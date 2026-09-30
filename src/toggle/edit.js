@@ -37,6 +37,7 @@ import {
 } from '@wordpress/blocks';
 
 import TargetsControl from './targets-control';
+import DarkPaletteSettings, { darkPaletteCss } from './dark-palette';
 import { toggleIcon } from './icon';
 import { stateAttributes } from './parts';
 
@@ -77,7 +78,7 @@ function collectParts( select, clientId ) {
 				return;
 			}
 
-			const type = block.attributes?.htmlAttributes?.[ 'data-toggle' ];
+			const type = block.attributes?.htmlAttributes?.[ 'data-toggle-part' ];
 
 			if ( type ) {
 				parts.push( {
@@ -131,7 +132,8 @@ function Placeholder( { clientId, setAttributes } ) {
 							createBlocksFromInnerBlocksTemplate(
 								variation.innerBlocks
 							),
-							true
+							// Keep the Toggle selected, so its settings are what you see next.
+							false
 						);
 					}
 				} }
@@ -232,12 +234,12 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 						value={ htmlClass }
 						onChange={ ( value ) => setAttributes( { htmlClass: value } ) }
 					/>
-					<Notice status="info" isDismissible={ false }>
+					<p className="ogal-toggle-help">
 						{ __(
-							'Dark mode colours come from your CSS. With GeneratePress, override the global colour variables, e.g. [data-color-scheme="dark"] { --base-3: #111; --contrast: #f2f2f2; }. The choice is remembered, and all dark mode toggles on the site stay in sync.',
+							'Pick the dark version of each theme colour in “Dark mode colours” below. The visitor’s choice is remembered, and every dark mode toggle on the site stays in sync. For anything else, style [data-color-scheme="dark"] in your CSS.',
 							'toggle-for-generateblocks'
 						) }
-					</Notice>
+					</p>
 				</>
 			) }
 
@@ -248,7 +250,7 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 						value={ classTargets }
 						onChange={ ( value ) => setAttributes( { classTargets: value } ) }
 						help={ __(
-							'Element IDs or CSS selectors, e.g. site-header, body, .card',
+							'Element IDs or CSS selectors, e.g. my-banner, body, .card',
 							'toggle-for-generateblocks'
 						) }
 					/>
@@ -348,7 +350,12 @@ function StateSettings( { attributes, setAttributes } ) {
 							'toggle-for-generateblocks'
 						) }
 						value={ group }
-						onChange={ ( value ) => setAttributes( { group: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( {
+								// Same rules as the server: lowercase, a-z 0-9 - _.
+								group: value.toLowerCase().replace( /[^a-z0-9_-]+/g, '-' ),
+							} )
+						}
 					/>
 				</>
 			) }
@@ -476,6 +483,67 @@ function useSyncPartState( parts, defaultState ) {
 	}, [ parts, defaultState ] );
 }
 
+/**
+ * While the Toggle (or anything in it) is selected, dim the elements that the
+ * current "Starts as" state hides, so it's clear what the toggle controls.
+ * GenerateBlocks doesn't print IDs on blocks in the editor, so targets are
+ * matched to blocks by their ID attribute and styled by client ID.
+ *
+ * @param {Object}  props            Props.
+ * @param {Object}  props.attributes Toggle attributes.
+ * @param {string}  props.clientId   Toggle client ID.
+ * @param {boolean} props.isActive   Whether the toggle or a child is selected.
+ */
+function TargetPreview( { attributes, clientId, isActive } ) {
+	const { action, defaultState, showWhenOff, showWhenOn } = attributes;
+	const isOn = 'on' === defaultState;
+	const hiddenIds = ( isOn ? showWhenOff : showWhenOn )
+		.filter( ( id ) => ! ( isOn ? showWhenOn : showWhenOff ).includes( id ) )
+		.join( ' ' );
+
+	const hiddenClientIds = useSelect(
+		( select ) => {
+			if ( ! isActive || 'showHide' !== action || ! hiddenIds ) {
+				return '';
+			}
+
+			const { getClientIdsWithDescendants, getBlockAttributes } =
+				select( blockEditorStore );
+			const wanted = hiddenIds.split( ' ' );
+
+			return getClientIdsWithDescendants()
+				.filter( ( id ) => {
+					if ( id === clientId ) {
+						return false;
+					}
+
+					const blockAttributes = getBlockAttributes( id ) || {};
+					const htmlId =
+						blockAttributes.htmlAttributes?.id || blockAttributes.anchor;
+
+					return htmlId && wanted.includes( htmlId );
+				} )
+				.join( ' ' );
+		},
+		[ isActive, action, hiddenIds, clientId ]
+	);
+
+	if ( ! hiddenClientIds ) {
+		return null;
+	}
+
+	const selectors = hiddenClientIds
+		.split( ' ' )
+		.map( ( id ) => `[data-block="${ id }"]` )
+		.join( ',' );
+
+	return (
+		<style>
+			{ `${ selectors }{opacity:.35;outline:2px dashed currentColor;outline-offset:4px;transition:opacity .2s}` }
+		</style>
+	);
+}
+
 function ToggleEdit( { attributes, setAttributes, clientId } ) {
 	const { defaultState } = attributes;
 
@@ -487,6 +555,18 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 
 	const parts = useMemo( () => JSON.parse( partsKey ), [ partsKey ] );
 	const isOn = 'on' === defaultState;
+
+	const isActive = useSelect(
+		( select ) => {
+			const { isBlockSelected, hasSelectedInnerBlock } =
+				select( blockEditorStore );
+
+			return (
+				isBlockSelected( clientId ) || hasSelectedInnerBlock( clientId, true )
+			);
+		},
+		[ clientId ]
+	);
 
 	useSyncPartState( parts, defaultState );
 
@@ -519,11 +599,17 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 			</BlockControls>
 
 			<InspectorControls>
-				<PartsSummary parts={ parts } />
+				{ parts.length === 0 && <PartsSummary parts={ parts } /> }
 				<BehaviourSettings
 					attributes={ attributes }
 					setAttributes={ setAttributes }
 				/>
+				{ 'colorScheme' === attributes.action && (
+					<DarkPaletteSettings
+						darkPalette={ attributes.darkPalette }
+						setAttributes={ setAttributes }
+					/>
+				) }
 				<StateSettings
 					attributes={ attributes }
 					setAttributes={ setAttributes }
@@ -533,6 +619,7 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 					setAttributes={ setAttributes }
 					parts={ parts }
 				/>
+				{ parts.length > 0 && <PartsSummary parts={ parts } /> }
 				<PanelBody
 					title={ __( 'Help', 'toggle-for-generateblocks' ) }
 					initialOpen={ false }
@@ -549,6 +636,17 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 				</PanelBody>
 			</InspectorControls>
 
+			{ 'colorScheme' === attributes.action && isOn && (
+				// Preview dark mode in the editor while the toggle shows its "on" state.
+				<style>
+					{ darkPaletteCss( attributes.darkPalette, ':root' ) }
+				</style>
+			) }
+			<TargetPreview
+				attributes={ attributes }
+				clientId={ clientId }
+				isActive={ isActive }
+			/>
 			<div { ...innerBlocksProps } />
 		</>
 	);

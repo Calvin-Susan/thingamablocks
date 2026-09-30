@@ -3,9 +3,10 @@
  *
  * Each toggle is a `.ogal-toggle` wrapper with a JSON config in
  * `data-ogal-toggle`. Its parts are ordinary GenerateBlocks blocks marked with
- * `data-toggle`:
+ * `data-toggle-part`:
  *   - "switch": flips the state (role="switch", aria-checked)
- *   - "off" / "on": sets that state (aria-pressed on buttons, data-active always)
+ *   - "off" / "on": sets that state (data-active always; aria-pressed when the
+ *     part is a button, or when it is the toggle's only kind of control)
  *
  * State changes fire `ogal-toggle:change` on the wrapper (it bubbles), so
  * custom code can react: `document.addEventListener( 'ogal-toggle:change', … )`.
@@ -13,6 +14,7 @@
 
 const STORAGE_PREFIX = 'ogal-toggle:';
 const HIDDEN_CLASS = 'ogal-toggle-hidden';
+const PART = 'data-toggle-part';
 const toggles = [];
 
 function readStorage( key ) {
@@ -30,75 +32,96 @@ function writeStorage( key, value ) {
 }
 
 /**
- * A bare word is an element ID; anything else is used as a CSS selector.
+ * A bare word is an element ID ("monthly"), unless no element has that ID and
+ * it's a tag name like "body" or "html". Anything else is a CSS selector.
  *
  * @param {string} value ID or selector.
- * @return {string} CSS selector.
+ * @return {Element[]} Matching elements.
  */
-function toSelector( value ) {
-	return /^[A-Za-z][\w-]*$/.test( value ) ? `#${ value }` : value;
+function resolve( value ) {
+	if ( /^[A-Za-z][\w-]*$/.test( value ) ) {
+		const byId = document.getElementById( value );
+
+		if ( byId ) {
+			return [ byId ];
+		}
+	}
+
+	try {
+		return [ ...document.querySelectorAll( value ) ];
+	} catch ( e ) {
+		// An invalid selector typed in the editor shouldn't break the other targets.
+		return [];
+	}
 }
 
 function queryAll( values = [] ) {
 	const elements = new Set();
 
-	values.forEach( ( value ) => {
-		try {
-			document
-				.querySelectorAll( toSelector( value ) )
-				.forEach( ( element ) => elements.add( element ) );
-		} catch ( e ) {
-			// An invalid selector typed in the editor shouldn't break the other targets.
-		}
-	} );
+	values.forEach( ( value ) =>
+		resolve( value ).forEach( ( element ) => elements.add( element ) )
+	);
 
 	return [ ...elements ];
-}
-
-function storageKey( toggle ) {
-	return toggle.config.group || toggle.id;
 }
 
 function prefersReducedMotion() {
 	return window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
 }
 
-function showElement( element, animation ) {
-	if ( ! element.classList.contains( HIDDEN_CLASS ) ) {
-		return;
-	}
+/*
+ * Hiding uses an inline display:none !important as well as a class. The class
+ * is a styling hook; the inline style keeps working when a "remove unused CSS"
+ * optimisation strips rules for classes that only appear after JS runs.
+ */
+function hideElement( element ) {
+	element.classList.add( HIDDEN_CLASS );
+	element.style.setProperty( 'display', 'none', 'important' );
+}
+
+function showElement( element, animation, initial ) {
+	const wasHidden = element.classList.contains( HIDDEN_CLASS );
 
 	element.classList.remove( HIDDEN_CLASS );
 
-	if ( 'none' === animation || prefersReducedMotion() ) {
+	if ( 'none' === element.style.getPropertyValue( 'display' ) ) {
+		element.style.removeProperty( 'display' );
+	}
+
+	if ( ! wasHidden || initial || 'none' === animation || prefersReducedMotion() ) {
 		return;
 	}
 
 	const enterClass = `ogal-toggle-enter-${ animation }`;
-	element.classList.remove( enterClass );
-	// Restart the animation if the element is shown again mid-animation.
-	void element.offsetWidth;
-	element.classList.add( enterClass );
-	element.addEventListener(
-		'animationend',
-		() => element.classList.remove( enterClass ),
-		{ once: true }
-	);
-}
+	const keyframes =
+		'slide' === animation
+			? [
+					{ opacity: 0, transform: 'translateY(0.75rem)' },
+					{ opacity: 1, transform: 'none' },
+			  ]
+			: [ { opacity: 0 }, { opacity: 1 } ];
 
-function hideElement( element ) {
-	element.classList.add( HIDDEN_CLASS );
+	element.classList.add( enterClass );
+	// Web Animations rather than CSS keyframes, for the same "unused CSS" reason.
+	const running = element.animate( keyframes, {
+		duration: 'slide' === animation ? 350 : 300,
+		easing: 'ease',
+	} );
+	running.onfinish = running.oncancel = () =>
+		element.classList.remove( enterClass );
 }
 
 const actions = {
-	showHide( config, isOn ) {
+	showHide( config, isOn, initial ) {
 		const show = queryAll( isOn ? config.showWhenOn : config.showWhenOff );
 		const hide = queryAll(
 			isOn ? config.showWhenOff : config.showWhenOn
 		).filter( ( element ) => ! show.includes( element ) );
 
 		hide.forEach( hideElement );
-		show.forEach( ( element ) => showElement( element, config.animation ) );
+		show.forEach( ( element ) =>
+			showElement( element, config.animation, initial )
+		);
 	},
 
 	colorScheme( config, isOn ) {
@@ -149,15 +172,25 @@ function paint( toggle, isOn ) {
 		toggle.parts( side ).forEach( ( part ) => {
 			part.setAttribute( 'data-active', active ? 'true' : 'false' );
 
-			if ( 'BUTTON' === part.tagName ) {
+			if ( part.hasAttribute( 'aria-pressed' ) ) {
 				part.setAttribute( 'aria-pressed', active ? 'true' : 'false' );
 			}
 		} );
 	} );
 }
 
+function groupMembers( toggle ) {
+	const { group } = toggle.config;
+
+	return group
+		? toggles.filter( ( other ) => other.config.group === group )
+		: [ toggle ];
+}
+
 /**
  * Set a toggle's state, apply its action, and keep grouped toggles in sync.
+ * Every member of a group runs its own action, so two toggles in one group can
+ * each control their own section of the page.
  *
  * @param {Object}  toggle Toggle record.
  * @param {boolean} isOn   New state.
@@ -168,19 +201,27 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 		return;
 	}
 
-	const { config } = toggle;
-	const group = config.group;
-	const members = group
-		? toggles.filter( ( other ) => other.config.group === group )
-		: [ toggle ];
+	const members = groupMembers( toggle );
+	const ran = new Set();
 
-	members.forEach( ( member ) => paint( member, isOn ) );
+	members.forEach( ( member ) => {
+		paint( member, isOn );
 
-	const run = actions[ config.action ] || actions.none;
-	run( config, isOn );
+		// Identical configs (the same toggle placed twice) only need to run once.
+		const signature = JSON.stringify( member.config );
 
-	if ( user && config.persist ) {
-		writeStorage( storageKey( toggle ), isOn ? 'on' : 'off' );
+		if ( ! ran.has( signature ) ) {
+			ran.add( signature );
+			( actions[ member.config.action ] || actions.none )(
+				member.config,
+				isOn,
+				initial
+			);
+		}
+	} );
+
+	if ( user && members.some( ( member ) => member.config.persist ) ) {
+		writeStorage( toggle.storageKey, isOn ? 'on' : 'off' );
 	}
 
 	toggle.element.dispatchEvent(
@@ -189,8 +230,8 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 			detail: {
 				state: isOn ? 'on' : 'off',
 				isOn,
-				group,
-				action: config.action,
+				group: toggle.config.group,
+				action: toggle.config.action,
 				initial,
 				toggle: toggle.element,
 			},
@@ -199,31 +240,31 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 }
 
 function initialState( toggle ) {
-	const { config } = toggle;
+	const members = groupMembers( toggle );
 
-	if ( config.persist ) {
-		const saved = readStorage( storageKey( toggle ) );
+	// A saved choice from any member of the group wins.
+	for ( const member of members ) {
+		if ( member.config.persist ) {
+			const saved = readStorage( member.storageKey );
 
-		if ( 'on' === saved || 'off' === saved ) {
-			return 'on' === saved;
+			if ( 'on' === saved || 'off' === saved ) {
+				return 'on' === saved;
+			}
 		}
 	}
 
-	if ( 'colorScheme' === config.action && config.followSystem ) {
-		return window.matchMedia( '(prefers-color-scheme: dark)' ).matches;
-	}
+	const { config } = toggle;
 
-	// A toggle joining a group that is already set up follows the group.
-	if ( config.group ) {
-		const leader = toggles.find(
-			( other ) =>
-				other !== toggle &&
-				other.config.group === config.group &&
-				'boolean' === typeof other.isOn
-		);
+	if ( 'colorScheme' === config.action ) {
+		// The <head> script may already have applied the system preference.
+		const applied = document.documentElement.getAttribute( 'data-color-scheme' );
 
-		if ( leader ) {
-			return leader.isOn;
+		if ( 'dark' === applied || 'light' === applied ) {
+			return 'dark' === applied;
+		}
+
+		if ( config.followSystem ) {
+			return window.matchMedia( '(prefers-color-scheme: dark)' ).matches;
 		}
 	}
 
@@ -232,7 +273,7 @@ function initialState( toggle ) {
 
 /**
  * Give the switch an accessible name when none was set: use the "on" label's
- * text, e.g. "Annual", or fall back to the page's visible label next to it.
+ * text, e.g. "Annual".
  *
  * @param {Object} toggle Toggle record.
  */
@@ -258,122 +299,183 @@ function ensureAccessibleName( toggle ) {
 	} );
 }
 
-function setup( element, index ) {
+/**
+ * The part an event belongs to, if it belongs to this toggle (not a toggle
+ * nested inside it).
+ *
+ * @param {Event}   event   DOM event.
+ * @param {Element} element Toggle wrapper.
+ * @return {Element|null} Part.
+ */
+function ownPart( event, element ) {
+	const part = event.target.closest( `[${ PART }]` );
+
+	return part && part.closest( '.ogal-toggle' ) === element ? part : null;
+}
+
+function activate( toggle, part ) {
+	const type = part.getAttribute( PART );
+
+	if ( 'switch' === type ) {
+		setState( toggle, ! toggle.isOn, { user: true } );
+		return true;
+	}
+
+	if ( 'on' === type || 'off' === type ) {
+		setState( toggle, 'on' === type, { user: true } );
+		return true;
+	}
+
+	return false;
+}
+
+function setup( element ) {
+	if ( element.ogalToggle ) {
+		return null;
+	}
+
 	let config;
 
 	try {
 		config = JSON.parse( element.dataset.ogalToggle || '{}' );
 	} catch ( e ) {
-		return;
+		return null;
 	}
+
+	const position = [
+		...document.querySelectorAll( '.ogal-toggle[data-ogal-toggle]' ),
+	].indexOf( element );
+	const id = element.id || `ogal-toggle-${ position + 1 }`;
 
 	const toggle = {
 		element,
 		config,
-		id: element.id || `ogal-toggle-${ index + 1 }`,
+		id,
+		// A group or an HTML anchor gives a stable key; otherwise fall back to the
+		// page path and position, so toggles on different pages don't collide.
+		storageKey:
+			config.group ||
+			element.id ||
+			`${ window.location.pathname }#${ position }`,
 		isOn: undefined,
 		// Only this toggle's own parts, not those of a toggle nested inside it.
 		parts: ( type ) =>
-			[ ...element.querySelectorAll( `[data-toggle="${ type }"]` ) ].filter(
+			[ ...element.querySelectorAll( `[${ PART }="${ type }"]` ) ].filter(
 				( part ) => part.closest( '.ogal-toggle' ) === element
 			),
 	};
 
+	element.ogalToggle = toggle;
 	toggles.push( toggle );
 
 	element.addEventListener( 'click', ( event ) => {
-		const part = event.target.closest( '[data-toggle]' );
+		const part = ownPart( event, element );
 
-		if ( ! part || part.closest( '.ogal-toggle' ) !== element ) {
-			return;
-		}
-
-		const type = part.getAttribute( 'data-toggle' );
-
-		if ( 'switch' === type ) {
-			setState( toggle, ! toggle.isOn, { user: true } );
-		} else if ( 'on' === type || 'off' === type ) {
-			setState( toggle, 'on' === type, { user: true } );
-		} else {
-			return;
-		}
-
-		// A part built as a link shouldn't navigate.
-		if ( 'A' === part.tagName ) {
+		if ( part && activate( toggle, part ) && 'A' === part.tagName ) {
+			// A part built as a link shouldn't navigate.
 			event.preventDefault();
 		}
 	} );
 
 	element.addEventListener( 'keydown', ( event ) => {
-		const part = event.target.closest( '[data-toggle="switch"]' );
+		const part = ownPart( event, element );
 
-		// Native buttons already handle Space and Enter.
-		if ( ! part || 'BUTTON' === part.tagName ) {
+		// Native buttons already turn Space and Enter into clicks.
+		if ( ! part || 'BUTTON' === part.tagName || event.repeat ) {
+			return;
+		}
+
+		// Only parts the server made keyboard-focusable take key presses.
+		if ( ! part.hasAttribute( 'tabindex' ) ) {
 			return;
 		}
 
 		if ( ' ' === event.key || 'Enter' === event.key ) {
 			event.preventDefault();
-			setState( toggle, ! toggle.isOn, { user: true } );
+			activate( toggle, part );
 		}
 	} );
 
 	ensureAccessibleName( toggle );
+
+	return toggle;
 }
 
-function init() {
-	document
-		.querySelectorAll( '.ogal-toggle[data-ogal-toggle]' )
-		.forEach( setup );
+/**
+ * Set up every toggle inside `root` that isn't set up yet. Runs on page load;
+ * call it again after adding toggles with AJAX: `window.ogalToggle.init()`.
+ *
+ * @param {ParentNode} root Where to look.
+ */
+function init( root = document ) {
+	const added = [ ...root.querySelectorAll( '.ogal-toggle[data-ogal-toggle]' ) ]
+		.map( setup )
+		.filter( Boolean );
 
-	toggles.forEach( ( toggle ) => {
-		if ( 'boolean' !== typeof toggle.isOn ) {
-			setState( toggle, initialState( toggle ), { initial: true } );
+	added.forEach( ( toggle ) => {
+		if ( 'boolean' === typeof toggle.isOn ) {
+			return;
 		}
+
+		// A toggle joining a group that is already running follows the group.
+		const leader = groupMembers( toggle ).find(
+			( other ) => other !== toggle && 'boolean' === typeof other.isOn
+		);
+
+		if ( leader ) {
+			paint( toggle, leader.isOn );
+			( actions[ toggle.config.action ] || actions.none )(
+				toggle.config,
+				leader.isOn,
+				true
+			);
+			return;
+		}
+
+		setState( toggle, initialState( toggle ), { initial: true } );
 	} );
 
 	// The script has taken over visibility; drop the no-flash rules.
 	document
 		.querySelectorAll( 'style.ogal-toggle-initial' )
 		.forEach( ( style ) => style.remove() );
+}
 
-	// Follow the operating system's dark mode while the visitor hasn't chosen.
-	window
-		.matchMedia( '(prefers-color-scheme: dark)' )
-		.addEventListener( 'change', ( event ) => {
-			const toggle = toggles.find(
-				( item ) =>
-					'colorScheme' === item.config.action &&
-					item.config.followSystem
-			);
-
-			if ( toggle && null === readStorage( storageKey( toggle ) ) ) {
-				setState( toggle, event.matches );
-			}
-		} );
-
-	// Small public API: window.ogalToggle.set( 'pricing', true ).
-	window.ogalToggle = {
-		get: ( key ) => {
-			const toggle = toggles.find(
-				( item ) => item.id === key || item.config.group === key
-			);
-			return toggle ? toggle.isOn : undefined;
-		},
-		set: ( key, isOn ) => {
-			const toggle = toggles.find(
-				( item ) => item.id === key || item.config.group === key
-			);
-
-			if ( toggle ) {
-				setState( toggle, !! isOn, { user: true } );
-			}
-		},
-	};
+function find( key ) {
+	return toggles.find(
+		( item ) => item.id === key || item.config.group === key
+	);
 }
 
 if ( 'loading' === document.readyState ) {
-	document.addEventListener( 'DOMContentLoaded', init );
+	document.addEventListener( 'DOMContentLoaded', () => init() );
 } else {
 	init();
 }
+
+// Follow the operating system's dark mode while the visitor hasn't chosen.
+window
+	.matchMedia( '(prefers-color-scheme: dark)' )
+	.addEventListener( 'change', ( event ) => {
+		const toggle = toggles.find(
+			( item ) =>
+				'colorScheme' === item.config.action && item.config.followSystem
+		);
+
+		if ( toggle && null === readStorage( toggle.storageKey ) ) {
+			setState( toggle, event.matches );
+		}
+	} );
+
+// Small public API, e.g. window.ogalToggle.set( 'billing', true ).
+window.ogalToggle = {
+	init,
+	get: ( key ) => find( key )?.isOn,
+	set: ( key, isOn ) => {
+		const toggle = find( key );
+
+		if ( toggle ) {
+			setState( toggle, !! isOn, { user: true } );
+		}
+	},
+};

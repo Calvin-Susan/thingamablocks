@@ -2,7 +2,7 @@
  * "Toggle part" settings on GenerateBlocks blocks.
  *
  * Any GenerateBlocks block inside a Toggle can become one of its parts. The
- * choice is stored as data-toggle in the block's own htmlAttributes, which is
+ * choice is stored as data-toggle-part in the block's own htmlAttributes, which is
  * where GenerateBlocks keeps custom attributes, so it's also visible and
  * editable in GB's HTML Attributes panel.
  */
@@ -77,7 +77,7 @@ const withTogglePartControl = createHigherOrderComponent(
 		}
 
 		const htmlAttributes = attributes.htmlAttributes || {};
-		const value = htmlAttributes[ 'data-toggle' ] || '';
+		const value = htmlAttributes[ 'data-toggle-part' ] || '';
 
 		const onChange = ( next ) => {
 			const updated = { ...htmlAttributes };
@@ -85,9 +85,9 @@ const withTogglePartControl = createHigherOrderComponent(
 			STATE_ATTRIBUTES.forEach( ( key ) => delete updated[ key ] );
 
 			if ( next ) {
-				updated[ 'data-toggle' ] = next;
+				updated[ 'data-toggle-part' ] = next;
 			} else {
-				delete updated[ 'data-toggle' ];
+				delete updated[ 'data-toggle-part' ];
 			}
 
 			setAttributes( { htmlAttributes: updated } );

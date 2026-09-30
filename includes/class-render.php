@@ -24,39 +24,48 @@ class Ogal_Toggle_Render {
 	const ACTIONS = array( 'showHide', 'colorScheme', 'toggleClass', 'none' );
 
 	/**
-	 * Counter for generated IDs, so aria-controls always has something to point at.
-	 *
-	 * @var int
+	 * The attribute that marks a GenerateBlocks block as a toggle part.
 	 */
-	private static $instance = 0;
+	const PART = 'data-toggle-part';
+
+	/**
+	 * Set on parts once a toggle has claimed them, so an outer toggle doesn't
+	 * re-process the parts of a toggle nested inside it.
+	 */
+	const OWNED = 'data-toggle-owned';
+
+	/**
+	 * Bare words treated as tag names rather than IDs when used as a target.
+	 */
+	const TAG_TARGETS = array( 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' );
 
 	/**
 	 * Render callback.
 	 *
-	 * @param array    $attributes Block attributes.
-	 * @param string   $content    Saved inner-block HTML.
-	 * @param WP_Block $block      Block instance.
+	 * @param array  $attributes Block attributes.
+	 * @param string $content    Saved inner-block HTML.
 	 * @return string
 	 */
-	public static function render( $attributes, $content, $block = null ) {
-		self::$instance++;
-
+	public static function render( $attributes, $content ) {
 		$config = self::config( $attributes );
 		$is_on  = 'on' === $config['defaultState'];
 
 		$content = self::decorate_parts( $content, $config, $is_on );
 
-		$wrapper = get_block_wrapper_attributes(
-			array(
-				'class'            => 'ogal-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
-				'data-ogal-toggle' => wp_json_encode( $config ),
-			)
+		$wrapper = array(
+			'class'            => 'ogal-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
+			'data-ogal-toggle' => wp_json_encode( $config ),
 		);
+
+		// The block is dynamic, so the HTML anchor has to be printed here.
+		if ( ! empty( $attributes['anchor'] ) ) {
+			$wrapper['id'] = $attributes['anchor'];
+		}
 
 		return sprintf(
 			'%1$s<div %2$s>%3$s</div>',
 			self::initial_visibility_css( $config, $is_on ),
-			$wrapper,
+			get_block_wrapper_attributes( $wrapper ),
 			$content
 		);
 	}
@@ -78,14 +87,16 @@ class Ogal_Toggle_Render {
 			'action'       => $action,
 			'defaultState' => 'on' === ( $attributes['defaultState'] ?? 'off' ) ? 'on' : 'off',
 			'persist'      => ! empty( $attributes['persist'] ),
-			'group'        => sanitize_key( $attributes['group'] ?? '' ),
+			'group'        => self::clean_group( $attributes['group'] ?? '' ),
 			'ariaLabel'    => sanitize_text_field( $attributes['ariaLabel'] ?? '' ),
 		);
 
 		if ( 'showHide' === $action ) {
+			$animation = $attributes['animation'] ?? 'fade';
+
 			$config['showWhenOff'] = self::clean_selectors( $attributes['showWhenOff'] ?? array() );
 			$config['showWhenOn']  = self::clean_selectors( $attributes['showWhenOn'] ?? array() );
-			$config['animation']   = in_array( $attributes['animation'] ?? 'none', array( 'none', 'fade', 'slide' ), true ) ? $attributes['animation'] : 'none';
+			$config['animation']   = in_array( $animation, array( 'none', 'fade', 'slide' ), true ) ? $animation : 'none';
 		}
 
 		if ( 'toggleClass' === $action ) {
@@ -106,10 +117,10 @@ class Ogal_Toggle_Render {
 	}
 
 	/**
-	 * Add roles, state and click targets to the inner GenerateBlocks parts.
+	 * Add roles, state and keyboard access to the inner GenerateBlocks parts.
 	 *
-	 * Parts are marked in the editor with data-toggle="switch|on|off" (in the
-	 * block's HTML Attributes, or the "Toggle part" panel this plugin adds).
+	 * Parts are marked in the editor with data-toggle-part="switch|on|off" (the
+	 * "Toggle part" panel, stored in the block's HTML attributes).
 	 *
 	 * @param string $content Inner HTML.
 	 * @param array  $config  Toggle config.
@@ -121,32 +132,34 @@ class Ogal_Toggle_Render {
 			return $content;
 		}
 
-		$controls = self::controls_attribute( $config );
-
-		$processor = new WP_HTML_Tag_Processor( $content );
+		$controls   = self::controls_attribute( $config );
+		$has_switch = self::has_switch( $content );
+		$processor  = new WP_HTML_Tag_Processor( $content );
 
 		while ( $processor->next_tag() ) {
-			$part = $processor->get_attribute( 'data-toggle' );
+			if ( null !== $processor->get_attribute( self::OWNED ) ) {
+				continue;
+			}
+
+			// A segmented control's group gets the toggle's label as its name.
+			if ( 'group' === $processor->get_attribute( 'role' ) && $config['ariaLabel'] && null === $processor->get_attribute( 'aria-label' ) ) {
+				$processor->set_attribute( 'aria-label', $config['ariaLabel'] );
+			}
+
+			$part = $processor->get_attribute( self::PART );
 
 			if ( ! is_string( $part ) ) {
 				continue;
 			}
+
+			$processor->set_attribute( self::OWNED, '' );
 
 			$is_button = 'BUTTON' === $processor->get_tag();
 
 			if ( 'switch' === $part ) {
 				$processor->set_attribute( 'role', 'switch' );
 				$processor->set_attribute( 'aria-checked', $is_on ? 'true' : 'false' );
-
-				if ( $is_button ) {
-					$processor->set_attribute( 'type', 'button' );
-				} else {
-					$processor->set_attribute( 'tabindex', '0' );
-				}
-
-				if ( $controls ) {
-					$processor->set_attribute( 'aria-controls', $controls );
-				}
+				self::make_operable( $processor, $is_button, $controls );
 
 				if ( $config['ariaLabel'] && null === $processor->get_attribute( 'aria-label' ) ) {
 					$processor->set_attribute( 'aria-label', $config['ariaLabel'] );
@@ -155,18 +168,62 @@ class Ogal_Toggle_Render {
 				$active = ( 'on' === $part ) === $is_on;
 				$processor->set_attribute( 'data-active', $active ? 'true' : 'false' );
 
-				if ( $is_button ) {
-					$processor->set_attribute( 'type', 'button' );
+				/*
+				 * Next to a switch, plain-text labels are a mouse convenience: the
+				 * switch is the control. Without a switch, the on/off parts are the
+				 * controls, so they must work as buttons for keyboard and screen readers.
+				 */
+				if ( $is_button || ! $has_switch ) {
 					$processor->set_attribute( 'aria-pressed', $active ? 'true' : 'false' );
+					self::make_operable( $processor, $is_button, $controls );
 
-					if ( $controls ) {
-						$processor->set_attribute( 'aria-controls', $controls );
+					if ( ! $is_button ) {
+						$processor->set_attribute( 'role', 'button' );
 					}
 				}
 			}
 		}
 
 		return $processor->get_updated_html();
+	}
+
+	/**
+	 * Make a part keyboard-operable and point it at what it controls.
+	 *
+	 * @param WP_HTML_Tag_Processor $processor Processor on the part's tag.
+	 * @param bool                  $is_button Whether it's a <button>.
+	 * @param string                $controls  aria-controls value.
+	 */
+	private static function make_operable( $processor, $is_button, $controls ) {
+		if ( $is_button ) {
+			// Stop a button inside a form from submitting it.
+			$processor->set_attribute( 'type', 'button' );
+		} else {
+			$processor->set_attribute( 'tabindex', '0' );
+		}
+
+		if ( $controls ) {
+			$processor->set_attribute( 'aria-controls', $controls );
+		}
+	}
+
+	/**
+	 * Whether the toggle's own parts include a switch (ignoring nested toggles,
+	 * whose parts are already marked as owned).
+	 *
+	 * @param string $content Inner HTML.
+	 * @return bool
+	 */
+	private static function has_switch( $content ) {
+		$processor = new WP_HTML_Tag_Processor( $content );
+
+		while ( $processor->next_tag() ) {
+			if ( 'switch' === $processor->get_attribute( self::PART ) && null === $processor->get_attribute( self::OWNED ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -186,6 +243,10 @@ class Ogal_Toggle_Render {
 		$ids = array();
 
 		foreach ( $selectors as $selector ) {
+			if ( in_array( $selector, self::TAG_TARGETS, true ) ) {
+				continue;
+			}
+
 			if ( preg_match( '/^#?([A-Za-z][\w\-]*)$/', $selector, $match ) ) {
 				$ids[] = $match[1];
 			}
@@ -218,22 +279,31 @@ class Ogal_Toggle_Render {
 			return '';
 		}
 
-		$selectors = array_map( array( __CLASS__, 'to_css_selector' ), $hidden );
+		/*
+		 * Not passed through esc_html(): <style> content is raw text, so entities
+		 * would break selectors like [data-plan="annual"]. clean_selectors() has
+		 * already removed <, {, }, ; and comments, so the rule can't be closed
+		 * early or extended with other declarations. One rule per selector, so
+		 * an invalid selector only voids its own rule.
+		 */
+		$rules = '';
 
-		return sprintf(
-			'<style class="ogal-toggle-initial">%s{display:none!important}</style>',
-			esc_html( implode( ',', $selectors ) )
-		);
+		foreach ( $hidden as $selector ) {
+			$rules .= self::to_css_selector( $selector ) . '{display:none!important}';
+		}
+
+		return '<style class="ogal-toggle-initial">' . $rules . '</style>';
 	}
 
 	/**
-	 * A bare word is an ID; anything else is used as a CSS selector.
+	 * A bare word is an ID (except common tag names like body); anything else
+	 * is used as a CSS selector.
 	 *
 	 * @param string $selector ID or selector.
 	 * @return string
 	 */
 	public static function to_css_selector( $selector ) {
-		if ( preg_match( '/^[A-Za-z][\w\-]*$/', $selector ) ) {
+		if ( ! in_array( $selector, self::TAG_TARGETS, true ) && preg_match( '/^[A-Za-z][\w\-]*$/', $selector ) ) {
 			return '#' . $selector;
 		}
 
@@ -242,7 +312,7 @@ class Ogal_Toggle_Render {
 
 	/**
 	 * Clean a list of IDs/selectors. Characters that could close the <style>
-	 * element or start a new declaration block are dropped.
+	 * element, open a comment or start a new declaration block are dropped.
 	 *
 	 * @param mixed $selectors List of selectors.
 	 * @return array
@@ -263,7 +333,7 @@ class Ogal_Toggle_Render {
 				continue;
 			}
 
-			$selector = trim( preg_replace( '/[<>{};\\\\]/', '', $selector ) );
+			$selector = trim( preg_replace( '#[<{};\\\\]|/\*|\*/#', '', $selector ) );
 
 			if ( '' !== $selector && strlen( $selector ) <= 200 ) {
 				$clean[] = $selector;
@@ -287,5 +357,19 @@ class Ogal_Toggle_Render {
 		$classes = array_filter( array_map( 'sanitize_html_class', preg_split( '/\s+/', $class_names ) ) );
 
 		return implode( ' ', $classes );
+	}
+
+	/**
+	 * Clean a sync group name the same way the editor does: lowercase letters,
+	 * numbers, dashes and underscores. "color-scheme" is reserved for dark mode.
+	 *
+	 * @param string $group Group name.
+	 * @return string
+	 */
+	public static function clean_group( $group ) {
+		$group = is_string( $group ) ? strtolower( trim( $group ) ) : '';
+		$group = trim( preg_replace( '/[^a-z0-9_-]+/', '-', $group ), '-' );
+
+		return 'color-scheme' === $group ? '' : $group;
 	}
 }

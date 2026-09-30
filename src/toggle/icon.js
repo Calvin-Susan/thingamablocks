@@ -7,3 +7,33 @@ export const toggleIcon = (
 		<Circle cx="17" cy="12" r="3" />
 	</SVG>
 );
+
+// Icons for the starting layouts in the variation picker.
+export const variationIcons = {
+	'switch-labels': (
+		<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+			<Path d="M4 22h8v4H4zM36 22h8v4h-8z" />
+			<Path d="M20 17h8a7 7 0 0 1 0 14h-8a7 7 0 0 1 0-14Zm0 2a5 5 0 0 0 0 10h8a5 5 0 0 0 0-10h-8Z" />
+			<Circle cx="28" cy="24" r="4" />
+		</SVG>
+	),
+	segmented: (
+		<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+			<Path d="M10 15h28a9 9 0 0 1 0 18H10a9 9 0 0 1 0-18Zm0 2a7 7 0 0 0 0 14h28a7 7 0 0 0 0-14H10Z" />
+			<Path d="M25 19h13a5 5 0 0 1 0 10H25z" />
+		</SVG>
+	),
+	switch: (
+		<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+			<Path d="M15 14h18a10 10 0 0 1 0 20H15a10 10 0 0 1 0-20Zm0 2a8 8 0 0 0 0 16h18a8 8 0 0 0 0-16H15Z" />
+			<Circle cx="33" cy="24" r="6" />
+		</SVG>
+	),
+	'dark-mode': (
+		<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true">
+			<Path d="M15 14h18a10 10 0 0 1 0 20H15a10 10 0 0 1 0-20Zm0 2a8 8 0 0 0 0 16h18a8 8 0 0 0 0-16H15Z" />
+			<Path d="M36.5 27.5a6 6 0 0 1-7-7 6 6 0 1 0 7 7Z" />
+			<Circle cx="15" cy="24" r="2.5" />
+		</SVG>
+	),
+};

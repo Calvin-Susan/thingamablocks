@@ -14,10 +14,15 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { variationIcons } from './icon';
+
 const color = {
 	accent: 'var(--accent, #1e73be)',
 	track: 'var(--contrast-3, #b2b2be)',
-	knob: 'var(--base-3, #ffffff)',
+	// The knob and its icons stay fixed colours so the switch reads the same in
+	// light and dark mode (the theme's base colours flip in dark mode).
+	knob: '#ffffff',
+	knobIcon: '#575760',
 	text: 'var(--contrast, #222222)',
 	muted: 'var(--contrast-2, #575760)',
 	surface: 'var(--base-2, #f7f8f9)',
@@ -72,7 +77,7 @@ export const switchTrack = ( knobChildren = [] ) => [
 	'generateblocks/element',
 	{
 		tagName: 'div',
-		htmlAttributes: { 'data-toggle': 'switch' },
+		htmlAttributes: { 'data-toggle-part': 'switch' },
 		styles: {
 			display: 'inline-flex',
 			alignItems: 'center',
@@ -87,8 +92,9 @@ export const switchTrack = ( knobChildren = [] ) => [
 			'&[aria-checked="true"]': {
 				backgroundColor: color.accent,
 			},
+			// Margin rather than transform, so the knob slides the right way on RTL sites.
 			'&[aria-checked="true"] > *': {
-				transform: 'translateX(1.5rem)',
+				marginInlineStart: '1.5rem',
 			},
 			...focusRing,
 		},
@@ -107,7 +113,7 @@ export const switchTrack = ( knobChildren = [] ) => [
 					...radius( '50%' ),
 					backgroundColor: color.knob,
 					boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)',
-					transition: 'transform 0.2s ease',
+					transition: 'margin 0.2s ease',
 				},
 			},
 			knobChildren,
@@ -120,7 +126,7 @@ const label = ( text, side ) => [
 	{
 		tagName: 'span',
 		content: text,
-		htmlAttributes: { 'data-toggle': side },
+		htmlAttributes: { 'data-toggle-part': side },
 		styles: {
 			color: color.muted,
 			fontWeight: '500',
@@ -150,7 +156,7 @@ const segment = ( text, side ) => [
 	{
 		tagName: 'button',
 		content: text,
-		htmlAttributes: { 'data-toggle': side, type: 'button' },
+		htmlAttributes: { 'data-toggle-part': side, type: 'button' },
 		styles: {
 			...padding( '0.5em', '1.25em' ),
 			...radius( '999px' ),
@@ -168,7 +174,7 @@ const segment = ( text, side ) => [
 			},
 			'&[data-active="true"], &[data-active="true"]:hover': {
 				backgroundColor: color.accent,
-				color: color.knob,
+				color: 'var(--base-3, #ffffff)',
 			},
 			...focusRing,
 		},
@@ -199,7 +205,7 @@ const icon = ( svg, showWhenOn ) => [
 		html: svg,
 		styles: {
 			display: showWhenOn ? 'none' : 'flex',
-			color: color.muted,
+			color: color.knobIcon,
 			svg: {
 				width: '0.875rem',
 				height: '0.875rem',
@@ -244,6 +250,7 @@ const darkModeSwitch = () => {
 export const variations = [
 	{
 		name: 'switch-labels',
+		icon: variationIcons[ 'switch-labels' ],
 		title: __( 'Switch with labels', 'toggle-for-generateblocks' ),
 		description: __(
 			'Two labels either side of a switch, e.g. Monthly / Annual.',
@@ -262,6 +269,7 @@ export const variations = [
 	},
 	{
 		name: 'segmented',
+		icon: variationIcons[ 'segmented' ],
 		title: __( 'Segmented buttons', 'toggle-for-generateblocks' ),
 		description: __(
 			'Two buttons side by side; the active one is highlighted.',
@@ -278,6 +286,7 @@ export const variations = [
 	},
 	{
 		name: 'switch',
+		icon: variationIcons[ 'switch' ],
 		title: __( 'Switch', 'toggle-for-generateblocks' ),
 		description: __(
 			'Just the switch. Give it an accessible label in the settings.',
@@ -289,6 +298,7 @@ export const variations = [
 	},
 	{
 		name: 'dark-mode',
+		icon: variationIcons[ 'dark-mode' ],
 		title: __( 'Dark mode switch', 'toggle-for-generateblocks' ),
 		description: __(
 			'A sun/moon switch that changes the page between light and dark.',

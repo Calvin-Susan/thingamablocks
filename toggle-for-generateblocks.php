@@ -24,6 +24,7 @@ define( 'OGAL_TOGGLE_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once OGAL_TOGGLE_DIR . 'includes/class-render.php';
 require_once OGAL_TOGGLE_DIR . 'includes/color-scheme.php';
+require_once OGAL_TOGGLE_DIR . 'includes/patterns.php';
 
 add_action( 'init', 'ogal_toggle_register_block' );
 /**
