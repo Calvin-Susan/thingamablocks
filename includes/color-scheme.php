@@ -37,6 +37,16 @@ function ogal_toggle_track_color_scheme_toggle( $post_id, $post ) {
 		return;
 	}
 
+	/*
+	 * The dark palette and <html> class affect every page, so only people who
+	 * can change the site's appearance can set them. A dark mode toggle saved
+	 * by anyone else still works on its page; it just doesn't change the
+	 * site-wide settings.
+	 */
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
 	$settings = null;
 
 	if ( 'publish' === $post->post_status && false !== strpos( $post->post_content, 'wp:ogal/toggle' ) ) {
@@ -155,14 +165,14 @@ function ogal_toggle_clean_palette( $palette ) {
 	$clean = array();
 
 	foreach ( $palette as $name => $value ) {
-		if ( ! is_string( $name ) || ! is_string( $value ) || ! preg_match( '/^--[A-Za-z0-9_-]+$/', $name ) ) {
+		if ( ! is_string( $name ) || ! is_string( $value ) || ! preg_match( '/^--[A-Za-z0-9_-]+$/D', $name ) ) {
 			continue;
 		}
 
 		$value = trim( $value );
 
 		// Hex, or rgb()/hsl()/oklch() and friends with plain numeric arguments.
-		if ( preg_match( '/^#[0-9a-fA-F]{3,8}$/', $value ) || preg_match( '/^(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch)\([0-9.,%\s\/+-]+\)$/', $value ) ) {
+		if ( preg_match( '/^#[0-9a-fA-F]{3,8}$/D', $value ) || preg_match( '/^(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch)\([0-9.,%\s\/+-]+\)$/D', $value ) ) {
 			$clean[ $name ] = $value;
 		}
 	}

@@ -321,7 +321,7 @@ window.ogalToggle.init( container );            // set up toggles added later, e
 
 ### Storage keys
 
-`localStorage` keys start with `ogal-toggle:`, followed by the toggle's sync group, else its HTML anchor, else the page path and the toggle's position on the page (e.g. `ogal-toggle:/pricing/#0`). Dark mode uses `ogal-toggle:color-scheme`.
+`localStorage` keys start with `ogal-toggle:`, then `group:<sync group>`, else `id:<HTML anchor>`, else `path:<page path>#<position>` (e.g. `ogal-toggle:path:/pricing/#0`). Dark mode always uses `ogal-toggle:color-scheme`, which the `<head>` script reads.
 
 ---
 
@@ -342,7 +342,7 @@ GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't 
 ### What's saved vs. what's rendered
 
 - In the post content, the Toggle saves only its inner blocks (`save` returns `<InnerBlocks.Content />`) plus its settings as block attributes.
-- On the front end, PHP (`includes/class-render.php`) renders the wrapper `<div class="ogal-toggle is-off" data-ogal-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts. Settings are sanitised there: selectors lose characters like `<{};\` and CSS comments, class names go through `sanitize_html_class`, group names are normalised.
+- On the front end, PHP (`includes/class-render.php`) renders the wrapper `<div class="ogal-toggle is-off" data-ogal-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts. Settings are sanitised there: a target selector is only kept if it uses plain selector characters (no `<`, `{`, `}`, `;`, `\` or `@`) with balanced brackets and quotes, so nothing typed into a target field can break out of the no-flash `<style>` or turn into an `@import`. The editor warns about targets that will be ignored. Class names go through `sanitize_html_class`; group names are normalised.
 - For show/hide, PHP also prints a tiny `<style class="ogal-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
 - The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.ogalToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
 - In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; previews the dark colours when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
@@ -356,6 +356,8 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
   - `<style id="ogal-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
   - a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
 - If several posts have a dark mode toggle, the most recently saved one's settings are used.
+- Only users who can change the site's appearance (`edit_theme_options`, i.e. administrators) update these site-wide settings when they save. A dark mode toggle saved by an Editor or Author still works on its page, but doesn't change the site's dark colours.
+- Only posts are scanned. A dark mode toggle placed in a **block widget**, or in a theme template part that has never been edited in the Site Editor, still switches `data-color-scheme`, but gets no dark colours or no-flash script until a post containing a dark mode toggle is saved. The simplest setup: put the switch in a GeneratePress Element (a post type, so it's tracked).
 - Removing the toggle from the post, unpublishing it, trashing or deleting it switches the head output off again (once no other post has one).
 
 ---

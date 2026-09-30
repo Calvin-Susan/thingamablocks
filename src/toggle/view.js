@@ -31,23 +31,30 @@ function writeStorage( key, value ) {
 	} catch ( e ) {}
 }
 
+// Bare words that may also mean a tag, mirroring TAG_TARGETS in class-render.php.
+const TAG_TARGETS = [ 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' ];
+
 /**
- * A bare word is an element ID ("monthly"), unless no element has that ID and
- * it's a tag name like "body" or "html". Anything else is a CSS selector.
+ * A bare word is an element ID ("monthly"). For a few tag names ("body",
+ * "header"…) an element with that ID wins, otherwise the tag is used.
+ * Anything else is a CSS selector.
+ *
+ * Every element with the ID is returned, so a pattern inserted twice on one
+ * page (duplicate IDs) switches both copies.
  *
  * @param {string} value ID or selector.
  * @return {Element[]} Matching elements.
  */
 function resolve( value ) {
-	if ( /^[A-Za-z][\w-]*$/.test( value ) ) {
-		const byId = document.getElementById( value );
-
-		if ( byId ) {
-			return [ byId ];
-		}
-	}
-
 	try {
+		if ( /^[A-Za-z][\w-]*$/.test( value ) ) {
+			const byId = [ ...document.querySelectorAll( `[id="${ value }"]` ) ];
+
+			if ( byId.length || ! TAG_TARGETS.includes( value ) ) {
+				return byId;
+			}
+		}
+
 		return [ ...document.querySelectorAll( value ) ];
 	} catch ( e ) {
 		// An invalid selector typed in the editor shouldn't break the other targets.
@@ -329,6 +336,32 @@ function activate( toggle, part ) {
 	return false;
 }
 
+/**
+ * Where a toggle's remembered choice is kept. Dark mode always uses
+ * "color-scheme", which the <head> script reads; other keys are namespaced so
+ * a group and an anchor with the same name can't collide.
+ *
+ * @param {Object}  config   Toggle config.
+ * @param {Element} element  Toggle wrapper.
+ * @param {number}  position Index among the page's toggles.
+ * @return {string} Storage key (without the prefix).
+ */
+function storageKeyFor( config, element, position ) {
+	if ( 'colorScheme' === config.action ) {
+		return 'color-scheme';
+	}
+
+	if ( config.group ) {
+		return `group:${ config.group }`;
+	}
+
+	if ( element.id ) {
+		return `id:${ element.id }`;
+	}
+
+	return `path:${ window.location.pathname }#${ position }`;
+}
+
 function setup( element ) {
 	if ( element.ogalToggle ) {
 		return null;
@@ -353,10 +386,7 @@ function setup( element ) {
 		id,
 		// A group or an HTML anchor gives a stable key; otherwise fall back to the
 		// page path and position, so toggles on different pages don't collide.
-		storageKey:
-			config.group ||
-			element.id ||
-			`${ window.location.pathname }#${ position }`,
+		storageKey: storageKeyFor( config, element, position ),
 		isOn: undefined,
 		// Only this toggle's own parts, not those of a toggle nested inside it.
 		parts: ( type ) =>

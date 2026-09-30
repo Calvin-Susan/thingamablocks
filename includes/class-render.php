@@ -142,8 +142,12 @@ class Ogal_Toggle_Render {
 			}
 
 			// A segmented control's group gets the toggle's label as its name.
-			if ( 'group' === $processor->get_attribute( 'role' ) && $config['ariaLabel'] && null === $processor->get_attribute( 'aria-label' ) ) {
-				$processor->set_attribute( 'aria-label', $config['ariaLabel'] );
+			if ( 'group' === $processor->get_attribute( 'role' ) ) {
+				$processor->set_attribute( self::OWNED, '' );
+
+				if ( $config['ariaLabel'] && null === $processor->get_attribute( 'aria-label' ) ) {
+					$processor->set_attribute( 'aria-label', $config['ariaLabel'] );
+				}
 			}
 
 			$part = $processor->get_attribute( self::PART );
@@ -281,10 +285,11 @@ class Ogal_Toggle_Render {
 
 		/*
 		 * Not passed through esc_html(): <style> content is raw text, so entities
-		 * would break selectors like [data-plan="annual"]. clean_selectors() has
-		 * already removed <, {, }, ; and comments, so the rule can't be closed
-		 * early or extended with other declarations. One rule per selector, so
-		 * an invalid selector only voids its own rule.
+		 * would break selectors like [data-plan="annual"]. clean_selectors() only
+		 * lets through balanced, plain selector characters (see
+		 * is_safe_selector()), so the rule can't be closed early, extended, or
+		 * turned into an at-rule. One rule per selector, so an invalid selector
+		 * only voids its own rule.
 		 */
 		$rules = '';
 
@@ -342,14 +347,57 @@ class Ogal_Toggle_Render {
 				continue;
 			}
 
-			$selector = trim( preg_replace( '#[<{};\\\\]|/\*|\*/#', '', $selector ) );
+			$selector = trim( $selector );
 
-			if ( '' !== $selector && strlen( $selector ) <= 200 ) {
+			if ( '' !== $selector && strlen( $selector ) <= 200 && self::is_safe_selector( $selector ) ) {
 				$clean[] = $selector;
 			}
 		}
 
 		return array_values( array_unique( $clean ) );
+	}
+
+	/**
+	 * Whether a selector is safe to print inside a <style> element.
+	 *
+	 * Only characters that plain selectors use are allowed: no "<" (which could
+	 * close the element), no "{", "}", ";" or "\\" (declarations, escapes) and
+	 * no "@" (at-rules such as @import). Brackets, parentheses and quotes must
+	 * balance, so an open "(" can't swallow the rule that follows it.
+	 *
+	 * @param string $selector Selector.
+	 * @return bool
+	 */
+	public static function is_safe_selector( $selector ) {
+		if ( ! preg_match( '/^[A-Za-z0-9_\-#.\[\]="\'~^$*|:(), >+]+$/D', $selector ) ) {
+			return false;
+		}
+
+		$stack = array();
+		$quote = '';
+		$pairs = array(
+			')' => '(',
+			']' => '[',
+		);
+
+		foreach ( str_split( $selector ) as $char ) {
+			if ( $quote ) {
+				if ( $char === $quote ) {
+					$quote = '';
+				}
+				continue;
+			}
+
+			if ( '"' === $char || "'" === $char ) {
+				$quote = $char;
+			} elseif ( '(' === $char || '[' === $char ) {
+				$stack[] = $char;
+			} elseif ( isset( $pairs[ $char ] ) && array_pop( $stack ) !== $pairs[ $char ] ) {
+				return false;
+			}
+		}
+
+		return '' === $quote && empty( $stack );
 	}
 
 	/**

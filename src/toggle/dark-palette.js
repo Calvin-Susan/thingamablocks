@@ -48,7 +48,13 @@ function readVariable( name ) {
 	const doc = frame?.contentDocument || document;
 	const target = doc.body || doc.documentElement;
 
-	return getComputedStyle( target ).getPropertyValue( name ).trim();
+	// Read the light value: switch off the editor's dark mode preview meanwhile.
+	const previews = [ ...doc.querySelectorAll( 'style[data-ogal-dark-preview]' ) ];
+	previews.forEach( ( style ) => ( style.disabled = true ) );
+	const value = getComputedStyle( target ).getPropertyValue( name ).trim();
+	previews.forEach( ( style ) => ( style.disabled = false ) );
+
+	return value;
 }
 
 /**
@@ -60,14 +66,17 @@ function readVariable( name ) {
  */
 function toHex( value ) {
 	if ( ! value ) {
-		return value;
+		return '';
 	}
 
 	const varMatch = /^var\(\s*(--[\w-]+)\s*\)$/.exec( value );
 	const resolved = varMatch ? readVariable( varMatch[ 1 ] ) : value;
 
+	if ( ! resolved || ! CSS.supports( 'color', resolved ) ) {
+		return '';
+	}
+
 	const canvas = document.createElement( 'canvas' ).getContext( '2d' );
-	canvas.fillStyle = '#000';
 	canvas.fillStyle = resolved;
 
 	return /^#[0-9a-f]{6}$/i.test( canvas.fillStyle ) ? canvas.fillStyle : resolved;
@@ -197,8 +206,10 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 		( name, value ) => {
 			const next = { ...darkPalette };
 
-			if ( value ) {
-				next[ name ] = toHex( value );
+			const hex = value ? toHex( value ) : '';
+
+			if ( hex ) {
+				next[ name ] = hex;
 			} else {
 				delete next[ name ];
 			}

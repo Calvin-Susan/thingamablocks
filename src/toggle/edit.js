@@ -30,16 +30,27 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { useEffect, useMemo } from '@wordpress/element';
+import {
+	createContext,
+	createPortal,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from '@wordpress/element';
 import {
 	createBlocksFromInnerBlocksTemplate,
 	store as blocksStore,
 } from '@wordpress/blocks';
 
 import TargetsControl from './targets-control';
+
+// The document the block is rendered in (the editor canvas iframe).
+const CanvasContext = createContext( null );
 import DarkPaletteSettings, { darkPaletteCss } from './dark-palette';
 import { toggleIcon } from './icon';
-import { stateAttributes } from './parts';
+import { stateAttributes, STATE_ATTRIBUTES } from './parts';
 
 const ACTION_OPTIONS = [
 	{
@@ -466,12 +477,18 @@ function useSyncPartState( parts, defaultState ) {
 		const isOn = 'on' === defaultState;
 
 		parts.forEach( ( part ) => {
-			const next = {
-				...part.htmlAttributes,
-				...stateAttributes( part, isOn ),
-			};
+			const next = { ...part.htmlAttributes };
 
-			const changed = Object.keys( next ).some(
+			// Drop state attributes that no longer apply (e.g. the tag changed
+			// from button to div), then add the current ones.
+			STATE_ATTRIBUTES.forEach( ( key ) => delete next[ key ] );
+			Object.assign( next, stateAttributes( part, isOn ) );
+
+			const keys = new Set( [
+				...Object.keys( next ),
+				...Object.keys( part.htmlAttributes || {} ),
+			] );
+			const changed = [ ...keys ].some(
 				( key ) => next[ key ] !== part.htmlAttributes?.[ key ]
 			);
 
@@ -538,10 +555,29 @@ function TargetPreview( { attributes, clientId, isActive } ) {
 		.join( ',' );
 
 	return (
-		<style>
+		<CanvasStyle>
 			{ `${ selectors }{opacity:.35;outline:2px dashed currentColor;outline-offset:4px;transition:opacity .2s}` }
-		</style>
+		</CanvasStyle>
 	);
+}
+
+/**
+ * A <style> in the editor canvas's <head>. Rendered through a portal so it
+ * isn't a sibling in the block list, where it would upset spacing rules like
+ * "> * + *".
+ *
+ * @param {Object} props          Props.
+ * @param {string} props.children CSS.
+ * @param {Object} props.rest     Extra attributes for the <style>.
+ */
+function CanvasStyle( { children, ...rest } ) {
+	const canvas = useContext( CanvasContext );
+
+	if ( ! canvas || ! children ) {
+		return null;
+	}
+
+	return createPortal( <style { ...rest }>{ children }</style>, canvas.head );
 }
 
 function ToggleEdit( { attributes, setAttributes, clientId } ) {
@@ -570,13 +606,20 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 
 	useSyncPartState( parts, defaultState );
 
+	const [ canvas, setCanvas ] = useState( null );
+	const canvasRef = useCallback(
+		( node ) => setCanvas( node ? node.ownerDocument : null ),
+		[]
+	);
+
 	const blockProps = useBlockProps( {
+		ref: canvasRef,
 		className: `ogal-toggle ${ isOn ? 'is-on' : 'is-off' }`,
 	} );
 	const innerBlocksProps = useInnerBlocksProps( blockProps );
 
 	return (
-		<>
+		<CanvasContext.Provider value={ canvas }>
 			<BlockControls>
 				<ToolbarGroup>
 					<ToolbarButton
@@ -638,9 +681,9 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 
 			{ 'colorScheme' === attributes.action && isOn && (
 				// Preview dark mode in the editor while the toggle shows its "on" state.
-				<style>
-					{ darkPaletteCss( attributes.darkPalette, ':root' ) }
-				</style>
+				<CanvasStyle data-ogal-dark-preview="">
+					{ darkPaletteCss( attributes.darkPalette, ':root:root' ) }
+				</CanvasStyle>
 			) }
 			<TargetPreview
 				attributes={ attributes }
@@ -648,7 +691,7 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 				isActive={ isActive }
 			/>
 			<div { ...innerBlocksProps } />
-		</>
+		</CanvasContext.Provider>
 	);
 }
 

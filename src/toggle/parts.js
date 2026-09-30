@@ -21,7 +21,7 @@ const PART_BLOCKS = [
 ];
 
 // Attributes the Toggle manages on its parts; cleared when a block stops being one.
-const STATE_ATTRIBUTES = [ 'aria-checked', 'aria-pressed', 'data-active' ];
+export const STATE_ATTRIBUTES = [ 'aria-checked', 'aria-pressed', 'data-active' ];
 
 /**
  * The state attributes a part should carry, mirroring what the server and the

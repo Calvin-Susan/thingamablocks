@@ -33,12 +33,43 @@ export function usePageIds() {
 	return useMemo( () => ( joined ? joined.split( ' ' ) : [] ), [ joined ] );
 }
 
+/**
+ * Mirrors Ogal_Toggle_Render::is_safe_selector(): plain selector characters
+ * only, with balanced brackets and quotes. Anything else is dropped on save.
+ *
+ * @param {string} value Selector.
+ * @return {boolean} Whether the server will keep it.
+ */
+export function isSafeSelector( value ) {
+	if ( ! /^[A-Za-z0-9_\-#.[\]="'~^$*|:(), >+]+$/.test( value ) ) {
+		return false;
+	}
+
+	const stack = [];
+	let quote = '';
+
+	for ( const char of value ) {
+		if ( quote ) {
+			quote = char === quote ? '' : quote;
+		} else if ( '"' === char || "'" === char ) {
+			quote = char;
+		} else if ( '(' === char || '[' === char ) {
+			stack.push( char );
+		} else if ( ( ')' === char && stack.pop() !== '(' ) || ( ']' === char && stack.pop() !== '[' ) ) {
+			return false;
+		}
+	}
+
+	return ! quote && ! stack.length;
+}
+
 const isPlainId = ( value ) => /^#?[A-Za-z][\w-]*$/.test( value );
 const stripHash = ( value ) => value.replace( /^#/, '' );
 
 export default function TargetsControl( { label, help, value = [], onChange } ) {
 	const pageIds = usePageIds();
 
+	const unsafe = value.filter( ( target ) => ! isSafeSelector( target ) );
 	const missing = value.filter(
 		( target ) => isPlainId( target ) && ! pageIds.includes( stripHash( target ) )
 	);
@@ -65,6 +96,18 @@ export default function TargetsControl( { label, help, value = [], onChange } ) 
 				__experimentalExpandOnFocus
 				help={ help || '' }
 			/>
+			{ unsafe.length > 0 && (
+				<p className="ogal-toggle-targets__missing">
+					{ sprintf(
+						/* translators: %s: comma-separated list of selectors. */
+						__(
+							'These will be ignored because they contain characters a selector can’t use here (such as @ ; { } or unbalanced brackets): %s',
+							'toggle-for-generateblocks'
+						),
+						unsafe.join( ', ' )
+					) }
+				</p>
+			) }
 			{ missing.length > 0 && (
 				<p className="ogal-toggle-targets__missing">
 					{ sprintf(
