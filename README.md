@@ -7,7 +7,7 @@ The block (`ogal/toggle`) sits in the GenerateBlocks category of the inserter. L
 A toggle can:
 
 - **Show / hide elements** – e.g. monthly vs. annual pricing.
-- **Switch light / dark mode** – sets `data-color-scheme` on `<html>`, remembers the choice, no flash on load.
+- **Switch light / dark mode** – with a dark version of each theme colour picked in the sidebar, remembered per visitor, no flash on load.
 - **Add / remove classes** on any elements.
 - **Do nothing** – just hold an on/off state for your own code.
 
@@ -69,7 +69,7 @@ Like all patterns, once inserted it's ordinary blocks – nothing links back to 
 
 ### Recipe: monthly / annual pricing
 
-1. **Build both price sets.** Make two GenerateBlocks Element blocks, one holding the monthly prices and one holding the annual prices. They can sit anywhere on the page – side by side, or one under the other. Both stay visible in the editor.
+1. **Build both price sets.** Make two GenerateBlocks Element blocks, one holding the monthly prices and one holding the annual prices. They can sit anywhere on the page.
 2. **Give each an ID.** Select the monthly Element → Settings → **HTML Attributes** → add attribute `id` with value `monthly-prices`. Do the same for the annual one with `annual-prices`.
 3. **Insert a Toggle** above the pricing and choose **Switch with labels** (or **Segmented buttons**). Edit the label text if you like.
 4. **Select the Toggle block itself** (use the breadcrumb or List View if a child block is selected) and open **Toggle behaviour**:
@@ -82,38 +82,49 @@ Like all patterns, once inserted it's ordinary blocks – nothing links back to 
 5. **State** panel: leave **Starts as** on *Off* so visitors see monthly first, or set *On* to lead with annual. Tick **Remember the visitor's choice** if you want it to stick between visits.
 6. Save and view the page. Monthly shows; flip the switch and annual fades in.
 
-The hidden set is hidden by a small inline `<style>` from the server, so visitors never see both sets flash on load.
+In the editor both sets stay visible so you can edit them. While the Toggle (or anything inside it) is selected, the set that's hidden in the current preview state is dimmed with a dashed outline. Flip the toolbar **On/Off** button to see the other set dimmed instead.
 
-**Two toggles for one table** (e.g. one above and one below): give both the same **Sync group** name, like `billing`. They stay in step.
+On the front end the hidden set is hidden by a small inline `<style>` from the server, so visitors never see both sets flash on load.
+
+**Two toggles for one table** (e.g. one above and one below): give both the same **Sync group** name, like `billing`. They stay in step. Each toggle in a group still runs its own action, so two grouped toggles can also each control a different section.
 
 ### Recipe: dark mode
 
 1. Insert a Toggle and choose **Dark mode switch**. Put it wherever you want – most sites put it in the header, via a GeneratePress Element (Block – Site Header, Hook, etc.) or a template part.
-2. Check the settings (they're already set by the layout):
+2. Check the settings (already set by the layout):
    - When toggled: **Light / dark mode**
    - **Match the visitor's system setting**: on by default. Until the visitor uses the switch, they get dark mode if their device is set to dark.
    - **Also add a class to `<html>`**: optional, e.g. `is-dark`, if other CSS needs a class.
    - **Accessibility → Switch label**: "Dark mode" (already filled in).
-3. **Publish** the post, page or Element that contains the switch. Publishing is what turns on the no-flash `<head>` script site-wide (see [How it's built](#the-no-flash-dark-mode-script)).
-4. **Add the dark colours.** The toggle only flips `data-color-scheme` between `light` and `dark` on `<html>`; the colours come from your CSS. With GeneratePress, override the global colour variables. Put this in **Appearance → Customize → Additional CSS** (or your child theme):
+3. **Pick the dark colours.** Open the **Dark mode colours** panel. It lists your theme's colours (the GeneratePress global colours, or a block theme's palette), each with a "… in dark mode" colour picker.
+   - Click **Suggest dark colours** to fill them all in: light backgrounds become dark, dark text becomes light (keeping the order of Base / Base 2 / Base 3 and so on), and brand colours keep their hue but get lighter so they stay readable.
+   - Adjust any colour by hand. Leave one empty to keep it the same in dark mode. **Clear** empties them all.
+   - To preview, set **State → Starts as** to *On* (or use the toolbar **On/Off** button): the editor then shows the page in its dark colours. Set it back to *Off* before publishing unless you want dark to be the default.
+4. **Publish** the post, page or Element that contains the switch. From then on every page on the site gets the dark colours and the no-flash `<head>` script (see [How it's built](#the-dark-mode-head-output)).
 
-   ```css
-   [data-color-scheme="dark"] {
-   	--base: #2a2a30;       /* borders, subtle backgrounds */
-   	--base-2: #1f1f24;     /* alternate section backgrounds */
-   	--base-3: #16161a;     /* main background */
-   	--contrast: #f2f2f5;   /* main text */
-   	--contrast-2: #c4c4cc; /* secondary text */
-   	--contrast-3: #6e6e78; /* muted text, switch track */
-   	--accent: #6ab0f3;     /* links, buttons, the "on" switch */
-   }
-   ```
+Anything styled with your theme's colours (including GenerateBlocks blocks that use them) switches automatically. The toggle also sets the CSS `color-scheme` property on `<html>`, so browser-drawn things (form controls, scrollbars) follow along. All dark mode toggles on a site share one state, and the choice is always remembered.
 
-   Anything styled with GP's global colours (including GenerateBlocks blocks that use them) switches automatically. Adjust the values to your palette. If you've added your own global colours in GP, override those variables here too.
+**Other elements (advanced).** Images, logos, or anything with a hard-coded colour won't change on their own. Style them with the `data-color-scheme` attribute the toggle sets on `<html>`, e.g. in **Appearance → Customize → Additional CSS**:
 
-   Images, logos or anything with a hard-coded colour won't change on their own; target them with `[data-color-scheme="dark"] .your-selector { … }`.
+```css
+[data-color-scheme="dark"] .site-logo img {
+	filter: invert(1);
+}
+```
 
-The toggle also sets the CSS `color-scheme` property on `<html>`, so browser-drawn things (form controls, scrollbars) follow along. All dark mode toggles on a site share one state, and the choice is always remembered.
+You can also skip the panel entirely and override the variables yourself:
+
+```css
+[data-color-scheme="dark"] {
+	--base: #2a2a30;       /* borders, subtle backgrounds */
+	--base-2: #1f1f24;     /* alternate section backgrounds */
+	--base-3: #16161a;     /* main background */
+	--contrast: #f2f2f5;   /* main text */
+	--contrast-2: #c4c4cc; /* secondary text */
+	--contrast-3: #6e6e78; /* muted text, switch track */
+	--accent: #6ab0f3;     /* links, buttons, the "on" switch */
+}
+```
 
 ### Recipe: toggle a class (show a banner)
 
@@ -128,7 +139,7 @@ Example: a "Show promo" switch that reveals a banner.
    - The class is: **Added when on**
 4. Change the labels to something sensible, or set **Accessibility → Switch label**.
 
-"Elements" takes IDs or any CSS selector (`body`, `.card`, `#site-header`), and you can list several classes separated by spaces. **Removed when on** does the opposite: the class is present while the toggle is off.
+"Elements" takes IDs, tag names or any CSS selector (`body`, `.card`, `#site-header`), and you can list several classes separated by spaces. **Removed when on** does the opposite: the class is present while the toggle is off.
 
 ---
 
@@ -138,18 +149,27 @@ Example: a "Show promo" switch that reveals a banner.
 
 A Toggle only reacts to clicks on blocks marked as **parts**. Select any GenerateBlocks block inside a Toggle (Element, Text, Shape or Media) and you'll get a **Toggle part** panel with one setting, *Clicking this block*:
 
-| Option | `data-toggle` value | What it does | Gets these attributes |
-| --- | --- | --- | --- |
-| Does nothing (decoration) | *(none)* | Nothing | – |
-| Flips the toggle (switch) | `switch` | Flips on ↔ off | `role="switch"`, `aria-checked`, `tabindex="0"` (or `type="button"` on a `<button>`), `aria-controls`, `aria-label` |
-| Turns it off | `off` | Sets the state to off | `data-active`; on a `<button>` also `aria-pressed`, `type="button"`, `aria-controls` |
-| Turns it on | `on` | Sets the state to on | same as above |
+| Option | `data-toggle-part` value | What it does |
+| --- | --- | --- |
+| Does nothing (decoration) | *(none)* | Nothing |
+| Flips the toggle (switch) | `switch` | Flips on ↔ off |
+| Turns it off | `off` | Sets the state to off |
+| Turns it on | `on` | Sets the state to on |
 
-The value is stored as a `data-toggle` HTML attribute on the block, in the same place GenerateBlocks keeps its own HTML attributes – so you can also see and edit it in GB's HTML Attributes panel.
+The value is stored as a `data-toggle-part` HTML attribute on the block, in the same place GenerateBlocks keeps its own HTML attributes – so you can also see and edit it in GB's HTML Attributes panel.
 
-The Toggle's sidebar has a **Toggle parts** summary counting each kind. If nothing inside is clickable yet, it shows a warning instead.
+When the page renders, the server adds these attributes to the parts:
 
-A part built as a link (`<a>`) won't navigate when clicked. Toggles can be nested; a toggle ignores parts that belong to a toggle inside it.
+| Part | Attributes |
+| --- | --- |
+| Switch | `role="switch"`, `aria-checked`, `aria-controls`, `aria-label` (from the Switch label setting); `type="button"` on a `<button>`, otherwise `tabindex="0"` |
+| On/off part that's a `<button>` | `data-active`, `aria-pressed`, `type="button"`, `aria-controls` |
+| On/off part, not a button, in a toggle **without** a switch | `data-active`, `role="button"`, `tabindex="0"`, `aria-pressed`, `aria-controls` – the parts are the controls, so they work from the keyboard |
+| On/off part, not a button, **next to** a switch | `data-active` only – plain-text labels like "Monthly" / "Annual" are a mouse convenience; the switch is the control |
+
+Every processed part also gets `data-toggle-owned`, so an outer toggle leaves the parts of a toggle nested inside it alone. A part built as a link (`<a>`) won't navigate when clicked.
+
+The Toggle's sidebar has a **Toggle parts** summary counting each kind. If nothing inside is clickable yet, a warning appears at the top of the sidebar instead.
 
 ### Styling each state
 
@@ -158,15 +178,15 @@ Style parts with GenerateBlocks **nested selectors** on the part itself (in the 
 | What | Nested selector | Set it on |
 | --- | --- | --- |
 | Switch in the on state | `&[aria-checked="true"]` | the switch |
-| Knob inside the switch | `&[aria-checked="true"] > *` | the switch (e.g. `transform: translateX(1.5rem)`) |
+| Knob inside the switch | `&[aria-checked="true"] > *` | the switch – the layouts set `margin-inline-start: 1.5rem`, which slides the right way on RTL sites too |
 | Active on/off label or button | `&[data-active="true"]` | the label or button |
 | Anything, based on the whole toggle | `.ogal-toggle.is-on …` | global CSS (the wrapper has `is-on` or `is-off`) |
 
 The starting layouts already use these – open the switch block's Styles to see a working example. The dark mode switch also swaps its sun/moon icons with `&[aria-checked="true"] .gb-shape:first-child` / `:last-child` on the switch.
 
-**The editor previews the starting state.** Use the **On/Off** toolbar button (or **State → Starts as**) to preview the other state while you style it. Remember that button also changes which state visitors start in, so set it back when you're done.
+**The editor previews the starting state.** Use the **On/Off** toolbar button (or **State → Starts as**) to preview the other state while you style it. That button also changes which state visitors start in, so set it back when you're done.
 
-The plugin's own CSS is deliberately tiny: pointer cursor on parts, the hidden class (`.ogal-toggle-hidden { display: none !important }`), the fade/slide reveal animations, and a reduced-motion rule that switches off transitions and animations inside a toggle.
+The plugin's own CSS is deliberately tiny: a pointer cursor on parts (front end only, so parts stay editable in the editor), the hidden class, and a reduced-motion rule that switches off transitions and animations inside a toggle.
 
 ---
 
@@ -180,13 +200,15 @@ Select the Toggle block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | When toggled | `action` | `showHide` | `showHide`, `colorScheme`, `toggleClass`, `none` |
 
+**Targets** (Show when off / on, Elements): a bare word is an element ID if the page has one with that name, otherwise it's used as a tag name – so `body` and `html` work. Anything else (`.card`, `#site-header`, `[data-plan="annual"]`) is a CSS selector. A leading `#` on a plain ID is dropped when saved.
+
 **Show / hide elements**
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Show when off | `showWhenOff` | `[]` | IDs or CSS selectors. Hidden while the toggle is on. |
+| Show when off | `showWhenOff` | `[]` | Hidden while the toggle is on. |
 | Show when on | `showWhenOn` | `[]` | Hidden while the toggle is off. An element listed on both sides stays visible. |
-| Reveal animation | `animation` | `fade` | `none`, `fade`, `slide` (fade and slide up) |
+| Reveal animation | `animation` | `fade` | `none`, `fade`, `slide` (fade and slide up). Not played on page load or for reduced-motion visitors. |
 
 **Light / dark mode**
 
@@ -194,14 +216,15 @@ Select the Toggle block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | Match the visitor's system setting | `followSystem` | `true` | Uses `prefers-color-scheme` until the visitor chooses. Also follows live OS changes while they haven't chosen. |
 | Also add a class to `<html>` | `htmlClass` | `""` | Optional, space-separated. |
+| Dark mode colours | `darkPalette` | `{}` | Map of CSS variable → dark colour, e.g. `{ "--base-3": "#16161a" }`. Saved as hex. Only shown when the theme provides a colour palette. |
 
-A colour-scheme toggle always remembers the choice and always shares one state with every other colour-scheme toggle (its group is forced to `color-scheme`), so the Remember / Sync group settings are hidden for it.
+A colour-scheme toggle always remembers the choice and always shares one state with every other colour-scheme toggle (its group is `color-scheme`), so the Remember / Sync group settings are hidden for it.
 
 **Add / remove a class**
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Elements | `classTargets` | `[]` | IDs or CSS selectors |
+| Elements | `classTargets` | `[]` | See Targets above |
 | Class names | `classNames` | `""` | Space-separated |
 | The class is | `classMode` | `addWhenOn` | `addWhenOn` or `removeWhenOn` |
 
@@ -212,28 +235,34 @@ A colour-scheme toggle always remembers the choice and always shares one state w
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
 | Starts as | `defaultState` | `off` | The editor previews this state. The toolbar On/Off button flips it. |
-| Remember the visitor's choice | `persist` | `false` | Saved in `localStorage` under `ogal-toggle:<group or id>`. |
-| Sync group | `group` | `""` | Toggles with the same name stay in step. Lower-cased and limited to letters, numbers, `-` and `_`. |
+| Remember the visitor's choice | `persist` | `false` | Saved in `localStorage` (see [Storage keys](#storage-keys)). |
+| Sync group | `group` | `""` | Toggles with the same name stay in step; each still runs its own action. Normalised to lowercase `a-z`, `0-9`, `-`, `_`. `color-scheme` is reserved for dark mode. |
 
-How the starting state is picked on the front end, first match wins: saved choice (if remembered) → system setting (dark mode with "Match system" on) → state of another toggle already in the same group → **Starts as**.
+How the starting state is picked on the front end, first match wins:
+
+1. A saved choice from any toggle in the same group that has "Remember" on.
+2. For dark mode: the scheme the `<head>` script already applied, or the system setting.
+3. **Starts as**.
+
+A toggle added to the page later (see `window.ogalToggle.init`) follows its group if the group is already running.
 
 ### Accessibility
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Switch label | `ariaLabel` | `""` | Added as `aria-label` on each switch part (unless the part already has one). If empty and the switch has no text, the "on" label is used via `aria-labelledby`. The panel opens with a warning when a switch has neither. |
+| Switch label | `ariaLabel` | `""` | Added as `aria-label` on each switch part, and on a segmented control's `role="group"` wrapper (unless they already have one). If empty and the switch has no text, the "on" label is used via `aria-labelledby`. The panel opens with a warning when a switch has neither. |
 
 ### Also supported
 
-- **Advanced → HTML anchor** – sets the wrapper's `id` (useful for `window.ogalToggle`).
+- **Advanced → HTML anchor** – printed as the wrapper's `id`. Useful for `window.ogalToggle`, and it gives "Remember" a stable key.
 - **Advanced → Additional CSS class(es)**.
 - **Margin** (block spacing support).
 
 ### Accessibility behaviour
 
-- `role="switch"`, `aria-checked`, `aria-pressed`, `data-active` and `aria-controls` are added on the server when the page renders, so they're correct before any JavaScript runs and can't be removed by accident in the editor.
-- `aria-controls` lists the targets given as plain IDs (class or other selectors can't be referenced that way).
-- A switch that isn't a `<button>` gets `tabindex="0"` and responds to Space and Enter.
+- Roles and state attributes are added on the server when the page renders, so they're correct before any JavaScript runs and can't be removed by accident in the editor.
+- `aria-controls` lists the targets given as plain IDs (tag names and other selectors can't be referenced that way).
+- Parts with `tabindex="0"` respond to Space and Enter; native buttons handle keys themselves.
 - Transitions and animations are switched off for visitors with `prefers-reduced-motion: reduce`.
 
 ---
@@ -263,36 +292,36 @@ document.addEventListener( 'ogal-toggle:change', ( event ) => {
 | `initial` | boolean | `true` for the first run on page load |
 | `toggle` | Element | The `.ogal-toggle` wrapper that changed |
 
-For a sync group the event fires once, on the toggle that was used; the other toggles in the group are updated but don't fire their own event.
+For a sync group the event fires once, on the toggle that was used; the other toggles in the group are updated (and run their actions) but don't fire their own event.
 
 ### `window.ogalToggle`
 
-Available once the view script has run (after `DOMContentLoaded`).
-
 ```js
-window.ogalToggle.get( 'billing' );       // true, false, or undefined if not found
-window.ogalToggle.set( 'billing', true ); // turn on
+window.ogalToggle.get( 'billing' );             // true, false, or undefined if not found
+window.ogalToggle.set( 'billing', true );       // turn on
 window.ogalToggle.set( 'color-scheme', false ); // light mode
+window.ogalToggle.init( container );            // set up toggles added later, e.g. by AJAX
 ```
 
-The key is a toggle's **Sync group** name or its wrapper `id`. The `id` is the block's HTML anchor if you set one; otherwise it's `ogal-toggle-1`, `ogal-toggle-2`… in page order, which changes if you add toggles, so use a group or an anchor for anything you rely on. `set()` counts as a visitor's choice: it's remembered if the toggle has "Remember" on.
+- `get` / `set` take a toggle's **Sync group** name or its wrapper `id`. The `id` is the HTML anchor if you set one; otherwise it's `ogal-toggle-1`, `ogal-toggle-2`… in page order, which changes if you add toggles, so use a group or an anchor for anything you rely on. `set()` counts as a visitor's choice: it's remembered if "Remember" is on.
+- `init( root )` sets up every toggle inside `root` (default `document`) that isn't set up yet. Toggles already set up are skipped, so calling it more than once is safe.
 
 ### CSS hooks
 
 - `.ogal-toggle` – the wrapper, with `.is-on` or `.is-off`.
-- `[data-toggle="switch|on|off"]` – the parts, with `aria-checked` / `data-active` / `aria-pressed` as described above.
+- `[data-toggle-part="switch|on|off"]` – the parts, with `aria-checked` / `data-active` / `aria-pressed` as described above; `[data-toggle-owned]` once a toggle has claimed them.
 - `html[data-color-scheme="dark|light"]` – set by dark mode toggles.
-- `.ogal-toggle-hidden` – on elements hidden by a show/hide toggle.
-- `.ogal-toggle-enter-fade`, `.ogal-toggle-enter-slide` – briefly on an element while it's being revealed.
+- `.ogal-toggle-hidden` – on elements hidden by a show/hide toggle (together with an inline `display: none !important`).
+- `.ogal-toggle-enter-fade`, `.ogal-toggle-enter-slide` – on an element while its reveal animation runs.
 
 ### PHP
 
-- Filter `ogal_toggle_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` script.
-- Option `ogal_toggle_color_scheme` – the dark mode settings the `<head>` script uses (`followSystem`, `htmlClass`).
+- Filter `ogal_toggle_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
+- Option `ogal_toggle_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
 
 ### Storage keys
 
-`localStorage` keys are `ogal-toggle:<group>` (or `ogal-toggle:<wrapper id>` without a group). Dark mode uses `ogal-toggle:color-scheme`.
+`localStorage` keys start with `ogal-toggle:`, followed by the toggle's sync group, else its HTML anchor, else the page path and the toggle's position on the page (e.g. `ogal-toggle:/pricing/#0`). Dark mode uses `ogal-toggle:color-scheme`.
 
 ---
 
@@ -304,28 +333,30 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead the Toggle follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **Toggle block** (`ogal/toggle`) has no visual settings. It holds behaviour: what happens when toggled, the starting state, the sync group, the accessibility label.
+- The **Toggle block** (`ogal/toggle`) has no visual settings. It holds behaviour: what happens when toggled, the starting state, the sync group, the accessibility label, the dark mode colours.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/toggle/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
-- A block becomes clickable by being marked as a **part** (`data-toggle="switch|on|off"`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" panel to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block becomes clickable by being marked as a **part** (`data-toggle-part="switch|on|off"`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" panel to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
 - In the post content, the Toggle saves only its inner blocks (`save` returns `<InnerBlocks.Content />`) plus its settings as block attributes.
-- On the front end, PHP (`includes/class-render.php`) renders the wrapper `<div class="ogal-toggle is-off" data-ogal-toggle="{…config…}">`, and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add `role`, `aria-checked`, `aria-pressed`, `data-active`, `aria-controls` and `aria-label` to the parts. Settings are sanitised there: selectors lose characters like `<>{};\`, class names go through `sanitize_html_class`.
+- On the front end, PHP (`includes/class-render.php`) renders the wrapper `<div class="ogal-toggle is-off" data-ogal-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts. Settings are sanitised there: selectors lose characters like `<{};\` and CSS comments, class names go through `sanitize_html_class`, group names are normalised.
 - For show/hide, PHP also prints a tiny `<style class="ogal-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
-- The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.ogalToggle`.
-- In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling.
+- The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.ogalToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
+- In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; previews the dark colours when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
 
-### The no-flash dark mode script
+### The dark mode head output
 
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
 
-- When a **published** post (including GeneratePress Elements and template parts) containing a dark mode toggle is saved, its settings are stored in the `ogal_toggle_color_scheme` option.
-- From then on, every front-end page gets a small inline script at the top of `<head>` that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
-
-Note: removing the dark mode toggle later doesn't delete that option, so the head script keeps printing. Use the `ogal_toggle_print_color_scheme_script` filter (return `false`) or delete the option if you remove dark mode from a site.
+- When a post (including GeneratePress Elements and template parts) is saved, the plugin records whether it's **published** and contains a dark mode toggle, and if so that toggle's settings and dark colours. Each post is tracked separately.
+- While at least one such post exists, every front-end page gets, at the top of `<head>`:
+  - `<style id="ogal-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
+  - a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
+- If several posts have a dark mode toggle, the most recently saved one's settings are used.
+- Removing the toggle from the post, unpublishing it, trashing or deleting it switches the head output off again (once no other post has one).
 
 ---
 
@@ -352,20 +383,21 @@ npm run playground:reset  # same, starting from a fresh site
 toggle-for-generateblocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
 includes/
   class-render.php              Front-end render: wrapper, config sanitising, ARIA on parts, no-flash show/hide CSS
-  color-scheme.php              Dark mode: stores settings on save, prints the no-flash <head> script
+  color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles" pattern category and the patterns in patterns/
 patterns/
   pricing-toggle.html           "Pricing table with monthly/annual toggle" pattern (plain block markup)
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
-  edit.js                       Editor UI: layout picker, sidebar settings, toolbar On/Off, part state sync
+  edit.js                       Editor UI: layout picker, sidebar settings, toolbar On/Off, part state sync, previews
+  dark-palette.js               "Dark mode colours" panel and the colour suggestions
   parts.js                      "Toggle part" panel added to GB Element/Text/Shape/Media blocks
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   templates.js                  The four starting layouts (block variations) built from GB blocks
   view.js                       Front-end behaviour, ogal-toggle:change event, window.ogalToggle
   icon.js                       Block icon
-  style.scss                    Minimal front-end + editor CSS (hidden class, animations, reduced motion)
+  style.scss                    Minimal front-end + editor CSS (cursor, hidden class, reduced motion)
   editor.scss                   Sidebar helper styles
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground

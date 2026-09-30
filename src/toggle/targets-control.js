@@ -63,9 +63,8 @@ export default function TargetsControl( { label, help, value = [], onChange } ) 
 					)
 				}
 				__experimentalExpandOnFocus
-				__experimentalShowHowTo={ false }
+				help={ help || '' }
 			/>
-			{ help && <p className="ogal-toggle-targets__help">{ help }</p> }
 			{ missing.length > 0 && (
 				<p className="ogal-toggle-targets__missing">
 					{ sprintf(
