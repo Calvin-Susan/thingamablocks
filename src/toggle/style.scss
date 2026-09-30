@@ -1,0 +1,49 @@
+// Front-end and editor base styles. Deliberately minimal: the Toggle's look
+// lives in the GenerateBlocks styles of its inner blocks, not here.
+
+.ogal-toggle [data-toggle] {
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+// Keep the knob (and anything else inside the switch) from swallowing clicks
+// in ways that confuse the target detection.
+.ogal-toggle [data-toggle="switch"] > * {
+	pointer-events: none;
+}
+
+// Elements hidden by a show/hide toggle. !important because the target's own
+// GenerateBlocks styles usually set display: flex or grid.
+.ogal-toggle-hidden {
+	display: none !important;
+}
+
+.ogal-toggle-enter-fade {
+	animation: ogal-toggle-fade 0.3s ease both;
+}
+
+.ogal-toggle-enter-slide {
+	animation: ogal-toggle-slide 0.35s ease both;
+}
+
+@keyframes ogal-toggle-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes ogal-toggle-slide {
+	from {
+		opacity: 0;
+		transform: translateY(0.75rem);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ogal-toggle,
+	.ogal-toggle * {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
+}

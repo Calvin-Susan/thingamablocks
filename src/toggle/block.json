@@ -1,0 +1,84 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ogal/toggle",
+	"version": "0.1.0",
+	"title": "Toggle",
+	"category": "generateblocks",
+	"description": "A switch built from GenerateBlocks elements. Show or hide elements, switch light/dark mode, or toggle classes.",
+	"keywords": [ "toggle", "switch", "dark mode", "pricing", "show hide", "monthly annual" ],
+	"textdomain": "toggle-for-generateblocks",
+	"attributes": {
+		"action": {
+			"type": "string",
+			"default": "showHide",
+			"enum": [ "showHide", "colorScheme", "toggleClass", "none" ]
+		},
+		"defaultState": {
+			"type": "string",
+			"default": "off",
+			"enum": [ "off", "on" ]
+		},
+		"persist": {
+			"type": "boolean",
+			"default": false
+		},
+		"group": {
+			"type": "string",
+			"default": ""
+		},
+		"ariaLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"showWhenOff": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "string" }
+		},
+		"showWhenOn": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "string" }
+		},
+		"animation": {
+			"type": "string",
+			"default": "fade",
+			"enum": [ "none", "fade", "slide" ]
+		},
+		"classTargets": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "string" }
+		},
+		"classNames": {
+			"type": "string",
+			"default": ""
+		},
+		"classMode": {
+			"type": "string",
+			"default": "addWhenOn",
+			"enum": [ "addWhenOn", "removeWhenOn" ]
+		},
+		"followSystem": {
+			"type": "boolean",
+			"default": true
+		},
+		"htmlClass": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js"
+}
