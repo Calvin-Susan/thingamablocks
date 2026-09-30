@@ -289,7 +289,16 @@ class Ogal_Toggle_Render {
 		$rules = '';
 
 		foreach ( $hidden as $selector ) {
+			// "header" could be id="header" or every <header>; only the script can tell, so leave it to the script.
+			if ( in_array( $selector, self::TAG_TARGETS, true ) ) {
+				continue;
+			}
+
 			$rules .= self::to_css_selector( $selector ) . '{display:none!important}';
+		}
+
+		if ( '' === $rules ) {
+			return '';
 		}
 
 		return '<style class="ogal-toggle-initial">' . $rules . '</style>';

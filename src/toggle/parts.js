@@ -145,7 +145,7 @@ function helpText( value ) {
 		case 'on':
 		case 'off':
 			return __(
-				'Gets data-active="true" while its state is current (and aria-pressed if it’s a button). Style that with the nested selector &[data-active="true"].',
+				'Gets data-active="true" while its state is current. If it’s a button, or the toggle has no switch, it also works as a button for keyboard and screen readers (aria-pressed). Style the current state with the nested selector &[data-active="true"].',
 				'toggle-for-generateblocks'
 			);
 		default:

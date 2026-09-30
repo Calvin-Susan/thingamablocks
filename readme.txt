@@ -33,8 +33,8 @@ In the inserter's Patterns tab, the **Toggles** category has a **Pricing table w
 
 = What a toggle can do =
 
-* **Show / hide elements** – list element IDs or CSS selectors to show when the toggle is off and when it's on. The classic example is monthly and annual pricing. Optional fade or fade-and-slide reveal.
-* **Light / dark mode** – sets `data-color-scheme="dark"` or `"light"` (and the CSS `color-scheme` property) on `<html>`, optionally adds a class too. It can follow the visitor's system setting, remembers their choice, and a small script in `<head>` applies the saved choice before the page paints, so there's no flash of the wrong colours.
+* **Show / hide elements** – list element IDs, tag names (like `body`) or CSS selectors to show when the toggle is off and when it's on. The classic example is monthly and annual pricing. Optional fade or fade-and-slide reveal. In the editor, the elements hidden in the current preview state are dimmed with a dashed outline while the toggle is selected.
+* **Light / dark mode** – pick a dark version of each theme colour (GeneratePress global colours, or a block theme's palette) in the **Dark mode colours** panel, or let **Suggest dark colours** fill them in. The toggle sets `data-color-scheme="dark"` or `"light"` (and the CSS `color-scheme` property) on `<html>`, optionally adds a class too, can follow the visitor's system setting, and remembers their choice. The dark colours and a small script are printed in `<head>`, so there's no flash of the wrong colours. Set the toggle to start "On" to preview dark mode in the editor.
 * **Add / remove a class** – add (or remove) one or more classes on any elements when the toggle is on.
 * **Nothing (custom code)** – the toggle only changes its own state. Your code listens for the `ogal-toggle:change` event or uses `window.ogalToggle`.
 
@@ -47,14 +47,14 @@ Select any GenerateBlocks block inside a Toggle and you'll see a **Toggle part**
 * Turns it on
 * Does nothing (decoration)
 
-The choice is saved as a `data-toggle` HTML attribute on the block, so you can also see it in GenerateBlocks' HTML Attributes panel.
+The choice is saved as a `data-toggle-part` HTML attribute on the block, so you can also see it in GenerateBlocks' HTML Attributes panel.
 
 = Styling the "on" state =
 
 Use GenerateBlocks nested selectors on the part itself:
 
 * A switch: `&[aria-checked="true"]`
-* The knob inside a switch (set on the switch): `&[aria-checked="true"] > *`
+* The knob inside a switch (set on the switch): `&[aria-checked="true"] > *` – the layouts move it with `margin-inline-start`, so it slides the right way on RTL sites
 * An on/off label or button: `&[data-active="true"]`
 * The whole toggle: `.ogal-toggle.is-on`
 
@@ -63,10 +63,10 @@ The editor shows the toggle in its starting state. Use the On/Off button in the 
 = Accessibility =
 
 * The switch gets `role="switch"` and `aria-checked` on the server, so the markup is right before any JavaScript runs.
-* Segmented buttons get `aria-pressed`.
+* Segmented buttons get `aria-pressed`. In a toggle without a switch, on/off parts that aren't buttons get `role="button"`, `aria-pressed` and keyboard focus. Next to a switch, plain-text labels are a mouse convenience; the switch is the control.
 * `aria-controls` points at the elements the toggle controls (when they're referenced by ID).
-* A "Switch label" setting for screen readers; if you leave it empty, the "on" label's text is used.
-* Keyboard support: Space and Enter flip a switch that isn't a native button.
+* A "Switch label" setting for screen readers, also used as the name of a segmented control's group. If you leave it empty, the "on" label's text is used.
+* Keyboard support: Space and Enter work on every focusable part that isn't a native button.
 * Reveal animations and transitions are switched off for visitors who prefer reduced motion.
 
 = Requirements =
@@ -100,23 +100,23 @@ Select the element (for example the Element block wrapping your monthly prices),
 
 = Where do the dark mode colours come from? =
 
-From your CSS. The toggle only sets `data-color-scheme="dark"` on `<html>`. With GeneratePress, override the global colour variables for dark mode, for example in Customizer → Additional CSS:
+From the toggle's **Dark mode colours** panel: pick a dark version of each theme colour, or click **Suggest dark colours**. Once the post, page or GeneratePress Element containing the toggle is published, they're printed site-wide as CSS variable overrides under `:root[data-color-scheme="dark"]`, so anything using your theme colours switches automatically. If several posts have a dark mode toggle, the most recently saved one's settings are used; removing the toggle or trashing the post switches this off again.
 
-`[data-color-scheme="dark"] { --base: #2a2a30; --base-2: #1f1f24; --base-3: #16161a; --contrast: #f2f2f5; --contrast-2: #c4c4cc; --contrast-3: #6e6e78; --accent: #6ab0f3; }`
-
-Anything styled with those variables switches automatically.
+For anything else (images, hard-coded colours), use CSS, for example `[data-color-scheme="dark"] .site-logo img { filter: invert(1); }`. You can also skip the panel and override the variables yourself, e.g. `[data-color-scheme="dark"] { --base-3: #16161a; --contrast: #f2f2f5; }`.
 
 = Can I use two toggles for the same pricing table? =
 
-Yes. Give both the same **Sync group** name (under State), for example `billing`. Flipping one flips the other.
+Yes. Give both the same **Sync group** name (under State), for example `billing`. Flipping one flips the other. Each toggle in a group runs its own action, so grouped toggles can also control different sections.
 
 = Does it work with page caching? =
 
-Yes. The page HTML is the same for every visitor; each visitor's choice is stored in their own browser (localStorage) and applied by JavaScript. For dark mode, the inline `<head>` script reads that choice before the page paints, so cached pages don't flash light before switching to dark. If you use a plugin that delays or combines JavaScript, exclude the `ogal-toggle-color-scheme` inline script from delaying.
+Yes. The page HTML is the same for every visitor; each visitor's choice is stored in their own browser (localStorage) and applied by JavaScript. For dark mode, the inline `<head>` script reads that choice before the page paints, so cached pages don't flash light before switching to dark.
+
+It also holds up with "remove unused CSS" optimisations: hidden elements get an inline `display: none !important` and reveal animations use the Web Animations API, so neither relies on CSS rules an optimiser might strip. If you use a plugin that delays JavaScript, exclude the `ogal-toggle-color-scheme` inline script from delaying.
 
 = Can I control a toggle from my own code? =
 
-Yes. Listen for the `ogal-toggle:change` event on `document`, or call `window.ogalToggle.get( 'billing' )` and `window.ogalToggle.set( 'billing', true )` with a toggle's sync group name or HTML anchor.
+Yes. Listen for the `ogal-toggle:change` event on `document`, or call `window.ogalToggle.get( 'billing' )` and `window.ogalToggle.set( 'billing', true )` with a toggle's sync group name or HTML anchor. If you add toggles to the page later (e.g. with AJAX), call `window.ogalToggle.init()` to set them up.
 
 == Changelog ==
 
