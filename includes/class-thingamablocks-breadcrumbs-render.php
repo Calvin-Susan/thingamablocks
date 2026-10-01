@@ -105,16 +105,16 @@ class Thingamablocks_Breadcrumbs_Render {
 		$aria   = sanitize_text_field( $attributes['ariaLabel'] ?? '' );
 
 		return array(
-			'home'                 => in_array( $home, array( 'text', 'icon', 'both' ), true ) ? $home : 'text',
-			'home_label'           => '' !== $label ? $label : __( 'Home', 'thingamablocks' ),
-			'label'                => '' !== $aria ? $aria : __( 'Breadcrumb', 'thingamablocks' ),
-			'show_current'         => $flag( 'showCurrent', true ),
-			'show_on_home'         => $flag( 'showOnHome', false ),
-			'blog_page'            => $flag( 'showBlogPage', true ),
-			'category'             => $flag( 'showCategory', true ),
-			'collapse'             => $flag( 'collapse', true ),
-			'use_seo_plugin'       => $flag( 'useSeoPlugin', true ),
-			'schema'               => in_array( $schema, array( 'auto', 'always', 'never' ), true ) ? $schema : 'auto',
+			'home'           => in_array( $home, array( 'text', 'icon', 'both' ), true ) ? $home : 'text',
+			'home_label'     => '' !== $label ? $label : __( 'Home', 'thingamablocks' ),
+			'label'          => '' !== $aria ? $aria : __( 'Breadcrumb', 'thingamablocks' ),
+			'show_current'   => $flag( 'showCurrent', true ),
+			'show_on_home'   => $flag( 'showOnHome', false ),
+			'blog_page'      => $flag( 'showBlogPage', true ),
+			'category'       => $flag( 'showCategory', true ),
+			'collapse'       => $flag( 'collapse', true ),
+			'use_seo_plugin' => $flag( 'useSeoPlugin', true ),
+			'schema'         => in_array( $schema, array( 'auto', 'always', 'never' ), true ) ? $schema : 'auto',
 		);
 	}
 

@@ -502,7 +502,8 @@ class Thingamablocks_Breadcrumbs_Trail {
 			return self::step( '', '' );
 		}
 
-		return self::step( apply_filters( 'the_title', $post->post_title, $post->ID ), get_permalink( $post ) );
+		// WordPress's own title filter, without the prefixes get_the_title() adds.
+		return self::step( apply_filters( 'the_title', $post->post_title, $post->ID ), get_permalink( $post ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- core hook.
 	}
 
 	/**
