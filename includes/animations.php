@@ -113,7 +113,8 @@ function thingamablocks_animation_head_markup() {
 	$failsafe = '.tmb-animate-js:not(.tmb-animate-ready) [data-tmb-animate]:not([data-tmb-animate-children]):not(.tmb-in),'
 		. '.tmb-animate-js:not(.tmb-animate-ready) [data-tmb-animate-children]:not(.tmb-in)>*';
 
-	$css = '@media (prefers-reduced-motion:no-preference){'
+	// "screen": printing shows everything.
+	$css = '@media screen and (prefers-reduced-motion:no-preference){'
 		. $hidden . '{opacity:0}'
 		. $failsafe . '{animation:tmb-animate-failsafe 0s 4s forwards}'
 		. '}@keyframes tmb-animate-failsafe{to{opacity:1}}';

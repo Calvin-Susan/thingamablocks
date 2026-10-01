@@ -50,6 +50,11 @@ function init( root = document ) {
 				if ( entry.isIntersecting ) {
 					observer.unobserve( entry.target );
 					reveal( entry.target );
+				} else if ( entry.boundingClientRect.bottom <= 0 && entry.boundingClientRect.height > 0 ) {
+					// Already scrolled past (e.g. the visitor arrived via an #anchor
+					// lower down): just show it, there's nothing to watch.
+					observer.unobserve( entry.target );
+					entry.target.classList.add( 'tmb-in' );
 				}
 			} ),
 		// Start a little before the block is fully in view, so it's moving as it arrives.

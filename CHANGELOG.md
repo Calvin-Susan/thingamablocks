@@ -6,6 +6,15 @@ All notable changes to Thingamablocks are listed here.
 
 ### Added
 
+- **Entrance animations** for every GenerateBlocks 2 / GenerateBlocks Pro block (not the legacy GB 1.x blocks): an **Entrance animation** panel in the block sidebar.
+  - **Settings**: Animation (Fade in, Fade up, Fade down, Slide in from the left/right, Zoom in), Speed (Fast 400 ms / Normal 700 ms / Slow 1100 ms), Delay (0–2000 ms), and on blocks that hold other blocks, **Animate the blocks inside one by one** with **Time between each** (50–500 ms) – for grids, cards and query loops (set it on the Looper). **Preview** button; choosing an animation previews it.
+  - Stored in the block's GenerateBlocks HTML attributes (`data-tmb-animate`, `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`), only where they differ from the defaults.
+  - **Front end**: plays once as the block scrolls into view; blocks already scrolled past are just shown. Web Animations API from a single start keyframe to the block's own styles, using `opacity` and the individual `translate` / `scale` properties, so GB transforms and hover transitions are untouched.
+  - **Light**: a ~1.4 KB script and a few lines of inline CSS, loaded only when a rendered block uses an animation.
+  - **No flash, no lost content**: the hidden-until-animated CSS only applies with JavaScript running, on screen (not print), and without reduced motion; a fail-safe shows everything after 4 s if the script is blocked or delayed. Reduced motion means no animation.
+  - **Developer API**: `window.tmbAnimate.init( root )`, filter `thingamablocks_animation_head_markup`, CSS hooks `.tmb-in`, `html.tmb-animate-js` and `html.tmb-animate-ready`.
+  - **Marquee**: animated blocks inside its loop copies are shown as already animated.
+  - Build: `webpack.config.js` adds the `src/animations/` entries to the default `wp-scripts` build.
 - **Countdown block** (`thingamablocks/countdown`) in the GenerateBlocks inserter category. A settings-only wrapper like the Toggle: the numbers, labels, boxes and ended message are GenerateBlocks Element, Text and Shape blocks.
 - **Starting layouts**: Boxes, Inline text ("Ends in 2d 5h 12m 9s"; two-digit numbers off and hide-zero units on by default), Large numbers (with colons).
 - **Countdown part** panel on GenerateBlocks Element, Text and Shape blocks inside a countdown: Days/Hours/Minutes/Seconds number, unit box, Timer (hidden when it ends), Ended message, Separator (`aria-hidden`). Stored as `data-countdown-part` / `data-countdown-unit` in the block's HTML attributes.

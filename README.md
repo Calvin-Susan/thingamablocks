@@ -10,6 +10,8 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Countdown**](#countdown-block) | `thingamablocks/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
 | [**Marquee**](#marquee-block) | `thingamablocks/marquee` | A smooth, endless scrolling strip of logos, messages, headlines or cards, left/right or up/down. |
 
+Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
+
 All three blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.5+, PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
@@ -31,6 +33,9 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
   - [Marquee quick start](#marquee-quick-start)
   - [How marquee parts and styling work](#how-marquee-parts-and-styling-work)
   - [Marquee settings](#marquee-settings)
+- [Entrance animations](#entrance-animations)
+  - [Entrance animation recipes](#entrance-animation-recipes)
+  - [Entrance animation settings](#entrance-animation-settings)
 - [Developer API](#developer-api)
 - [How it's built](#how-its-built)
 - [Development](#development)
@@ -43,7 +48,7 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**.
+3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar.
 
 ---
 
@@ -557,6 +562,59 @@ Select the Marquee block (the wrapper) to see these in the sidebar. In List View
 
 ---
 
+## Entrance animations
+
+Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
+
+- Works on GenerateBlocks 2 blocks (Element, Text, Media, Shape, Query, Looper, Loop Item…) and, by the same rule, GenerateBlocks Pro's. **Not** on the legacy GB 1.x blocks (Container, Grid, Headline, Button), which have no HTML attributes to store it in.
+- Plays **once** per page view. It doesn't replay when you scroll back up.
+- **Nothing loads** on pages that don't use an animation. Pages that do get a ~1.4 KB script and a few lines of inline CSS.
+- Visitors who prefer **reduced motion** see everything straight away, with no animation.
+
+> **In the editor, animations don't play on their own,** so blocks never vanish while you're editing. Choosing an animation plays it once; after that, press **Preview** in the panel.
+
+### Entrance animation recipes
+
+#### Fade a section up as it scrolls into view
+
+1. Select the section's Element block.
+2. Open **Entrance animation** in the sidebar and choose **Fade up**.
+3. Publish and scroll down to it on the front end.
+
+#### Make a grid of cards animate in one by one
+
+1. Select the Element that holds the cards (the one with the grid layout), not the cards themselves.
+2. In **Entrance animation**, choose **Fade up** (or any animation).
+3. Turn on **Animate the blocks inside one by one**. The grid itself stays put; each card animates in turn, 100 ms after the one before. Change the gap with **Time between each**.
+4. Press **Preview** to see it.
+
+#### Animate a query loop's posts
+
+Same idea, set on the **Looper** block (inside the Query block): choose an animation and turn on **Animate the blocks inside one by one**. Each Loop Item (each post) animates in turn. Set it on the Looper rather than the Loop Item, or every post animates at once.
+
+If posts are added later by JavaScript (say, an infinite-scroll or load-more script), call [`window.tmbAnimate.init()`](#entrance-animations-windowtmbanimate) on the new content.
+
+### Entrance animation settings
+
+Select a GenerateBlocks block. The panel opens by itself on blocks that already have an animation.
+
+| Setting | Stored as | Default | Notes |
+| --- | --- | --- | --- |
+| Animation | `data-tmb-animate` | None | `fade` (Fade in), `fade-up`, `fade-down`, `fade-left` (Slide in from the left), `fade-right` (Slide in from the right), `zoom` (Zoom in). Choosing one previews it. |
+| Speed | `data-tmb-speed` | Normal | `fast` (400 ms), `normal` (700 ms), `slow` (1100 ms). |
+| Delay (ms) | `data-tmb-delay` | `0` | 0–2000, in steps of 100. Waits this long after the block comes into view. |
+| Animate the blocks inside one by one | `data-tmb-animate-children` | Off | Only on blocks that hold other blocks (not Text, Media, Shape or Query page numbers). The block stays put and its direct children animate in turn. The delay applies before the first one. |
+| Time between each (ms) | `data-tmb-animate-children` | `100` | 50–500, in steps of 25. The value of the attribute above. |
+| **Preview** button | – | – | Plays the animation in the editor. Changes nothing. |
+
+The settings are saved in the block's own GenerateBlocks **HTML Attributes** (you'll see them in that panel), so GenerateBlocks saves and renders them like any other attribute. Only values that differ from the defaults are stored: a block set to Fade up at Normal speed with no delay just gets `data-tmb-animate="fade-up"`. Setting Animation back to None removes them all.
+
+The animations move a block by at most 2rem (1.5rem for up/down) and zoom from 92%, so they stay subtle.
+
+**Inside a Marquee**, only the original row animates; the copies the Marquee makes for its loop show as already animated, so the strip has no gaps.
+
+---
+
 ## Developer API
 
 ### Toggle: the `tmb-toggle:change` event
@@ -642,6 +700,15 @@ window.tmbMarquee.pause( element, false );        // play (pass the .tmb-marquee
 
 The Marquee fires no events.
 
+### Entrance animations: `window.tmbAnimate`
+
+```js
+window.tmbAnimate.init( container ); // set up animated blocks added later, e.g. by AJAX
+```
+
+- `init( root )` sets up every `[data-tmb-animate]` block inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. Blocks are hidden by CSS until they animate, so content you add after the page has loaded **stays hidden** until you call `init()` on it (the 4-second fail-safe only covers the first page load).
+- To animate your own markup, add the attributes yourself: `<div data-tmb-animate="fade-up" data-tmb-delay="200">`. The script and CSS load only when a block rendered through WordPress contains `data-tmb-animate`, so on a page without one, enqueue `thingamablocks-animations` and print the CSS (see the filter below).
+
 ### CSS hooks
 
 - `.tmb-toggle` – the Toggle wrapper, with `.is-on` or `.is-off`.
@@ -654,11 +721,15 @@ The Marquee fires no events.
 - `.tmb-marquee` – the Marquee wrapper, with `.is-paused` while it isn't moving.
 - `[data-marquee-part="items|pause"]` – the scrolling row and the pause button (with `aria-pressed`); `[data-marquee-owned]` once a marquee has claimed them.
 - `.tmb-marquee__viewport` > `.tmb-marquee__track` – added by the script: the viewport clips and carries the edge fade; the track holds the row and its copies, and is what moves.
+- `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
+- `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
 
 ### PHP
 
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
+- Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` printed before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state).
+- Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 
 ### Storage keys
 
@@ -707,6 +778,17 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 - The front-end script (`src/marquee/view.js`, loaded only on pages with a Marquee) moves the row into a track (`.tmb-marquee__track`) inside a clipping viewport (`.tmb-marquee__viewport`), and moves the edge fade from the wrapper onto the viewport so the pause button isn't faded. It clones the row enough times to fill the space, and animates the track with the Web Animations API by one row's length plus the gap. Duration is distance ÷ speed, so speed is in px/s. A `ResizeObserver` re-measures (adding or removing copies) and keeps the current position; an `IntersectionObserver` pauses it off screen.
 - In the editor (`src/marquee/edit.js`) the wrapper gets the same clipping and fade so you see the real edges, but nothing moves unless you press **Preview**.
 
+### How entrance animations work
+
+`includes/animations.php`, `src/animations/`. Built to cost nothing on pages that don't use it and very little on pages that do.
+
+- **Saved in GB's own attributes.** The editor panel (`src/animations/editor.js`) is another `editor.BlockEdit` filter. It only appears on blocks named `generateblocks/…` or `generateblocks-pro/…` that have GB 2's `htmlAttributes` attribute, which is what rules out the legacy v1 blocks. Nothing is added to the block's markup except the `data-tmb-*` attributes.
+- **Loaded only when used.** A `render_block` filter looks for `data-tmb-animate` in each rendered block. The first time it finds one, it enqueues the script (deferred, in the footer) and prints, just before that block, a few lines of CSS and a one-line inline script. No match, nothing printed. It skips the admin, REST requests and feeds.
+- **No flash, and nothing lost.** The CSS hides animated blocks (or, for "one by one", their children) with `opacity: 0` until they get `.tmb-in`. That rule only applies when the inline script has added `tmb-animate-js` to `<html>` (so visitors without JavaScript see everything) and inside `@media screen and (prefers-reduced-motion: no-preference)` (so reduced-motion visitors are never hidden, and printing shows everything). If the main script never arrives – blocked, broken, or held back by a "delay JavaScript" optimisation – a CSS fail-safe fades everything in after 4 seconds. When the script loads it adds `tmb-animate-ready` to `<html>`, which switches the fail-safe off.
+- **The animation.** The front-end script (`src/animations/view.js`) watches the blocks with an `IntersectionObserver` and reveals each once, as it comes into view (a little above the bottom of the screen). Blocks already scrolled past – say the visitor arrived via an `#anchor` lower down – are shown without animating. It uses the **Web Animations API** with a single keyframe at offset 0 – the start state – so the browser animates from there to the block's **own** styles. The presets (`src/animations/presets.js`, shared with the editor's Preview) use only `opacity` and the individual `translate` and `scale` properties, not `transform`, so a GB transform or hover transition on the same block is left alone. `fill: backwards` keeps a block hidden during its delay. Without `IntersectionObserver`, or with reduced motion, blocks are simply shown.
+- **The Marquee** (`src/marquee/view.js`, `makeInert`) adds `.tmb-in` to animated blocks inside its copies, so they never sit hidden waiting for an animation.
+- **Build.** These scripts aren't blocks, so there's no `block.json` for `wp-scripts` to find. `webpack.config.js` extends the default config with two extra entries, `animations/editor` and `animations/view`.
+
 ### The dark mode head output
 
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
@@ -743,7 +825,7 @@ npm run playground   # local WordPress at http://127.0.0.1:9400
 npm run playground:reset  # same, starting from a fresh site
 ```
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `includes/`, `patterns/`, `build/` (and `LICENSE` if present). It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
@@ -760,6 +842,7 @@ includes/
   class-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
+  animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
 patterns/
   pricing-toggle.html           "Pricing table with monthly/annual toggle" pattern (plain block markup)
   sale-banner.html              "Sale banner with countdown" pattern
@@ -795,6 +878,10 @@ src/marquee/
   view.js                       Front-end copies, Web Animations loop, pausing, window.tmbMarquee
   icon.js                       Block and layout icons
   editor.scss                   Sidebar helper styles
+src/animations/
+  editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
+  presets.js                    The animations (start states), speeds and easing, shared by editor and front end
+  view.js                       Front-end reveal on scroll, one-by-one children, window.tmbAnimate
 src/shared/
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   variation-placeholder.js      "Choose a starting layout" placeholder
@@ -803,6 +890,7 @@ src/shared/
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
+webpack.config.js               Default wp-scripts build plus the src/animations/ entries
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```

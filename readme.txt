@@ -18,6 +18,8 @@ Thingamablocks adds three blocks to the GenerateBlocks category in the block ins
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
 * **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
 
+It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
+
 Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the boxes) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
 = Toggle: starting layouts =
@@ -147,6 +149,26 @@ It repeats the row just enough to fill the space, matches the gap where it repea
 * A pause button, as WCAG 2.2.2 asks for moving content. The sidebar warns you if you remove it.
 * Visitors who prefer reduced motion get a still row they can scroll.
 
+= Entrance animations =
+
+Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **Entrance animation** panel. The legacy GenerateBlocks 1.x blocks aren't supported.
+
+* **Animation** – None, Fade in, Fade up, Fade down, Slide in from the left, Slide in from the right, Zoom in.
+* **Speed** – Fast (400 ms), Normal (700 ms) or Slow (1100 ms).
+* **Delay** – 0 to 2000 ms.
+* **Animate the blocks inside one by one** – on blocks that hold other blocks. The block stays put and each block inside it animates in turn, with a **Time between each** you choose. Great for grids, cards and query loops: for a query loop, set it on the **Looper** block.
+* **Preview** button to play it in the editor.
+
+Each animation plays once, when the block scrolls into view. The settings are stored as HTML attributes on the block (`data-tmb-animate`, `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`), which you can see in GenerateBlocks' HTML Attributes panel.
+
+Built to be light and safe:
+
+* Nothing loads on pages without an animation. Pages with one get a ~1.4 KB script and a few lines of inline CSS.
+* Uses the Web Animations API with opacity, translate and scale, animating to the block's own styles, so GenerateBlocks transforms and hover transitions keep working.
+* No flash: blocks are only hidden while waiting to animate when JavaScript is running and the visitor hasn't asked for reduced motion. If the script is blocked or delayed, everything is shown after 4 seconds anyway.
+* Visitors who prefer reduced motion see no animation.
+* For developers: `window.tmbAnimate.init( container )` for content added with AJAX, the `thingamablocks_animation_head_markup` filter, and the `.tmb-in` class (added when a block animates) and `html.tmb-animate-js` for CSS.
+
 = Requirements =
 
 * WordPress 6.5 or newer
@@ -160,7 +182,7 @@ Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar.
 
 == Frequently Asked Questions ==
 
@@ -222,9 +244,22 @@ So you can click into it and edit the content. Use the **Preview** button in the
 
 Yes. Only the original row can be reached with the keyboard and screen readers; the copies made for the loop are skipped. With **Pause on hover** on (the default), the marquee also stops while a link inside it has keyboard focus, so it isn't a moving target. Keep in mind that moving links are harder to click, so don't put anything essential only in a marquee.
 
+= Will animations slow my site down? =
+
+No. Pages without an animation load nothing extra. Pages with one load a ~1.4 KB script (deferred, in the footer) and a few lines of inline CSS. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
+
+= Do animations work with caching/optimisation plugins? =
+
+Yes. Page caching makes no difference: the settings are attributes in the HTML. "Remove unused CSS" can't break the animations, because they're run by the script rather than CSS keyframes. If a plugin delays or blocks JavaScript, nothing stays hidden: a fail-safe shows every animated block after 4 seconds. For the animations themselves to play on load, exclude `build/animations/view.js` from JavaScript delaying.
+
+= Why doesn't my animation play in the editor? =
+
+On purpose: animations don't play on their own in the editor, so blocks never disappear while you're working on them. Choosing an animation plays it once, and the **Preview** button in the Entrance animation panel plays it again. It plays as the block scrolls into view on the front end.
+
 == Changelog ==
 
 = Unreleased =
+* New: entrance animations for every GenerateBlocks 2 / GB Pro block (fade, fade up/down, slide in from the left/right, zoom; speed; delay; animate the blocks inside one by one). Plays once on scroll, ~1.4 KB, only on pages that use it, with reduced-motion support and a no-JavaScript fail-safe.
 * New Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges and reduced-motion support.
 * New pattern: "Logo strip: Trusted by…", in a new Marquees category.
 * New Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time; end actions (message, stay at zero, disappear, hide/show elements, redirect).
