@@ -14,9 +14,25 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: [ 'scripts/**/*.mjs', 'webpack.config.js', '.eslintrc.js' ],
+			files: [
+				'scripts/**/*.mjs',
+				'webpack.config.js',
+				'playwright.config.js',
+				'.eslintrc.js',
+			],
 			env: { node: true, browser: false },
 			rules: { 'no-console': 'off' },
+		},
+		{
+			// Browser tests: Node, plus code that runs inside the page.
+			files: [ 'tests/**/*.js' ],
+			env: { node: true, browser: true },
+			rules: {
+				'jsdoc/no-undefined-types': 'off',
+				'no-console': 'off',
+				// Code passed to page.evaluate() runs in the page, not a React component.
+				'@wordpress/no-global-active-element': 'off',
+			},
 		},
 	],
 };

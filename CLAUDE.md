@@ -50,10 +50,53 @@ the essentials:
   "Thingamablocks demo" page built from the patterns. `npm run playground:reset`
   starts fresh. GB Pro can't be tested locally.
 - `npm run zip` — `dist/thingamablocks.zip` for uploading to a real site.
-- No PHP locally: read PHP carefully; Playground surfaces fatal errors.
+- `npm run lint` — ESLint + Stylelint (WordPress rules). `npm run format` fixes
+  formatting.
+- `npm run test:e2e` — Playwright browser tests in `tests/e2e/` against the
+  Playground site (starts it if it isn't running; uses the installed Google
+  Chrome locally). Covers asset loading, front-end behaviour, keyboard/screen
+  reader markup, forged-settings security, editor block validity, and an axe
+  WCAG scan. Test pages are created/updated via REST (`testPage()` in
+  `tests/e2e/utils.js`).
+- No PHP locally: PHPCS (WordPress-Extra/Docs + PHPCompatibilityWP 7.4+,
+  `phpcs.xml.dist`) and WordPress Plugin Check run in GitHub Actions on every
+  push (`.github/workflows/ci.yml`), along with lint, build and the browser
+  tests. Check the run after pushing (`gh run watch`). For a quick local PHP
+  syntax check, `@php-wasm/node` works (see memory notes).
 - If the in-app browser pane is hidden, rendering-dependent checks
-  (IntersectionObserver, animations) don't run there; use headless Chrome
-  (`playwright-core` with `/Applications/Google Chrome.app`).
+  (IntersectionObserver, animations) don't run there; use the Playwright tests
+  or headless Chrome.
+
+## Building a new block (or feature)
+
+One block at a time, taken to done (built, tested, reviewed, documented,
+committed) before the next. Before writing code, answer these and agree them
+with Kyle:
+
+1. **Security**: what can a contributor type that ends up in the page (HTML
+   attributes, `<style>`, URLs, selectors, JSON for scripts)? How is each
+   sanitised in PHP (`Thingamablocks_Sanitize`) and re-validated in the view
+   script (data attributes can be forged)? Do the saved attributes survive
+   kses for Authors/Contributors (aria-* beyond WP's short list don't, unless
+   allowed in `includes/kses.php`)?
+2. **Accessibility**: role/name/state for each interactive part, keyboard
+   behaviour (WAI-ARIA APG pattern), focus never on hidden or off-screen
+   content, contrast of template colours in light and dark mode (≥4.5:1 text,
+   ≥3:1 controls), anything moving >5s can be paused (WCAG 2.2.2),
+   prefers-reduced-motion, screen reader announcements (no chatty live regions).
+3. **Performance**: nothing loads on pages without the block (`viewScript` /
+   `viewStyle` in block.json, enqueue on render, no site-wide options or
+   `wp_head` output); markup correct from PHP before JS runs (no flash or
+   layout shift); no work for off-screen or hidden content.
+
+Then while building: add browser tests for the new block in `tests/e2e/` (its
+asset loading, behaviour, keyboard, forged settings, editor validity, and add
+it to the demo page/patterns so the axe scan covers it). `npm run lint` and
+`npm run test:e2e` must pass before committing; CI must be green after
+pushing.
+
+Before a release: a full four-part audit (security, performance,
+accessibility, WordPress best practices) with parallel read-only agents.
 
 ## Working style
 
@@ -61,4 +104,5 @@ the essentials:
   and is new to building block plugins: explain WordPress/JS choices plainly.
 - After each new feature: a read-only review agent and a docs agent
   (README.md, readme.txt, CHANGELOG.md "Unreleased"), then fix and re-test.
-- Commit as you go; there's no remote yet.
+- Commit as you go and push to `main` on GitHub
+  (github.com/Calvin-Susan/thingamablocks, private).

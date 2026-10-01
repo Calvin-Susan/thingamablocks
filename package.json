@@ -17,15 +17,17 @@
 		"build": "wp-scripts build --webpack-copy-php",
 		"start": "wp-scripts start --webpack-copy-php",
 		"lint": "npm run lint:js && npm run lint:css",
-		"lint:js": "wp-scripts lint-js src scripts webpack.config.js .eslintrc.js",
+		"lint:js": "wp-scripts lint-js src scripts tests webpack.config.js playwright.config.js .eslintrc.js",
 		"lint:css": "wp-scripts lint-style \"src/**/*.scss\"",
 		"lint:php": "composer run lint:php",
-		"format": "wp-scripts format src scripts webpack.config.js",
+		"format": "wp-scripts format src scripts tests webpack.config.js playwright.config.js",
+		"test:e2e": "playwright test",
 		"zip": "npm run build && node scripts/zip.mjs",
 		"playground": "wp-playground-cli start --no-auto-mount --mount=./:/wordpress/wp-content/plugins/thingamablocks --blueprint=playground/blueprint.json --port=9400",
 		"playground:reset": "npm run playground -- --reset"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.63.0",
 		"@wordpress/block-editor": "^18.0.0",
 		"@wordpress/blocks": "^16.1.0",
 		"@wordpress/components": "^41.0.0",
@@ -38,6 +40,7 @@
 		"@wordpress/primitives": "^4.56.0",
 		"@wordpress/scripts": "^31.0.0",
 		"@wp-playground/cli": "^3.0.0",
+		"axe-core": "^4.13.0",
 		"typescript": "~5.6"
 	}
 }

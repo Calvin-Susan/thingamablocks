@@ -13,8 +13,8 @@ jobs:
     name: Build and lint (JS, CSS)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -22,7 +22,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm run zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: thingamablocks-zip
           path: dist/thingamablocks.zip
@@ -34,7 +34,7 @@ jobs:
       matrix:
         php: ['7.4', '8.4']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -54,10 +54,31 @@ jobs:
     runs-on: ubuntu-latest
     needs: js
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: thingamablocks-zip
       - run: unzip -q thingamablocks.zip
       - uses: wordpress/plugin-check-action@v1
         with:
           build-dir: ./thingamablocks
+
+  e2e:
+    name: Browser tests (Playground)
+    runs-on: ubuntu-latest
+    needs: js
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # Starts WordPress Playground (free GenerateBlocks + GeneratePress) itself.
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/

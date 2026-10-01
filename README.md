@@ -841,6 +841,7 @@ npm run lint         # lint:js and lint:css together
 npm run lint:js      # ESLint (WordPress rules) on src/, scripts/ and the config files
 npm run lint:css     # Stylelint on src/**/*.scss
 npm run format       # reformat the JavaScript with Prettier (WordPress style)
+npm run test:e2e     # browser tests (Playwright) against the local Playground site
 
 composer install         # once; needs PHP and Composer
 composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
@@ -848,7 +849,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 
 - Node 20+ (the version in `.nvmrc` is what CI uses). `.editorconfig` sets tabs and line endings for editors that support it.
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
-- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; and the official WordPress **Plugin Check** against the built zip.
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
@@ -922,7 +923,9 @@ scripts/zip.mjs                 Packages dist/thingamablocks.zip
 webpack.config.js               Default wp-scripts build plus the src/animations/ entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
-.github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check
+.github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
+playwright.config.js            Browser test setup (starts Playground if needed)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```
