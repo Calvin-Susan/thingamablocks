@@ -3,7 +3,7 @@
  * from the editor without breaking content that already uses them.
  */
 const { test, expect } = require( '@playwright/test' );
-const { DEMO, newPost, openEditor, invalidBlocks } = require( './utils' );
+const { DEMO, rest, newPost, openEditor, invalidBlocks } = require( './utils' );
 
 const SETTINGS = '/wp-admin/options-general.php?page=thingamablocks';
 
@@ -26,6 +26,22 @@ async function setSwitches( page, changes ) {
 
 test.describe( 'Settings page', () => {
 	test.describe.configure( { mode: 'serial' } );
+
+	// Something for the Image masks count to find, whatever ran before.
+	test.beforeAll( async ( { browser } ) => {
+		const page = await browser.newPage();
+
+		await rest( page, '/wp/v2/posts', {
+			method: 'POST',
+			data: {
+				title: 'Settings: masked image',
+				status: 'draft',
+				content:
+					'<!-- wp:generateblocks/media {"uniqueId":"ab34cd56","tagName":"img","styles":{"maskImage":"url(\\u0022data:image/svg+xml,%3Csvg%3E%3C/svg%3E\\u0022)"},"htmlAttributes":{"src":"https://example.com/x.png","alt":"x"}} --><img class="gb-media-ab34cd56" src="https://example.com/x.png" alt="x"/><!-- /wp:generateblocks/media -->',
+			},
+		} );
+		await page.close();
+	} );
 
 	test.afterAll( async ( { browser } ) => {
 		const page = await browser.newPage();
@@ -61,7 +77,7 @@ test.describe( 'Settings page', () => {
 			).toBeChecked();
 		}
 
-		// The demo page uses the Toggle; earlier tests saved masked images.
+		// The demo page uses the Toggle; beforeAll saved a masked image.
 		await expect(
 			page.locator( '#thingamablocks-toggle-description' )
 		).toContainText( /In use on \d+ item/ );
@@ -170,20 +186,35 @@ test.describe( 'Settings page', () => {
 
 		await openEditor( page, postId );
 		expect( await invalidBlocks( page ) ).toEqual( [] );
-		expect(
-			await page.evaluate(
-				() =>
-					window.wp.data
-						.select( 'core/block-editor' )
-						.getBlocksByName( 'thingamablocks/dropdown' ).length
-			)
-		).toBeGreaterThan( 0 );
+		// Still editable, and can still be duplicated.
+		const counts = await page.evaluate( async () => {
+			const { select, dispatch } = window.wp.data;
+			const editor = select( 'core/block-editor' );
+			const [ dropdown ] = editor.getBlocksByName(
+				'thingamablocks/dropdown'
+			);
+			const before = editor.getBlocksByName(
+				'thingamablocks/dropdown'
+			).length;
+
+			await dispatch( 'core/block-editor' ).duplicateBlocks( [
+				dropdown,
+			] );
+
+			return {
+				before,
+				after: editor.getBlocksByName( 'thingamablocks/dropdown' )
+					.length,
+			};
+		} );
+
+		expect( counts.before ).toBeGreaterThan( 0 );
+		expect( counts.after ).toBe( counts.before + 1 );
 
 		expect( errors ).toEqual( [] );
 	} );
 
-	test( 'only administrators can see it', async ( { page } ) => {
-		// The page is registered with the manage_options capability.
+	test( 'saves through the WordPress settings form', async ( { page } ) => {
 		await page.goto( SETTINGS );
 		await expect(
 			page.locator( 'form[action="options.php"]' )

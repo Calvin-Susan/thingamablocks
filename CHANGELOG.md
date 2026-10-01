@@ -6,6 +6,13 @@ All notable changes to Thingamablocks are listed here.
 
 ### Added
 
+#### Settings
+
+- **Settings → Thingamablocks** (`manage_options`; also a **Settings** link on the Plugins screen): a switch for each block (Toggle, Countdown, Marquee, Dropdown, Breadcrumbs – **Show in the block inserter**) and feature (Entrance animations, Image masks – **Show the panel in the editor**), all on by default, each with a one-line description and where it's used ("In use on N items": posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash; masks are counted by an image mask in a block's GB styles).
+- **Switching off only hides.** A block stays registered, so existing content still renders and stays editable, but gets `supports.inserter = false` in the editor (an inline `blocks.registerBlockType` filter) and its patterns aren't registered. A feature's editor script (Entrance animation or Mask panel) isn't enqueued; existing animations and masks keep working.
+- Developer API: `thingamablocks_is_enabled( $key )` and the `thingamablocks_settings` option (key => true/false; a missing key counts as on). Deleting the plugin removes the option.
+- Browser tests (`tests/e2e/settings.spec.js`): the page and its counts, blocks/patterns/panels hidden when switched off, and an existing dropdown still working on the site and in the editor.
+
 #### Breadcrumbs
 
 - A fifth block, **Breadcrumbs** (`thingamablocks/breadcrumbs`): the path to the current page, worked out on the server for whatever page is being viewed, so it can go in a page, a template, a GeneratePress Element on a hook, or a widget. A settings-only wrapper like the others: a GenerateBlocks Text link marked **Link to each page**, a **Separator** and **The current page** in the new **Breadcrumb part** panel (`data-breadcrumb-part="item|separator|current"`) are templates, rendered once by GenerateBlocks (so their CSS prints) and repeated for every step with the `WP_HTML_Tag_Processor`. Only blocks set as a part are shown; the sidebar warns if there's no link part.

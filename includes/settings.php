@@ -27,31 +27,31 @@ function thingamablocks_switches() {
 			'label'       => __( 'Toggle', 'thingamablocks' ),
 			'description' => __( 'A switch or pair of buttons that shows/hides content, switches dark mode, or toggles classes.', 'thingamablocks' ),
 			'type'        => 'block',
-			'needle'      => '<!-- wp:thingamablocks/toggle',
+			'needle'      => '<!-- wp:thingamablocks/toggle ',
 		),
 		'countdown'   => array(
 			'label'       => __( 'Countdown', 'thingamablocks' ),
 			'description' => __( 'A countdown to a date, a per-visitor deadline or a repeating time.', 'thingamablocks' ),
 			'type'        => 'block',
-			'needle'      => '<!-- wp:thingamablocks/countdown',
+			'needle'      => '<!-- wp:thingamablocks/countdown ',
 		),
 		'marquee'     => array(
 			'label'       => __( 'Marquee', 'thingamablocks' ),
 			'description' => __( 'An endless scrolling strip of logos, messages or cards.', 'thingamablocks' ),
 			'type'        => 'block',
-			'needle'      => '<!-- wp:thingamablocks/marquee',
+			'needle'      => '<!-- wp:thingamablocks/marquee ',
 		),
 		'dropdown'    => array(
 			'label'       => __( 'Dropdown', 'thingamablocks' ),
 			'description' => __( 'A button that opens a drawer of links or anything else.', 'thingamablocks' ),
 			'type'        => 'block',
-			'needle'      => '<!-- wp:thingamablocks/dropdown',
+			'needle'      => '<!-- wp:thingamablocks/dropdown ',
 		),
 		'breadcrumbs' => array(
 			'label'       => __( 'Breadcrumbs', 'thingamablocks' ),
 			'description' => __( 'The path to the current page, built automatically.', 'thingamablocks' ),
 			'type'        => 'block',
-			'needle'      => '<!-- wp:thingamablocks/breadcrumbs',
+			'needle'      => '<!-- wp:thingamablocks/breadcrumbs ',
 		),
 		'animations'  => array(
 			'label'       => __( 'Entrance animations', 'thingamablocks' ),
@@ -146,26 +146,67 @@ function thingamablocks_settings_link( $links ) {
 }
 
 /**
- * How many posts, pages, templates, synced patterns and GeneratePress
- * Elements use each block or feature. Only counted on the settings page.
+ * How many posts, pages, templates, synced patterns, GeneratePress Elements
+ * and block widgets use each block or feature. One pass over the posts
+ * table, cached for a few minutes (and cleared when anything is saved).
  *
  * @return array Key => count.
  */
 function thingamablocks_usage_counts() {
 	global $wpdb;
 
-	$counts = array();
+	$cached = get_transient( 'thingamablocks_usage_counts' );
 
-	foreach ( thingamablocks_switches() as $key => $switch ) {
-		$counts[ $key ] = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an occasional admin-only count.
-			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' ) AND post_type <> 'revision' AND post_content LIKE %s",
-				'%' . $wpdb->esc_like( $switch['needle'] ) . '%'
-			)
-		);
+	if ( is_array( $cached ) ) {
+		return $cached;
 	}
 
+	$switches = thingamablocks_switches();
+	$sums     = array();
+	$likes    = array();
+
+	foreach ( $switches as $switch ) {
+		$sums[]  = 'SUM( post_content LIKE %s )';
+		$likes[] = '%' . $wpdb->esc_like( $switch['needle'] ) . '%';
+	}
+
+	// The SUM( … LIKE %s ) list is built from a fixed string above; every value is a placeholder.
+	$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient.
+		$wpdb->prepare(
+			'SELECT ' . implode( ', ', $sums ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$likes
+		),
+		ARRAY_N
+	);
+
+	// Block widgets live in an option, not the posts table.
+	$widgets = get_option( 'widget_block', array() );
+	$counts  = array();
+	$index   = 0;
+
+	foreach ( $switches as $key => $switch ) {
+		$counts[ $key ] = (int) ( $row[ $index ] ?? 0 );
+		++$index;
+
+		foreach ( is_array( $widgets ) ? $widgets : array() as $widget ) {
+			if ( is_array( $widget ) && false !== strpos( (string) ( $widget['content'] ?? '' ), $switch['needle'] ) ) {
+				++$counts[ $key ];
+			}
+		}
+	}
+
+	set_transient( 'thingamablocks_usage_counts', $counts, 10 * MINUTE_IN_SECONDS );
+
 	return $counts;
+}
+
+add_action( 'save_post', 'thingamablocks_clear_usage_counts' );
+add_action( 'update_option_widget_block', 'thingamablocks_clear_usage_counts' );
+/**
+ * Saving anything may change the counts.
+ */
+function thingamablocks_clear_usage_counts() {
+	delete_transient( 'thingamablocks_usage_counts' );
 }
 
 /**

@@ -23,6 +23,23 @@ module.exports = async () => {
 				response?.ok() &&
 				( await page.locator( '.tmb-marquee' ).count() )
 			) {
+				// Every block and feature switched on (a run that stopped early
+				// may have left some off in Settings → Thingamablocks).
+				await page.goto(
+					'/wp-admin/options-general.php?page=thingamablocks'
+				);
+
+				for ( const box of await page
+					.locator( 'input[type="checkbox"][id^="thingamablocks-"]' )
+					.all() ) {
+					await box.check();
+				}
+
+				await page
+					.getByRole( 'button', { name: 'Save Changes' } )
+					.click();
+				await page.waitForLoadState();
+
 				return;
 			}
 

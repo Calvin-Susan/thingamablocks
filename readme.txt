@@ -28,6 +28,8 @@ Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settin
 
 Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
+Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy. Each switch shows how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited.
+
 = Toggle: starting layouts =
 
 When you insert a Toggle you pick one of four layouts. Each is fully editable afterwards.
@@ -324,6 +326,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
 4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need.
 
 == Frequently Asked Questions ==
 
@@ -408,6 +411,10 @@ The editor shows the three part templates (a link, a separator and the current p
 = Will it duplicate my SEO plugin's breadcrumb schema? =
 
 Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on **Automatic** (the default) the block adds no structured data when one of them already does (Rank Math: when its breadcrumbs are switched on). If another SEO plugin adds breadcrumb structured data, set **Breadcrumb structured data** to **Never** in the block's Search engines panel, or add `add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );` to tell every block at once. Either way, the block never prints it more than once per page.
+
+= Can I hide blocks I don't use? =
+
+Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited, and existing animations and masks stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 

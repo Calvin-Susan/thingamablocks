@@ -22,11 +22,14 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 
 **Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
+**Light on the editor, too:** don't need the Marquee, or masks? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
+
 ---
 
 ## Contents
 
 - [Install](#install)
+- [Settings](#settings)
 - [Toggle block](#toggle-block)
   - [Toggle quick start](#toggle-quick-start)
   - [How toggle parts and styling work](#how-toggle-parts-and-styling-work)
@@ -68,6 +71,24 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
 3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+
+---
+
+## Settings
+
+**Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has a switch for each block and feature. Everything is on by default.
+
+- **Blocks** – Toggle, Countdown, Marquee, Dropdown and Breadcrumbs: **Show in the block inserter**.
+- **Features** – Entrance animations and Image masks: **Show the panel in the editor**.
+
+Each switch has a one-line description and shows where it's used ("In use on 3 items" or "Not used anywhere yet"), counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, and masks by GenerateBlocks blocks with an image mask in their styles.
+
+**Switching off only hides things.** Nothing on your site changes:
+
+- A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited.
+- A switched-off **feature**'s sidebar panel (Entrance animation, Mask) no longer loads in the editor. Existing animations keep animating and existing masks stay.
+
+Switch it back on whenever you like. Deleting the plugin removes this setting.
 
 ---
 
@@ -1131,6 +1152,8 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 
 ### PHP
 
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `animations`, `masks`.
+- Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
 - Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
@@ -1242,6 +1265,16 @@ All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Conte
 - **Library shapes** come from the shape list GenerateBlocks gives the editor (`window.generateBlocksInfo.svgShapes`, which GB builds with its `generateblocks_svg_shapes` filter), and go through the same cleaning.
 - **Why not the Media Library?** WordPress refuses SVG uploads by default, because an SVG opened directly can run scripts. Storing the cleaned shape in the block's CSS avoids needing an SVG-upload plugin, and means a mask never depends on a file that could be deleted.
 
+### How switching things off works
+
+`includes/settings.php`. The page uses the WordPress Settings API (`register_setting`, `options.php`), under **Settings** with `manage_options`. The rule is "hide, never break": nothing is unregistered.
+
+- **Blocks.** Every block stays registered in PHP, so its render callback still runs and existing content renders exactly as before. In the editor, a tiny inline script (registered before the blocks, in `enqueue_block_editor_assets`) adds a `blocks.registerBlockType` filter that sets `supports.inserter` to `false` for the switched-off blocks. That's WordPress's own way to hide a block from the inserter while existing copies still load and edit normally.
+- **Patterns.** `includes/patterns.php` tags each pattern with its block and skips registering the ones whose block is switched off.
+- **Features.** The editor scripts for the Entrance animation and Mask panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, and masks are plain GenerateBlocks CSS.
+- **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles.
+- **Saving.** Each switch has a hidden `0` field before its checkbox, so unticked boxes are saved as `false`; the sanitize callback keeps only known keys, as true/false.
+
 ### The dark mode head output
 
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
@@ -1314,9 +1347,10 @@ includes/
   class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: SEO plugin detection, Yoast/Rank Math trails, the block's own trail for every kind of page
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
-  patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/
+  patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
+  settings.php                  Settings → Thingamablocks: the switches, usage counts, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
   sale-banner.php               "Sale banner with countdown" pattern
@@ -1396,7 +1430,7 @@ webpack.config.js               Default wp-scripts build plus the src/animations
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

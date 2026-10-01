@@ -79,7 +79,7 @@ const trailText = ( page ) =>
 test.describe( 'Breadcrumbs', () => {
 	test.describe.configure( { mode: 'serial' } );
 
-	const site = {};
+	const site = { created: [] };
 
 	test.beforeAll( async ( { browser } ) => {
 		const page = await browser.newPage();
@@ -94,8 +94,17 @@ test.describe( 'Breadcrumbs', () => {
 		const sidebarMarkup = await breadcrumbsMarkup( page, {
 			collapse: false,
 		} );
-		const make = ( path, data ) =>
-			rest( page, path, { method: 'POST', data } );
+		const make = async ( path, data ) => {
+			const item = await rest( page, path, { method: 'POST', data } );
+
+			// Remember what was made, to delete it afterwards (pages pile up in
+			// the theme's menu otherwise).
+			if ( item?.id && ! path.includes( 'settings' ) ) {
+				site.created.push( `${ path }/${ item.id }` );
+			}
+
+			return item;
+		};
 		const stamp = Date.now();
 
 		site.reading = await rest( page, '/wp/v2/settings' );
@@ -189,6 +198,16 @@ test.describe( 'Breadcrumbs', () => {
 					timezone_string: site.reading.timezone_string,
 				},
 			} );
+		}
+
+		// Everything the tests made, newest first (children before parents).
+		for ( const path of [ ...site.created ].reverse() ) {
+			if ( ! path.includes( '/widgets/' ) ) {
+				await rest( page, path, {
+					method: 'DELETE',
+					params: { force: 'true' },
+				} ).catch( () => {} );
+			}
 		}
 
 		if ( site.widget?.id ) {
@@ -457,6 +476,8 @@ test.describe( 'Breadcrumbs', () => {
 				content: await breadcrumbsMarkup( page, { home: 'icon' } ),
 			},
 		} );
+
+		site.created.push( `/wp/v2/pages/${ deep.id }` );
 
 		await page.goto( deep.link, { waitUntil: 'networkidle' } );
 

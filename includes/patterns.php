@@ -84,7 +84,7 @@ function thingamablocks_register_patterns() {
 
 	foreach ( $patterns as $slug => $pattern ) {
 		// A block switched off in Settings → Thingamablocks takes its patterns with it.
-		if ( ! thingamablocks_is_enabled( $pattern['block'] ) ) {
+		if ( isset( $pattern['block'] ) && ! thingamablocks_is_enabled( $pattern['block'] ) ) {
 			continue;
 		}
 
