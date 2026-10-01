@@ -172,8 +172,8 @@ function thingamablocks_usage_counts() {
 
 	// The SUM( … LIKE %s ) list is built from a fixed string above; every value is a placeholder.
 	$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient.
-		$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the %s placeholders are in $sums.
-			'SELECT ' . implode( ', ', $sums ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->prepare(
+			'SELECT ' . implode( ', ', $sums ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the %s placeholders are built into $sums.
 			$likes
 		),
 		ARRAY_N
