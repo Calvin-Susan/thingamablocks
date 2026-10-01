@@ -71,7 +71,10 @@ export function classify( url, hosts = [] ) {
 			'player.mediadelivery.net',
 		].includes( host )
 	) {
-		return { error: 'bunny-embed' };
+		// A Direct Play / embed link: pick out the video ID, to help build the MP4 address.
+		const match = path.match( /^\/(?:play|embed)\/\d+\/([0-9a-f-]{36})/i );
+
+		return { error: 'bunny-embed', id: match ? match[ 1 ] : '' };
 	}
 
 	if ( ! host.endsWith( '.b-cdn.net' ) && ! hosts.includes( host ) ) {

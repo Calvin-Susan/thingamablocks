@@ -1152,7 +1152,14 @@ Not a block: a **Video background** panel added to the sidebar of the GenerateBl
 
 #### A hero with a Bunny video behind it
 
-1. **Get an MP4 address from Bunny.** In Bunny Stream, turn on **MP4 fallback** in the video library's settings, so its videos also get MP4 files. Then copy a video's `play_720p.mp4` link (its Direct play URL), like `https://vz-abc123.b-cdn.net/1234-5678/play_720p.mp4`. (A video in a plain Bunny Storage zone with a pull zone works too: its `.b-cdn.net` address ending in `.mp4`.)
+1. **Get an MP4 address from Bunny.** Bunny Stream doesn't show this address anywhere, so you put it together:
+   - In the video library's **Encoding** settings, turn on **MP4 Fallback**, so its videos also get MP4 files (it applies to videos encoded afterwards: re-encode or re-upload existing ones).
+   - On the library's **API** tab, copy the **CDN Hostname** (like `vz-a1b2c3d4-e5f.b-cdn.net`).
+   - Copy the video's ID (in its **Direct Play URL**, the long ID after the library number: `…/play/123456/8f7e6d5c-…`).
+   - The address is `https://` + hostname + `/` + video ID + `/play_720p.mp4` (or `play_480p.mp4` for the phone video), like `https://vz-a1b2c3d4-e5f.b-cdn.net/8f7e6d5c-…/play_720p.mp4`. Paste the Direct Play URL into the panel and it shows this address with the ID filled in.
+   - If it won't play, check the library's **Security** settings: **Block direct URL file access** must be off, and if you've set allowed referrers, your site's domain must be on the list.
+
+   (A video in a plain Bunny Storage zone with a pull zone works too: its `.b-cdn.net` address ending in `.mp4`.)
 2. **Grab a still for the poster.** A frame from the start of the video, exported as a JPG or WebP about 1920 px wide, uploaded to the Media Library.
 3. Select the hero's **Element** block and open **Video background** in the sidebar.
 4. Paste the address into **Video address**. The help text under it says what kind of video it found (or why it can't be used).
@@ -1201,7 +1208,7 @@ The settings are saved as one JSON attribute, `data-tmb-video`, in the Element's
 **Addresses that won't work**, and what the panel says about them (with "This video won't be used on the site"):
 
 - **YouTube**: not supported; use a Bunny or Vimeo video.
-- **Bunny's player page** (`iframe.mediadelivery.net`, `player.mediadelivery.net`, `video.bunnycdn.com`): use the video's MP4 address instead (turn on MP4 fallback and copy a `play_720p.mp4` link).
+- **Bunny's player page** (`iframe.mediadelivery.net`, `player.mediadelivery.net`, `video.bunnycdn.com`): use the video's MP4 address instead. The panel picks the video ID out of a Direct Play URL and shows the address to use, `https://YOUR-CDN-HOSTNAME.b-cdn.net/VIDEO-ID/play_720p.mp4` (see step 1 above).
 - **HLS streams** (`.m3u8`): they need a heavy player script; use the MP4 version instead.
 - **Not a video file** (a Bunny address that doesn't end in `.mp4` or `.webm`), **not a Vimeo video address** (a Vimeo showcase or channel page, say), **another site**, or **not `https://`**.
 

@@ -734,6 +734,12 @@ test.describe( 'Video background', () => {
 		const field = panel.getByLabel( 'Video address' );
 		await field.fill( 'https://www.youtube.com/watch?v=x' );
 		await expect( panel ).toContainText( 'YouTube isn’t supported' );
+		await field.fill(
+			'https://iframe.mediadelivery.net/play/123456/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f'
+		);
+		await expect( panel ).toContainText(
+			'https://YOUR-CDN-HOSTNAME.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/play_720p.mp4'
+		);
 		await field.fill( 'https://vz-x.b-cdn.net/a/playlist.m3u8' );
 		await expect( panel ).toContainText( 'HLS streams' );
 		await field.fill( BUNNY );

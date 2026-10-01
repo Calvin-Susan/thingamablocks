@@ -9,7 +9,7 @@
  * In the editor the poster (with the overlay) is shown as the container's
  * background, so editing stays quick: the video only plays on the site.
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import {
@@ -81,14 +81,20 @@ const MESSAGES = {
 			'Only Bunny (*.b-cdn.net, or a hostname added in Settings → Thingamablocks) and Vimeo videos can be used.',
 			'thingamablocks'
 		),
-	'bunny-embed': () =>
-		__(
-			'That’s Bunny’s player page. Use the video’s MP4 address instead: in Bunny Stream, turn on “MP4 fallback” for the library and copy a play_720p.mp4 link (Direct play URL).',
-			'thingamablocks'
+	'bunny-embed': ( result ) =>
+		sprintf(
+			/* translators: %s: the address to use, with the video ID filled in. */
+			__(
+				'That’s Bunny’s player page, not the video file. In Bunny Stream: turn on “MP4 Fallback” in the library’s Encoding settings (then re-encode or re-upload the video), find the library’s CDN hostname on its API tab, and use: %s',
+				'thingamablocks'
+			),
+			`https://YOUR-CDN-HOSTNAME.b-cdn.net/${
+				result?.id || 'VIDEO-ID'
+			}/play_720p.mp4`
 		),
 	hls: () =>
 		__(
-			'HLS streams (.m3u8) need a heavy player script. Use the MP4 version instead: in Bunny Stream, turn on “MP4 fallback” and use play_720p.mp4.',
+			'HLS streams (.m3u8) need a heavy player script. Use the MP4 version instead: in Bunny Stream, turn on “MP4 Fallback” in the library’s Encoding settings and use …/play_720p.mp4.',
 			'thingamablocks'
 		),
 	'not-video': () =>
@@ -105,7 +111,7 @@ const MESSAGES = {
 
 const describe = ( result ) => {
 	if ( result.error ) {
-		return MESSAGES[ result.error ]?.() || MESSAGES.host();
+		return MESSAGES[ result.error ]?.( result ) || MESSAGES.host();
 	}
 
 	return 'vimeo' === result.type
