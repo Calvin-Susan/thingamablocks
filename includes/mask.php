@@ -20,6 +20,11 @@ add_action( 'enqueue_block_editor_assets', 'thingamablocks_enqueue_mask_editor' 
  * The "Mask" panel in the block editor.
  */
 function thingamablocks_enqueue_mask_editor() {
+	// Switched off in Settings → Thingamablocks: no panel (existing masks stay).
+	if ( ! thingamablocks_is_enabled( 'masks' ) ) {
+		return;
+	}
+
 	$asset_file = THINGAMABLOCKS_DIR . 'build/mask/editor.asset.php';
 
 	if ( ! file_exists( $asset_file ) ) {

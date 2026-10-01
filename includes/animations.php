@@ -49,6 +49,11 @@ add_action( 'enqueue_block_editor_assets', 'thingamablocks_enqueue_animation_edi
  * The "Entrance animation" panel in the block editor.
  */
 function thingamablocks_enqueue_animation_editor() {
+	// Switched off in Settings → Thingamablocks: no panel (animated blocks still animate).
+	if ( ! thingamablocks_is_enabled( 'animations' ) ) {
+		return;
+	}
+
 	$asset_file = THINGAMABLOCKS_DIR . 'build/animations/editor.asset.php';
 
 	if ( ! file_exists( $asset_file ) ) {
