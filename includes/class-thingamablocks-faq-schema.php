@@ -274,7 +274,6 @@ class Thingamablocks_Faq_Schema {
 				self::$entities[ $item[0] ] = $item[1];
 			}
 		}
-
 	}
 
 	/**
