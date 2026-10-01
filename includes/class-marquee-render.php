@@ -37,18 +37,16 @@ class Thingamablocks_Marquee_Render {
 		$vertical = in_array( $config['direction'], array( 'up', 'down' ), true );
 
 		$styles = array( 'position:relative', 'overflow:hidden' );
+		$mask   = '';
 
 		if ( $vertical ) {
 			$styles[] = 'height:' . self::length( $attributes['height'] ?? '', '20rem' );
 		}
 
 		if ( ! isset( $attributes['fadeEdges'] ) || ! empty( $attributes['fadeEdges'] ) ) {
-			$fade  = self::length( $attributes['fadeWidth'] ?? '', '10%' );
-			$side  = $vertical ? 'to bottom' : 'to right';
-			$mask  = "linear-gradient({$side},transparent,#000 {$fade},#000 calc(100% - {$fade}),transparent)";
-
-			$styles[] = '-webkit-mask-image:' . $mask;
-			$styles[] = 'mask-image:' . $mask;
+			$fade = self::length( $attributes['fadeWidth'] ?? '', '10%' );
+			$side = $vertical ? 'to bottom' : 'to right';
+			$mask = "linear-gradient({$side},transparent,#000 {$fade},#000 calc(100% - {$fade}),transparent)";
 		}
 
 		$wrapper = array(
@@ -69,11 +67,29 @@ class Thingamablocks_Marquee_Render {
 			$wrapper['aria-label'] = $label;
 		}
 
-		return sprintf(
+		$html = sprintf(
 			'<div %1$s>%2$s</div>',
 			get_block_wrapper_attributes( $wrapper ),
 			self::decorate_parts( $content, $vertical )
 		);
+
+		/*
+		 * WordPress's style filter in get_block_wrapper_attributes() drops
+		 * mask-image, so the edge fade is added to the rendered tag. It's built
+		 * only from a validated length, so it's safe as-is. The script moves it
+		 * to an inner layer so the pause button isn't faded.
+		 */
+		if ( $mask && class_exists( 'WP_HTML_Tag_Processor' ) ) {
+			$processor = new WP_HTML_Tag_Processor( $html );
+
+			if ( $processor->next_tag() ) {
+				$style = rtrim( (string) $processor->get_attribute( 'style' ), '; ' );
+				$processor->set_attribute( 'style', $style . ';-webkit-mask-image:' . $mask . ';mask-image:' . $mask );
+				$html = $processor->get_updated_html();
+			}
+		}
+
+		return $html;
 	}
 
 	/**

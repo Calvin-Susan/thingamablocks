@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Thingamablocks
- * Description:       Add-on blocks for GenerateBlocks, built from native GB blocks so you style them with the GB Styles panel: a Toggle (show/hide, light/dark mode, classes), a Countdown (date, evergreen, recurring) and a Marquee (smooth scrolling logos and messages).
+ * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
  * Version:           0.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4

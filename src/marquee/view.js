@@ -51,7 +51,7 @@ function gapOf( items, vertical ) {
  * @param {Object} marquee Marquee record.
  */
 function layout( marquee ) {
-	const { element, config, track, items } = marquee;
+	const { config, track, items, viewport } = marquee;
 	const vertical = isVertical( config );
 
 	if ( reducedMotion.matches ) {
@@ -62,7 +62,7 @@ function layout( marquee ) {
 	const gap = gapOf( items, vertical );
 	const rect = items.getBoundingClientRect();
 	const size = vertical ? rect.height : rect.width;
-	const space = vertical ? element.clientHeight : element.clientWidth;
+	const space = vertical ? viewport.clientHeight : viewport.clientWidth;
 
 	if ( ! size || ! space ) {
 		return;
@@ -95,7 +95,7 @@ function layout( marquee ) {
 
 	const axis = vertical ? 'Y' : 'X';
 	// RTL sites read right to left, so "left" flips there.
-	const rtl = ! vertical && 'rtl' === getComputedStyle( element ).direction;
+	const rtl = ! vertical && 'rtl' === getComputedStyle( viewport ).direction;
 	const forwards = 'left' === config.direction || 'up' === config.direction;
 	const sign = forwards !== rtl ? -1 : 1;
 	const from = `translate${ axis }(${ sign < 0 ? 0 : -distance }px)`;
@@ -128,7 +128,7 @@ function stop( marquee ) {
 
 	// Without motion, let people scroll to see everything.
 	const vertical = isVertical( marquee.config );
-	marquee.element.style.setProperty( vertical ? 'overflow-y' : 'overflow-x', 'auto' );
+	marquee.viewport.style.setProperty( vertical ? 'overflow-y' : 'overflow-x', 'auto' );
 	marquee.pauseButtons.forEach( ( button ) => ( button.hidden = true ) );
 }
 
@@ -191,7 +191,27 @@ function setup( element ) {
 	track.style.cssText = `display:flex;flex-direction:${ vertical ? 'column' : 'row' };width:${
 		vertical ? '100%' : 'max-content'
 	};will-change:transform`;
-	items.before( track );
+
+	/*
+	 * The track sits in a clipping viewport that carries the edge fade, so the
+	 * fade applies to the moving row only, not to the pause button. (The server
+	 * puts the fade on the wrapper so the row looks right before this runs.)
+	 */
+	const viewport = document.createElement( 'div' );
+	viewport.className = 'tmb-marquee__viewport';
+	viewport.style.cssText = `overflow:hidden;${ vertical ? 'height:100%;' : '' }`;
+
+	const mask = element.style.getPropertyValue( 'mask-image' ) || element.style.getPropertyValue( '-webkit-mask-image' );
+
+	if ( mask ) {
+		viewport.style.setProperty( 'mask-image', mask );
+		viewport.style.setProperty( '-webkit-mask-image', mask );
+		element.style.removeProperty( 'mask-image' );
+		element.style.removeProperty( '-webkit-mask-image' );
+	}
+
+	items.before( viewport );
+	viewport.appendChild( track );
 	track.appendChild( items );
 
 	const marquee = {
@@ -199,6 +219,7 @@ function setup( element ) {
 		config,
 		items,
 		track,
+		viewport,
 		copies: [],
 		animation: null,
 		distance: 0,
@@ -257,7 +278,7 @@ function setup( element ) {
 	if ( 'ResizeObserver' in window ) {
 		const observer = new ResizeObserver( () => layout( marquee ) );
 		observer.observe( items );
-		observer.observe( element );
+		observer.observe( viewport );
 	}
 
 	// Don't burn CPU animating something nobody can see.
@@ -297,8 +318,8 @@ window.addEventListener( 'load', () => marquees.forEach( layout ) );
 reducedMotion.addEventListener( 'change', () =>
 	marquees.forEach( ( marquee ) => {
 		if ( ! reducedMotion.matches ) {
-			marquee.element.style.removeProperty( 'overflow-x' );
-			marquee.element.style.removeProperty( 'overflow-y' );
+			marquee.viewport.style.removeProperty( 'overflow-x' );
+			marquee.viewport.style.removeProperty( 'overflow-y' );
 			marquee.pauseButtons.forEach( ( button ) => ( button.hidden = false ) );
 		}
 

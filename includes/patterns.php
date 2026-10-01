@@ -31,6 +31,11 @@ function thingamablocks_register_patterns() {
 		array( 'label' => __( 'Countdowns', 'thingamablocks' ) )
 	);
 
+	register_block_pattern_category(
+		'thingamablocks-marquees',
+		array( 'label' => __( 'Marquees', 'thingamablocks' ) )
+	);
+
 	$patterns = array(
 		'pricing-toggle'   => array(
 			'title'       => __( 'Pricing table with monthly/annual toggle', 'thingamablocks' ),
@@ -43,6 +48,12 @@ function thingamablocks_register_patterns() {
 			'description' => __( 'A slim banner with an inline countdown. The whole banner disappears when the sale ends.', 'thingamablocks' ),
 			'keywords'    => array( 'sale', 'banner', 'countdown', 'offer', 'promo' ),
 			'categories'  => array( 'thingamablocks-countdowns' ),
+		),
+		'logo-marquee'     => array(
+			'title'       => __( 'Logo strip: “Trusted by…”', 'thingamablocks' ),
+			'description' => __( 'A small heading above an endlessly scrolling row of logos. Swap the placeholders for your clients’ logos.', 'thingamablocks' ),
+			'keywords'    => array( 'logos', 'clients', 'trusted by', 'marquee', 'partners' ),
+			'categories'  => array( 'thingamablocks-marquees' ),
 		),
 		'launch-countdown' => array(
 			'title'       => __( 'Launch countdown', 'thingamablocks' ),
