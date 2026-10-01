@@ -1,0 +1,29 @@
+// Editor only. The drawer sits in the flow (not floating) so it's easy to
+// edit, and shows while the dropdown or anything in it is selected.
+
+// Sized by the button, like the front end, so "as wide as the button" shows.
+.tmb-dropdown {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.tmb-dropdown [data-dropdown-part="drawer"] {
+	margin-top: var(--tmb-dropdown-gap, 8px);
+}
+
+:where(.tmb-dropdown) :where([data-dropdown-part="drawer"]) {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.tmb-dropdown.is-closed [data-dropdown-part="drawer"] {
+	display: none !important;
+}
+
+.tmb-dropdown-control {
+	margin-bottom: 16px;
+}
+
+.tmb-dropdown-notice {
+	padding: 0 16px 16px;
+}

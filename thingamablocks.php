@@ -27,6 +27,7 @@ require_once THINGAMABLOCKS_DIR . 'includes/kses.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-toggle-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-countdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-marquee-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-dropdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
@@ -41,6 +42,7 @@ function thingamablocks_register_blocks() {
 		'toggle'    => array( 'Thingamablocks_Toggle_Render', 'render' ),
 		'countdown' => array( 'Thingamablocks_Countdown_Render', 'render' ),
 		'marquee'   => array( 'Thingamablocks_Marquee_Render', 'render' ),
+		'dropdown'  => array( 'Thingamablocks_Dropdown_Render', 'render' ),
 	);
 
 	foreach ( $blocks as $folder => $render ) {

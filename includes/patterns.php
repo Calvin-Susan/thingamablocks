@@ -39,30 +39,41 @@ function thingamablocks_register_patterns() {
 		array( 'label' => __( 'Marquees', 'thingamablocks' ) )
 	);
 
+	register_block_pattern_category(
+		'thingamablocks-dropdowns',
+		array( 'label' => __( 'Dropdowns', 'thingamablocks' ) )
+	);
+
 	$patterns = array(
-		'pricing-toggle'   => array(
+		'pricing-toggle'     => array(
 			'title'       => __( 'Pricing table with monthly/annual toggle', 'thingamablocks' ),
 			'description' => __( 'Three plans with a segmented toggle that switches between monthly and annual prices.', 'thingamablocks' ),
 			'keywords'    => array( 'pricing', 'plans', 'monthly', 'annual', 'toggle' ),
 			'categories'  => array( 'thingamablocks-toggles' ),
 		),
-		'sale-banner'      => array(
+		'sale-banner'        => array(
 			'title'       => __( 'Sale banner with countdown', 'thingamablocks' ),
 			'description' => __( 'A slim banner with an inline countdown. The whole banner disappears when the sale ends.', 'thingamablocks' ),
 			'keywords'    => array( 'sale', 'banner', 'countdown', 'offer', 'promo' ),
 			'categories'  => array( 'thingamablocks-countdowns' ),
 		),
-		'logo-marquee'     => array(
+		'logo-marquee'       => array(
 			'title'       => __( 'Logo strip: “Trusted by…”', 'thingamablocks' ),
 			'description' => __( 'A small heading above an endlessly scrolling row of logos. Swap the placeholders for your clients’ logos.', 'thingamablocks' ),
 			'keywords'    => array( 'logos', 'clients', 'trusted by', 'marquee', 'partners' ),
 			'categories'  => array( 'thingamablocks-marquees' ),
 		),
-		'launch-countdown' => array(
+		'launch-countdown'   => array(
 			'title'       => __( 'Launch countdown', 'thingamablocks' ),
 			'description' => __( 'A “coming soon” section with large countdown numbers and a message for when it’s live.', 'thingamablocks' ),
 			'keywords'    => array( 'launch', 'coming soon', 'countdown', 'timer' ),
 			'categories'  => array( 'thingamablocks-countdowns' ),
+		),
+		'downloads-dropdown' => array(
+			'title'       => __( 'Product resources with a Downloads dropdown', 'thingamablocks' ),
+			'description' => __( 'A short section with a button that opens a list of files to download.', 'thingamablocks' ),
+			'keywords'    => array( 'downloads', 'files', 'dropdown', 'resources', 'brochure' ),
+			'categories'  => array( 'thingamablocks-dropdowns' ),
 		),
 	);
 

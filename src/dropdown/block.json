@@ -1,0 +1,59 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thingamablocks/dropdown",
+	"version": "0.1.0",
+	"title": "Dropdown",
+	"category": "generateblocks",
+	"description": "A button that opens a drawer of links or any other blocks, like a downloads menu, built from GenerateBlocks elements.",
+	"keywords": [
+		"dropdown",
+		"downloads",
+		"menu",
+		"disclosure",
+		"button",
+		"drawer",
+		"popover"
+	],
+	"textdomain": "thingamablocks",
+	"attributes": {
+		"animation": {
+			"type": "string",
+			"default": "slide",
+			"enum": [ "none", "fade", "slide", "grow", "unfold" ]
+		},
+		"speed": {
+			"type": "string",
+			"default": "normal",
+			"enum": [ "fast", "normal", "slow" ]
+		},
+		"align": {
+			"type": "string",
+			"default": "start",
+			"enum": [ "start", "center", "end" ]
+		},
+		"gap": {
+			"type": "number",
+			"default": 8
+		},
+		"closeOnClick": {
+			"type": "boolean",
+			"default": true
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js",
+	"viewStyle": "file:./style-index.css"
+}

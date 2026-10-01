@@ -1,0 +1,38 @@
+// Front end only (block.json "viewStyle": loaded only on pages with a
+// Dropdown). Every rule is wrapped in :where(), so it has no specificity and
+// any style set in the GenerateBlocks Styles panel wins over it.
+
+// Sized by the button: the drawer is positioned, so it doesn't add width.
+:where(.tmb-dropdown) {
+	position: relative;
+	display: inline-block;
+	vertical-align: top;
+}
+
+// The drawer opens below the button, as wide as it, until it's given a
+// width of its own. The script sets "left" so it lines up and stays on screen.
+:where(.tmb-dropdown) :where([data-dropdown-part="drawer"]) {
+	position: absolute;
+	z-index: 100;
+	top: calc(100% + var(--tmb-dropdown-gap, 8px));
+	left: 0;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+// Flipped above the button when there isn't room below.
+:where(.tmb-dropdown[data-placement="top"]) :where([data-dropdown-part="drawer"]) {
+	top: auto;
+	bottom: calc(100% + var(--tmb-dropdown-gap, 8px));
+}
+
+:where(.tmb-dropdown) :where([data-dropdown-part="button"]) {
+	cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	:where(.tmb-dropdown) :where([data-dropdown-part="button"]) * {
+		transition-duration: 0.01ms !important;
+	}
+}

@@ -45,6 +45,7 @@ test.describe( 'Editor', () => {
 		);
 
 		expect( patterns.map( ( pattern ) => pattern.name ).sort() ).toEqual( [
+			'thingamablocks/downloads-dropdown',
 			'thingamablocks/launch-countdown',
 			'thingamablocks/logo-marquee',
 			'thingamablocks/pricing-toggle',
@@ -79,6 +80,7 @@ test.describe( 'Editor', () => {
 
 		expect( names ).toEqual( [
 			'thingamablocks/countdown',
+			'thingamablocks/dropdown',
 			'thingamablocks/marquee',
 			'thingamablocks/toggle',
 		] );
