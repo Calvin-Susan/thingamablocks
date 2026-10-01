@@ -1,0 +1,47 @@
+// Sidebar helpers. Canvas styling is left to GenerateBlocks.
+
+.ogal-countdown-help {
+	margin: 8px 0 16px;
+	color: #757575;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.ogal-countdown-mode {
+	margin-top: 16px;
+}
+
+.ogal-countdown-date-button {
+	width: 100%;
+	justify-content: center;
+}
+
+.ogal-countdown-date-picker {
+	padding: 8px;
+}
+
+.ogal-countdown-weekdays {
+	display: grid;
+	grid-template-columns: repeat(4, auto);
+	gap: 8px 12px;
+	margin: 16px 0 0;
+	padding: 0;
+	border: 0;
+
+	legend {
+		margin-bottom: 8px;
+		padding: 0;
+		font-size: 11px;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+}
+
+.ogal-countdown-notice {
+	padding: 16px;
+	border-bottom: 1px solid #e0e0e0;
+
+	.components-notice {
+		margin: 0;
+	}
+}

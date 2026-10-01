@@ -1,0 +1,80 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ogal/countdown",
+	"version": "0.1.0",
+	"title": "Countdown",
+	"category": "generateblocks",
+	"description": "A countdown timer built from GenerateBlocks elements. Count to a date, a per-visitor deadline, or a time that repeats every day.",
+	"keywords": [ "countdown", "timer", "clock", "deadline", "sale", "launch", "evergreen" ],
+	"textdomain": "toggle-for-generateblocks",
+	"attributes": {
+		"mode": {
+			"type": "string",
+			"default": "date",
+			"enum": [ "date", "evergreen", "recurring" ]
+		},
+		"endDate": {
+			"type": "string",
+			"default": ""
+		},
+		"evergreenMinutes": {
+			"type": "number",
+			"default": 1440
+		},
+		"evergreenRestart": {
+			"type": "boolean",
+			"default": false
+		},
+		"recurringTime": {
+			"type": "string",
+			"default": "17:00"
+		},
+		"recurringDays": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "number" }
+		},
+		"padNumbers": {
+			"type": "boolean",
+			"default": true
+		},
+		"hideEmptyUnits": {
+			"type": "boolean",
+			"default": false
+		},
+		"endAction": {
+			"type": "string",
+			"default": "message",
+			"enum": [ "message", "zeros", "hide" ]
+		},
+		"showOnEnd": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "string" }
+		},
+		"hideOnEnd": {
+			"type": "array",
+			"default": [],
+			"items": { "type": "string" }
+		},
+		"redirectUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js"
+}

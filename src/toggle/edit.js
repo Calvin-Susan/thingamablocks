@@ -14,7 +14,6 @@ import {
 	useBlockProps,
 	useInnerBlocksProps,
 	store as blockEditorStore,
-	__experimentalBlockVariationPicker as BlockVariationPicker,
 } from '@wordpress/block-editor';
 import {
 	CheckboxControl,
@@ -30,24 +29,11 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
-import {
-	createContext,
-	createPortal,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from '@wordpress/element';
-import {
-	createBlocksFromInnerBlocksTemplate,
-	store as blocksStore,
-} from '@wordpress/blocks';
+import { useEffect, useMemo } from '@wordpress/element';
 
-import TargetsControl from './targets-control';
-
-// The document the block is rendered in (the editor canvas iframe).
-const CanvasContext = createContext( null );
+import TargetsControl from '../shared/targets-control';
+import VariationPlaceholder from '../shared/variation-placeholder';
+import { CanvasContext, CanvasStyle, useCanvas } from '../shared/canvas-style';
 import DarkPaletteSettings, { darkPaletteCss } from './dark-palette';
 import { toggleIcon } from './icon';
 import { stateAttributes, STATE_ATTRIBUTES } from './parts';
@@ -109,50 +95,6 @@ function collectParts( select, clientId ) {
 	return parts;
 }
 
-function Placeholder( { clientId, setAttributes } ) {
-	const { variations, defaultVariation } = useSelect( ( select ) => {
-		const { getBlockVariations, getDefaultBlockVariation } =
-			select( blocksStore );
-
-		return {
-			variations: getBlockVariations( 'ogal/toggle', 'block' ),
-			defaultVariation: getDefaultBlockVariation( 'ogal/toggle', 'block' ),
-		};
-	}, [] );
-	const { replaceInnerBlocks } = useDispatch( blockEditorStore );
-	const blockProps = useBlockProps();
-
-	return (
-		<div { ...blockProps }>
-			<BlockVariationPicker
-				icon={ toggleIcon }
-				label={ __( 'Toggle', 'toggle-for-generateblocks' ) }
-				instructions={ __(
-					'Choose a starting layout. Every part is a GenerateBlocks block, so you can restyle it afterwards.',
-					'toggle-for-generateblocks'
-				) }
-				variations={ variations }
-				onSelect={ ( variation = defaultVariation ) => {
-					if ( variation.attributes ) {
-						setAttributes( variation.attributes );
-					}
-
-					if ( variation.innerBlocks ) {
-						replaceInnerBlocks(
-							clientId,
-							createBlocksFromInnerBlocksTemplate(
-								variation.innerBlocks
-							),
-							// Keep the Toggle selected, so its settings are what you see next.
-							false
-						);
-					}
-				} }
-				allowSkip
-			/>
-		</div>
-	);
-}
 
 function BehaviourSettings( { attributes, setAttributes } ) {
 	const {
@@ -561,25 +503,6 @@ function TargetPreview( { attributes, clientId, isActive } ) {
 	);
 }
 
-/**
- * A <style> in the editor canvas's <head>. Rendered through a portal so it
- * isn't a sibling in the block list, where it would upset spacing rules like
- * "> * + *".
- *
- * @param {Object} props          Props.
- * @param {string} props.children CSS.
- * @param {Object} props.rest     Extra attributes for the <style>.
- */
-function CanvasStyle( { children, ...rest } ) {
-	const canvas = useContext( CanvasContext );
-
-	if ( ! canvas || ! children ) {
-		return null;
-	}
-
-	return createPortal( <style { ...rest }>{ children }</style>, canvas.head );
-}
-
 function ToggleEdit( { attributes, setAttributes, clientId } ) {
 	const { defaultState } = attributes;
 
@@ -606,11 +529,7 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 
 	useSyncPartState( parts, defaultState );
 
-	const [ canvas, setCanvas ] = useState( null );
-	const canvasRef = useCallback(
-		( node ) => setCanvas( node ? node.ownerDocument : null ),
-		[]
-	);
+	const [ canvas, canvasRef ] = useCanvas();
 
 	const blockProps = useBlockProps( {
 		ref: canvasRef,
@@ -702,5 +621,18 @@ export default function Edit( props ) {
 		[ props.clientId ]
 	);
 
-	return hasInnerBlocks ? <ToggleEdit { ...props } /> : <Placeholder { ...props } />;
+	return hasInnerBlocks ? (
+		<ToggleEdit { ...props } />
+	) : (
+		<VariationPlaceholder
+			{ ...props }
+			blockName="ogal/toggle"
+			icon={ toggleIcon }
+			label={ __( 'Toggle', 'toggle-for-generateblocks' ) }
+			instructions={ __(
+				'Choose a starting layout. Every part is a GenerateBlocks block, so you can restyle it afterwards.',
+				'toggle-for-generateblocks'
+			) }
+		/>
+	);
 }

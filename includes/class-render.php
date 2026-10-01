@@ -35,11 +35,6 @@ class Ogal_Toggle_Render {
 	const OWNED = 'data-toggle-owned';
 
 	/**
-	 * Bare words treated as tag names rather than IDs when used as a target.
-	 */
-	const TAG_TARGETS = array( 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' );
-
-	/**
 	 * Render callback.
 	 *
 	 * @param array  $attributes Block attributes.
@@ -247,7 +242,7 @@ class Ogal_Toggle_Render {
 		$ids = array();
 
 		foreach ( $selectors as $selector ) {
-			if ( in_array( $selector, self::TAG_TARGETS, true ) ) {
+			if ( in_array( $selector, Ogal_Blocks_Sanitize::TAG_TARGETS, true ) ) {
 				continue;
 			}
 
@@ -295,7 +290,7 @@ class Ogal_Toggle_Render {
 
 		foreach ( $hidden as $selector ) {
 			// "header" could be id="header" or every <header>; only the script can tell, so leave it to the script.
-			if ( in_array( $selector, self::TAG_TARGETS, true ) ) {
+			if ( in_array( $selector, Ogal_Blocks_Sanitize::TAG_TARGETS, true ) ) {
 				continue;
 			}
 
@@ -310,110 +305,33 @@ class Ogal_Toggle_Render {
 	}
 
 	/**
-	 * A bare word is an ID (except common tag names like body); anything else
-	 * is used as a CSS selector.
+	 * Kept for code calling these on the Toggle class; see Ogal_Blocks_Sanitize.
 	 *
 	 * @param string $selector ID or selector.
 	 * @return string
 	 */
 	public static function to_css_selector( $selector ) {
-		if ( ! in_array( $selector, self::TAG_TARGETS, true ) && preg_match( '/^[A-Za-z][\w\-]*$/', $selector ) ) {
-			return '#' . $selector;
-		}
-
-		return $selector;
+		return Ogal_Blocks_Sanitize::to_css_selector( $selector );
 	}
 
 	/**
-	 * Clean a list of IDs/selectors. Characters that could close the <style>
-	 * element, open a comment or start a new declaration block are dropped.
+	 * See Ogal_Blocks_Sanitize::selectors().
 	 *
-	 * @param mixed $selectors List of selectors.
+	 * @param mixed $selectors Selectors.
 	 * @return array
 	 */
 	public static function clean_selectors( $selectors ) {
-		if ( is_string( $selectors ) ) {
-			$selectors = preg_split( '/\s*,\s*/', $selectors );
-		}
-
-		if ( ! is_array( $selectors ) ) {
-			return array();
-		}
-
-		$clean = array();
-
-		foreach ( $selectors as $selector ) {
-			if ( ! is_string( $selector ) ) {
-				continue;
-			}
-
-			$selector = trim( $selector );
-
-			if ( '' !== $selector && strlen( $selector ) <= 200 && self::is_safe_selector( $selector ) ) {
-				$clean[] = $selector;
-			}
-		}
-
-		return array_values( array_unique( $clean ) );
+		return Ogal_Blocks_Sanitize::selectors( $selectors );
 	}
 
 	/**
-	 * Whether a selector is safe to print inside a <style> element.
-	 *
-	 * Only characters that plain selectors use are allowed: no "<" (which could
-	 * close the element), no "{", "}", ";" or "\\" (declarations, escapes) and
-	 * no "@" (at-rules such as @import). Brackets, parentheses and quotes must
-	 * balance, so an open "(" can't swallow the rule that follows it.
-	 *
-	 * @param string $selector Selector.
-	 * @return bool
-	 */
-	public static function is_safe_selector( $selector ) {
-		if ( ! preg_match( '/^[A-Za-z0-9_\-#.\[\]="\'~^$*|:(), >+]+$/D', $selector ) ) {
-			return false;
-		}
-
-		$stack = array();
-		$quote = '';
-		$pairs = array(
-			')' => '(',
-			']' => '[',
-		);
-
-		foreach ( str_split( $selector ) as $char ) {
-			if ( $quote ) {
-				if ( $char === $quote ) {
-					$quote = '';
-				}
-				continue;
-			}
-
-			if ( '"' === $char || "'" === $char ) {
-				$quote = $char;
-			} elseif ( '(' === $char || '[' === $char ) {
-				$stack[] = $char;
-			} elseif ( isset( $pairs[ $char ] ) && array_pop( $stack ) !== $pairs[ $char ] ) {
-				return false;
-			}
-		}
-
-		return '' === $quote && empty( $stack );
-	}
-
-	/**
-	 * Clean a space-separated list of class names.
+	 * See Ogal_Blocks_Sanitize::class_names().
 	 *
 	 * @param string $class_names Class names.
 	 * @return string
 	 */
 	public static function clean_class_names( $class_names ) {
-		if ( ! is_string( $class_names ) ) {
-			return '';
-		}
-
-		$classes = array_filter( array_map( 'sanitize_html_class', preg_split( '/\s+/', $class_names ) ) );
-
-		return implode( ' ', $classes );
+		return Ogal_Blocks_Sanitize::class_names( $class_names );
 	}
 
 	/**

@@ -1,7 +1,6 @@
 import { SVG, Path, Circle } from '@wordpress/primitives';
 
-// GenerateBlocks colours block icons with this class, so ours match its blocks.
-const GB_ICON_CLASS = 'gblocks-block-icon';
+import { GB_ICON_CLASS } from '../shared/gb';
 
 // A pill switch in the "on" position.
 export const toggleIcon = (

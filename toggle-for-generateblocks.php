@@ -22,25 +22,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'OGAL_TOGGLE_VERSION', '0.1.0' );
 define( 'OGAL_TOGGLE_DIR', plugin_dir_path( __FILE__ ) );
 
+require_once OGAL_TOGGLE_DIR . 'includes/class-sanitize.php';
 require_once OGAL_TOGGLE_DIR . 'includes/class-render.php';
+require_once OGAL_TOGGLE_DIR . 'includes/class-countdown-render.php';
 require_once OGAL_TOGGLE_DIR . 'includes/color-scheme.php';
 require_once OGAL_TOGGLE_DIR . 'includes/patterns.php';
 
-add_action( 'init', 'ogal_toggle_register_block' );
+add_action( 'init', 'ogal_toggle_register_blocks' );
 /**
- * Register the Toggle block from its built block.json.
+ * Register the blocks from their built block.json files.
  */
-function ogal_toggle_register_block() {
-	if ( ! file_exists( OGAL_TOGGLE_DIR . 'build/toggle/block.json' ) ) {
-		return;
-	}
-
-	register_block_type(
-		OGAL_TOGGLE_DIR . 'build/toggle',
-		array(
-			'render_callback' => array( 'Ogal_Toggle_Render', 'render' ),
-		)
+function ogal_toggle_register_blocks() {
+	$blocks = array(
+		'toggle'    => array( 'Ogal_Toggle_Render', 'render' ),
+		'countdown' => array( 'Ogal_Countdown_Render', 'render' ),
 	);
+
+	foreach ( $blocks as $folder => $render ) {
+		if ( ! file_exists( OGAL_TOGGLE_DIR . "build/{$folder}/block.json" ) ) {
+			continue;
+		}
+
+		register_block_type(
+			OGAL_TOGGLE_DIR . "build/{$folder}",
+			array( 'render_callback' => $render )
+		);
+	}
 }
 
 add_filter( 'block_categories_all', 'ogal_toggle_block_category', 20 );

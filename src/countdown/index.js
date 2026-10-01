@@ -1,5 +1,5 @@
 /**
- * Toggle block for GenerateBlocks.
+ * Countdown block for GenerateBlocks.
  */
 import { __ } from '@wordpress/i18n';
 import { registerBlockType } from '@wordpress/blocks';
@@ -7,35 +7,31 @@ import { InnerBlocks } from '@wordpress/block-editor';
 
 import metadata from './block.json';
 import Edit from './edit';
-import { toggleIcon } from './icon';
+import { countdownIcon } from './icon';
 import { variations } from './templates';
 import { toBlockObjects } from '../shared/gb';
 import './parts';
 import './editor.scss';
-import './style.scss';
 
 registerBlockType( metadata.name, {
-	icon: toggleIcon,
+	icon: countdownIcon,
 	edit: Edit,
 	// The wrapper is rendered in PHP; only the inner GenerateBlocks blocks are saved.
 	save: () => <InnerBlocks.Content />,
 	variations,
-	// In List View, say what the toggle does: "Toggle · Light / dark mode".
+	// In List View, say what it counts down to.
 	__experimentalLabel: ( attributes, { context } ) => {
 		if ( 'list-view' !== context ) {
 			return undefined;
 		}
 
 		const labels = {
-			showHide: __( 'Show / hide', 'toggle-for-generateblocks' ),
-			colorScheme: __( 'Light / dark mode', 'toggle-for-generateblocks' ),
-			toggleClass: __( 'Class', 'toggle-for-generateblocks' ),
-			none: __( 'Custom', 'toggle-for-generateblocks' ),
+			date: __( 'Date', 'toggle-for-generateblocks' ),
+			evergreen: __( 'Evergreen', 'toggle-for-generateblocks' ),
+			recurring: __( 'Recurring', 'toggle-for-generateblocks' ),
 		};
 
-		return `${ __( 'Toggle', 'toggle-for-generateblocks' ) } · ${
-			labels[ attributes.action ] || labels.none
-		}`;
+		return `${ __( 'Countdown', 'toggle-for-generateblocks' ) } · ${ labels[ attributes.mode ] || labels.date }`;
 	},
 	example: {
 		innerBlocks: toBlockObjects( variations[ 0 ].innerBlocks ),
