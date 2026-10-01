@@ -118,7 +118,7 @@ class Thingamablocks_Marquee_Render {
 	public static function length( $value, $default ) {
 		$value = is_string( $value ) ? trim( $value ) : '';
 
-		return preg_match( '/^\d{1,4}(\.\d+)?(px|rem|em|%|vw|vh|svh|dvh)$/D', $value ) ? $value : $default;
+		return preg_match( '/^(\d{1,4}(\.\d+)?|\.\d+)(px|rem|em|%|vw|vh|svh|dvh)$/D', $value ) ? $value : $default;
 	}
 
 	/**
@@ -162,8 +162,10 @@ class Thingamablocks_Marquee_Render {
 
 				$processor->set_attribute( 'aria-pressed', 'false' );
 
+				// A name for icon-only buttons; the script drops it if the button has visible text.
 				if ( null === $processor->get_attribute( 'aria-label' ) ) {
 					$processor->set_attribute( 'aria-label', __( 'Pause the scrolling', 'thingamablocks' ) );
+					$processor->set_attribute( 'data-tmb-default-label', '' );
 				}
 			}
 		}

@@ -36,13 +36,57 @@ function makeInert( copy ) {
 	copy.querySelectorAll( 'a, button, input, select, textarea, [tabindex]' ).forEach( ( element ) =>
 		element.setAttribute( 'tabindex', '-1' )
 	);
+
+	// Copies scroll into view almost at once, so don't make their images wait.
+	copy.querySelectorAll( 'img[loading="lazy"]' ).forEach( ( image ) =>
+		image.setAttribute( 'loading', 'eager' )
+	);
+
+	// One playing video is enough; copies show their poster/first frame.
+	copy.querySelectorAll( 'video' ).forEach( ( video ) => {
+		video.removeAttribute( 'autoplay' );
+		video.pause?.();
+	} );
+
+	// A marquee nested inside must not be set up again as a separate one.
+	copy.querySelectorAll( '[data-tmb-marquee]' ).forEach( ( nested ) =>
+		nested.removeAttribute( 'data-tmb-marquee' )
+	);
+
+	// Entrance animations inside a copy: show it as already animated.
+	copy.querySelectorAll( '[data-tmb-animate]' ).forEach( ( animated ) =>
+		animated.classList.add( 'tmb-in' )
+	);
 }
 
-function gapOf( items, vertical ) {
-	const style = getComputedStyle( items );
-	const gap = parseFloat( vertical ? style.rowGap : style.columnGap );
+/**
+ * The gap between the row's items, in px, so the same gap can be used where
+ * the row repeats. A percentage or other relative gap is measured from the
+ * first two items rather than parsed.
+ *
+ * @param {Element} items    Items row.
+ * @param {boolean} vertical Up/down.
+ * @param {number}  scale    Screen px per layout px.
+ * @return {number} Gap in layout px.
+ */
+function gapOf( items, vertical, scale ) {
+	const value = getComputedStyle( items )[ vertical ? 'rowGap' : 'columnGap' ];
 
-	return Number.isFinite( gap ) ? gap : 0;
+	if ( /^-?[\d.]+px$/.test( value ) ) {
+		return parseFloat( value );
+	}
+
+	const [ first, second ] = items.children;
+
+	if ( ! first || ! second ) {
+		return 0;
+	}
+
+	const a = first.getBoundingClientRect();
+	const b = second.getBoundingClientRect();
+	const gap = vertical ? b.top - a.bottom : Math.max( b.left - a.right, a.left - b.right );
+
+	return Math.max( 0, gap / scale );
 }
 
 /**
@@ -59,9 +103,21 @@ function layout( marquee ) {
 		return;
 	}
 
-	const gap = gapOf( items, vertical );
+	/*
+	 * getBoundingClientRect() is in screen pixels, which include any scale on
+	 * an ancestor (e.g. a block zooming in on entrance), while the animation
+	 * moves in layout pixels. Divide by the viewport's own scale to convert.
+	 */
+	const viewportRect = viewport.getBoundingClientRect();
+	const rawScale =
+		( vertical
+			? viewportRect.height / ( viewport.offsetHeight || 1 )
+			: viewportRect.width / ( viewport.offsetWidth || 1 ) ) || 1;
+	// offsetWidth is rounded, so only correct for a real scale, not rounding noise.
+	const scale = Math.abs( rawScale - 1 ) < 0.02 ? 1 : rawScale;
+	const gap = gapOf( items, vertical, scale );
 	const rect = items.getBoundingClientRect();
-	const size = vertical ? rect.height : rect.width;
+	const size = ( vertical ? rect.height : rect.width ) / scale;
 	const space = vertical ? viewport.clientHeight : viewport.clientWidth;
 
 	if ( ! size || ! space ) {
@@ -85,7 +141,14 @@ function layout( marquee ) {
 		marquee.copies.pop().remove();
 	}
 
-	const distance = size + gap;
+	/*
+	 * The exact loop length is how far the first copy sits from the original:
+	 * row + gap, with no rounding. (size + gap was only the estimate used to
+	 * decide how many copies are needed.)
+	 */
+	const first = items.getBoundingClientRect();
+	const copy = marquee.copies[ 0 ].getBoundingClientRect();
+	const distance = ( vertical ? copy.top - first.top : copy.left - first.left ) / scale;
 
 	if ( distance === marquee.distance && marquee.animation ) {
 		return;
@@ -94,10 +157,9 @@ function layout( marquee ) {
 	marquee.distance = distance;
 
 	const axis = vertical ? 'Y' : 'X';
-	// RTL sites read right to left, so "left" flips there.
-	const rtl = ! vertical && 'rtl' === getComputedStyle( viewport ).direction;
+	// The track is always laid out left to right (see setup), so the maths is the same on RTL sites.
 	const forwards = 'left' === config.direction || 'up' === config.direction;
-	const sign = forwards !== rtl ? -1 : 1;
+	const sign = forwards ? -1 : 1;
 	const from = `translate${ axis }(${ sign < 0 ? 0 : -distance }px)`;
 	const to = `translate${ axis }(${ sign < 0 ? -distance : 0 }px)`;
 	const duration = ( distance / Math.max( 1, config.speed ) ) * 1000;
@@ -126,10 +188,32 @@ function stop( marquee ) {
 	marquee.copies.forEach( ( copy ) => copy.remove() );
 	marquee.copies = [];
 
-	// Without motion, let people scroll to see everything.
+	// Without motion, let people scroll to see everything, with no faded ends hiding the first and last items.
 	const vertical = isVertical( marquee.config );
 	marquee.viewport.style.setProperty( vertical ? 'overflow-y' : 'overflow-x', 'auto' );
-	marquee.pauseButtons.forEach( ( button ) => ( button.hidden = true ) );
+	marquee.viewport.style.removeProperty( 'mask-image' );
+	marquee.viewport.style.removeProperty( '-webkit-mask-image' );
+	// The GB styles give the button display:flex, which would beat the hidden attribute.
+	marquee.pauseButtons.forEach( ( button ) => button.style.setProperty( 'display', 'none', 'important' ) );
+}
+
+/**
+ * Undo stop() when reduced motion is switched off again.
+ *
+ * @param {Object} marquee Marquee record.
+ */
+function restart( marquee ) {
+	const { viewport, mask } = marquee;
+
+	viewport.style.setProperty( 'overflow-x', 'hidden' );
+	viewport.style.setProperty( 'overflow-y', 'hidden' );
+
+	if ( mask ) {
+		viewport.style.setProperty( 'mask-image', mask );
+		viewport.style.setProperty( '-webkit-mask-image', mask );
+	}
+
+	marquee.pauseButtons.forEach( ( button ) => button.style.removeProperty( 'display' ) );
 }
 
 function updatePlayState( marquee ) {
@@ -199,7 +283,15 @@ function setup( element ) {
 	 */
 	const viewport = document.createElement( 'div' );
 	viewport.className = 'tmb-marquee__viewport';
-	viewport.style.cssText = `overflow:hidden;${ vertical ? 'height:100%;' : '' }`;
+	// contain: the viewport never grows to fit the track, even in a container
+	// that sizes to its content (which would otherwise add copies forever).
+	viewport.style.cssText = `overflow:hidden;contain:${ vertical ? 'size' : 'inline-size' };${
+		vertical ? 'height:100%;' : 'width:100%;'
+	}direction:ltr`;
+
+	// The track runs left to right even on RTL sites, so the loop maths is the
+	// same; the row keeps the page's direction for its own content.
+	items.style.direction = getComputedStyle( element ).direction;
 
 	const mask = element.style.getPropertyValue( 'mask-image' ) || element.style.getPropertyValue( '-webkit-mask-image' );
 
@@ -214,12 +306,23 @@ function setup( element ) {
 	viewport.appendChild( track );
 	track.appendChild( items );
 
+	// Tabbing to a clipped link makes the browser scroll the viewport, which
+	// would knock the loop out of line. The marquee pauses on focus instead.
+	viewport.addEventListener( 'scroll', () => {
+		// Only while moving: with reduced motion the row is meant to be scrolled.
+		if ( element.tmbMarquee?.animation ) {
+			viewport.scrollLeft = 0;
+			viewport.scrollTop = 0;
+		}
+	} );
+
 	const marquee = {
 		element,
 		config,
 		items,
 		track,
 		viewport,
+		mask,
 		copies: [],
 		animation: null,
 		distance: 0,
@@ -240,6 +343,12 @@ function setup( element ) {
 	};
 
 	marquee.pauseButtons.forEach( ( button ) => {
+		// A button with its own visible text ("Stop motion") should be named by
+		// that text, not the server's default label for icon-only buttons.
+		if ( button.textContent.trim() && 'tmbDefaultLabel' in button.dataset ) {
+			button.removeAttribute( 'aria-label' );
+		}
+
 		button.addEventListener( 'click', ( event ) => {
 			event.preventDefault();
 			togglePause();
@@ -256,11 +365,14 @@ function setup( element ) {
 		}
 	} );
 
-	element.addEventListener( 'mouseenter', () => {
-		marquee.hovered = true;
-		updatePlayState( marquee );
+	// Mouse only: a tap on a touch screen would "hover" and never leave.
+	element.addEventListener( 'pointerenter', ( event ) => {
+		if ( 'mouse' === event.pointerType ) {
+			marquee.hovered = true;
+			updatePlayState( marquee );
+		}
 	} );
-	element.addEventListener( 'mouseleave', () => {
+	element.addEventListener( 'pointerleave', () => {
 		marquee.hovered = false;
 		updatePlayState( marquee );
 	} );
@@ -283,8 +395,8 @@ function setup( element ) {
 
 	// Don't burn CPU animating something nobody can see.
 	if ( 'IntersectionObserver' in window ) {
-		new IntersectionObserver( ( [ entry ] ) => {
-			marquee.offscreen = ! entry.isIntersecting;
+		new IntersectionObserver( ( entries ) => {
+			marquee.offscreen = ! entries[ entries.length - 1 ].isIntersecting;
 			updatePlayState( marquee );
 		} ).observe( element );
 	}
@@ -318,9 +430,7 @@ window.addEventListener( 'load', () => marquees.forEach( layout ) );
 reducedMotion.addEventListener( 'change', () =>
 	marquees.forEach( ( marquee ) => {
 		if ( ! reducedMotion.matches ) {
-			marquee.viewport.style.removeProperty( 'overflow-x' );
-			marquee.viewport.style.removeProperty( 'overflow-y' );
-			marquee.pauseButtons.forEach( ( button ) => ( button.hidden = false ) );
+			restart( marquee );
 		}
 
 		layout( marquee );

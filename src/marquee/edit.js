@@ -39,7 +39,7 @@ const isVertical = ( direction ) => 'up' === direction || 'down' === direction;
  * @param {Object} attributes Block attributes.
  * @return {Object} Style object.
  */
-function wrapperStyle( attributes ) {
+function wrapperStyle( attributes, previewing ) {
 	const vertical = isVertical( attributes.direction );
 	const style = { position: 'relative', overflow: 'hidden' };
 
@@ -47,7 +47,8 @@ function wrapperStyle( attributes ) {
 		style.height = attributes.height || '20rem';
 	}
 
-	if ( attributes.fadeEdges ) {
+	// The fade only shows while previewing, so the first and last blocks stay editable.
+	if ( attributes.fadeEdges && previewing ) {
 		const fade = attributes.fadeWidth || '10%';
 		const mask = `linear-gradient(${ vertical ? 'to bottom' : 'to right' },transparent,#000 ${ fade },#000 calc(100% - ${ fade }),transparent)`;
 		style.WebkitMaskImage = mask;
@@ -242,7 +243,7 @@ function MarqueeEdit( { attributes, setAttributes, clientId } ) {
 	const blockProps = useBlockProps( {
 		ref: wrapperRef,
 		className: 'tmb-marquee',
-		style: wrapperStyle( attributes ),
+		style: wrapperStyle( attributes, previewing ),
 	} );
 	const innerBlocksProps = useInnerBlocksProps( blockProps );
 
