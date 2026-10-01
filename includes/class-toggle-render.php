@@ -290,10 +290,12 @@ class Thingamablocks_Toggle_Render {
 	private static function restore_state_script( $config, $is_on, $anchor ) {
 		if ( 'colorScheme' === $config['action'] ) {
 			$key = ''; // The <head> script has already applied the scheme; read it from <html>.
+		} elseif ( '' !== $config['group'] ) {
+			// Any member of a group may be the one that remembers the choice
+			// (the script honours it for all of them), so every member restores it.
+			$key = 'group:' . $config['group'];
 		} elseif ( ! $config['persist'] ) {
 			return '';
-		} elseif ( '' !== $config['group'] ) {
-			$key = 'group:' . $config['group'];
 		} elseif ( '' !== $anchor ) {
 			$key = 'id:' . $anchor;
 		} else {
@@ -306,8 +308,10 @@ class Thingamablocks_Toggle_Render {
 		);
 
 		// Mirrors paint() in src/toggle/view.js, which takes over on DOMContentLoaded.
-		$script = '(function(k,o,c){var w=document.currentScript.previousElementSibling,d=document.documentElement,s=null,a;'
-			. 'if(!w||!w.classList.contains("tmb-toggle"))return;'
+		// Does nothing if the main script got there first (an optimiser delaying
+		// inline scripts): it has already applied the state and removed the styles.
+		$script = '(function(k,o,c){var x=document.currentScript,w=x&&x.previousElementSibling,d=document.documentElement,s=null,a;'
+			. 'if(!w||w.tmbToggle||!w.classList.contains("tmb-toggle"))return;'
 			. 'if(k){try{s=localStorage.getItem("tmb-toggle:"+k)}catch(e){}}'
 			. 'else{a=d.getAttribute("data-color-scheme");s=a==="dark"?"on":a==="light"?"off":null}'
 			. 'if(s!=="on"&&s!=="off"||(s==="on")===o)return;'

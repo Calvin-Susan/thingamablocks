@@ -153,8 +153,9 @@ function thingamablocks_animation_render_block( $content, $block ) {
 		return $content;
 	}
 
-	// Rendered before <head> was printed (block themes): <head> will print it.
-	if ( ! did_action( 'wp_head' ) ) {
+	// Rendered before <head> was printed (block themes): <head> will print it,
+	// unless a filter has turned that off, in which case print it here.
+	if ( ! did_action( 'wp_head' ) && apply_filters( 'thingamablocks_animations_print_css', true ) ) {
 		thingamablocks_animation_seen( true );
 		return $content;
 	}

@@ -100,13 +100,14 @@ class Thingamablocks_Marquee_Render {
 	 */
 	public static function config( $attributes ) {
 		$direction = $attributes['direction'] ?? 'left';
+		$label     = sanitize_text_field( $attributes['ariaLabel'] ?? '' );
 
 		return array(
 			'speed'        => max( 5, min( 1000, (float) ( $attributes['speed'] ?? 50 ) ) ),
 			'direction'    => in_array( $direction, array( 'left', 'right', 'up', 'down' ), true ) ? $direction : 'left',
 			'pauseOnHover' => ! isset( $attributes['pauseOnHover'] ) || ! empty( $attributes['pauseOnHover'] ),
 			// Names the row when reduced motion turns it into a scrollable, focusable area.
-			'scrollLabel'  => sanitize_text_field( $attributes['ariaLabel'] ?? '' ) ?: __( 'Scrolling content', 'thingamablocks' ),
+			'scrollLabel'  => '' !== $label ? $label : __( 'Scrolling content', 'thingamablocks' ),
 		);
 	}
 

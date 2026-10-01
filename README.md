@@ -14,7 +14,9 @@ Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks bl
 
 All three blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
-**Requirements:** WordPress 6.6+, PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
+**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
+
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 ---
 
@@ -68,11 +70,11 @@ When you insert a Toggle you're asked to pick a starting layout:
 | Layout | What you get | Default action |
 | --- | --- | --- |
 | **Switch with labels** | "Monthly" text · switch · "Annual" text | Show / hide |
-| **Segmented buttons** | Two `<button>`s side by side, active one highlighted | Show / hide |
+| **Segmented buttons** | Two `<button>`s side by side, active one highlighted, group labelled "Billing period" for screen readers | Show / hide |
 | **Switch** | Just the switch (give it a label under Accessibility) | Show / hide |
 | **Dark mode switch** | Switch with a sun/moon icon in the knob, label "Dark mode" | Light / dark mode |
 
-The layouts use the GeneratePress global colour variables (`--accent`, `--base`, `--base-2`, `--base-3`, `--contrast`, `--contrast-2`, `--contrast-3`) with fallback colours for other themes, so they pick up your GP colours straight away.
+The layouts use the GeneratePress global colour variables (`--accent`, `--base`, `--base-2`, `--base-3`, `--contrast`, `--contrast-2`, `--contrast-3`) with fallback colours for other themes, so they pick up your GP colours straight away. The one fixed colour is the switch's "off" track, a mid grey (`#767680`) that has enough contrast against both light and dark backgrounds.
 
 > **In the editor, clicking the switch doesn't flip it.** Clicking selects blocks so you can edit them. To see the other state, use the **On/Off** button in the Toggle's block toolbar. The actual toggling happens on the front end.
 
@@ -204,7 +206,7 @@ The starting layouts already use these – open the switch block's Styles to see
 
 **The editor previews the starting state.** Use the **On/Off** toolbar button (or **State → Starts as**) to preview the other state while you style it. That button also changes which state visitors start in, so set it back when you're done.
 
-The Toggle's own CSS is deliberately tiny: a pointer cursor on parts (front end only, so parts stay editable in the editor), the hidden class, and a reduced-motion rule that switches off transitions and animations inside a toggle.
+The Toggle's own CSS is deliberately tiny, front end only, and loaded only on pages with a Toggle: a pointer cursor on parts, the hidden class, and a reduced-motion rule that switches off transitions and animations inside a toggle.
 
 ### Toggle settings
 
@@ -216,7 +218,7 @@ Select the Toggle block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | When toggled | `action` | `showHide` | `showHide`, `colorScheme`, `toggleClass`, `none` |
 
-**Targets** (Show when off / on, Elements – and the Countdown's Also hide / Also show): a bare word is an element ID (`monthly-prices`). The exceptions are `html`, `body`, `main`, `header`, `footer`, `nav`, `aside`, `article` and `section`: those mean the tag, unless the page has an element with that ID. Anything else (`.card`, `#site-header`, `[data-plan="annual"]`) is a CSS selector. If several elements share an ID (e.g. a pattern inserted twice), all of them are switched. A leading `#` on a plain ID is dropped when saved.
+**Targets** (Show when off / on, Elements – and the Countdown's Also hide / Also show): a bare word is an element ID (`monthly-prices`). The exceptions are `html`, `body`, `main`, `header`, `footer`, `nav`, `aside`, `article` and `section`: those mean the tag, unless the page has an element with that ID. Anything else (`.card`, `#site-header`, `[data-plan="annual"]`) is a CSS selector. Selectors can't contain `<`, `\`, `{`, `}`, `;`, `@`, CSS comments or `url(` anywhere, even inside quotes; the field warns about any it will ignore. If several elements share an ID (e.g. a pattern inserted twice), all of them are switched. A leading `#` on a plain ID is dropped when saved.
 
 **Show / hide elements**
 
@@ -262,11 +264,13 @@ How the starting state is picked on the front end, first match wins:
 
 A toggle added to the page later (see `window.tmbToggle.init`) follows its group if the group is already running.
 
+When **Remember** is on and the toggle has a **Sync group** or an **HTML anchor**, a tiny inline script printed right after the toggle applies the saved choice before the page is first drawn, so the other pricing set (or the switch's knob) doesn't flash and jump. Dark mode toggles do the same from the scheme the `<head>` script applied. A remembering toggle with neither a group nor an anchor is still restored, just a moment later, when the main script runs.
+
 #### Accessibility
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Switch label | `ariaLabel` | `""` | Added as `aria-label` on each switch part, and on a segmented control's `role="group"` wrapper (unless they already have one). If empty and the switch has no text, the "on" label is used via `aria-labelledby`. The panel opens with a warning when a switch has neither. |
+| Switch label | `ariaLabel` | `""` | Added as `aria-label` on each switch part, and on a segmented control's `role="group"` wrapper (unless they already have one). If empty and the switch has no text, the "on" label is used via `aria-labelledby`. The panel opens with a warning when a switch has neither, or when a buttons-only toggle (like Segmented buttons) has no label, since screen readers announce the buttons as a group. |
 
 #### Also supported
 
@@ -279,7 +283,9 @@ A toggle added to the page later (see `window.tmbToggle.init`) follows its group
 - Roles and state attributes are added on the server when the page renders, so they're correct before any JavaScript runs and can't be removed by accident in the editor.
 - `aria-controls` lists the targets given as plain IDs (tag names and other selectors can't be referenced that way).
 - Parts with `tabindex="0"` respond to Space and Enter; native buttons handle keys themselves.
+- If a toggle hides the section it sits in (say, a monthly/annual switch inside each pricing set, synced by group), keyboard focus moves to the same part of a visible toggle in the group rather than getting lost.
 - Transitions and animations are switched off for visitors with `prefers-reduced-motion: reduce`.
+- WordPress normally strips `aria-checked` and `aria-pressed` from content saved by Authors and Contributors (users without `unfiltered_html`), which would make a saved Toggle show as "invalid" in the editor. The plugin allows those two plain ARIA state attributes through WordPress's content filter, so everyone who can edit posts can use Toggles.
 
 ---
 
@@ -300,7 +306,7 @@ When you insert a Countdown you pick a starting layout:
 | Layout | What you get | Ended message |
 | --- | --- | --- |
 | **Boxes** (default) | Each unit (Days, Hours, Minutes, Seconds) in its own box, number above label | "This offer has ended." |
-| **Inline text** | "Ends in 2d 5h 12m 9s", for banners and buttons. Starts with two-digit numbers off and "Hide units that reach zero" on, so it reads like a sentence. | "This offer has ended." |
+| **Inline text** | "Ends in 2d 5h 12m 9s", for banners and buttons. Starts with two-digit numbers off and "Hide units that reach zero" on, so it reads like a sentence. The short letters are visual only: screen readers hear "days", "hours" and so on from a visually hidden full word. | "This offer has ended." |
 | **Large numbers** | Big numbers with colons between them, for launches | "We're live!" |
 
 Like the Toggle layouts, they use the GeneratePress global colour variables with fallbacks.
@@ -422,7 +428,7 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 | The countdown | `endAction` | `message` | `message` (hide the timer, show the ended message), `zeros` (stay at 00), `hide` (the whole countdown disappears). |
 | Also hide | `hideOnEnd` | `[]` | IDs or selectors (see [Targets](#toggle-behaviour)), e.g. a sale banner or a "Buy now" button. |
 | Also show | `showOnEnd` | `[]` | Hidden until it ends, e.g. a "Sold out" notice. |
-| Then go to (optional) | `redirectUrl` | `""` | Sends visitors to this URL when it ends – including visitors who arrive after it has ended. Never redirects to the page it's on. |
+| Then go to (optional) | `redirectUrl` | `""` | Sends visitors to this URL when it ends – including visitors who arrive after it has ended. Only `http://` and `https://` addresses are followed, and never the page it's on. |
 
 #### Also supported
 
@@ -432,8 +438,9 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 
 #### Accessibility behaviour
 
-- The wrapper has `role="timer"`, which screen readers don't announce every second.
+- The wrapper has `role="timer"`, which screen readers don't announce every second, and an `aria-label`: "Countdown to {date and time}" for a date countdown (in the site's date and time formats), otherwise "Countdown".
 - Separators get `aria-hidden="true"`.
+- In the Inline text layout and the sale banner pattern, the short unit letters (d, h, m, s) are hidden from screen readers and a visually hidden full word is read instead.
 - The numbers and the timer/ended state are rendered on the server, so the page makes sense before (and without) JavaScript.
 
 ---
@@ -460,7 +467,7 @@ When you insert a Marquee you pick a starting layout:
 | **Big scrolling headline** | Two phrases in very large type, separated by stars | Left, 45 px/s, 15% fade |
 | **Vertical quotes** | Four testimonial cards scrolling upwards | Up, 30 px/s, 22rem tall |
 
-Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. Like the other blocks' layouts, colours use the GeneratePress global colour variables with fallbacks.
+Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. It comes first inside the Marquee (it's positioned in the corner, so this doesn't change the look), so keyboard users reach it before any links in the row; keep it first if you build your own. Like the other blocks' layouts, colours use the GeneratePress global colour variables with fallbacks.
 
 #### Fastest: the logo strip pattern
 
@@ -519,7 +526,7 @@ Select the Marquee block (the wrapper) to see these in the sidebar. In List View
 | Speed | `speed` | `50` | Pixels per second, 5–300. The same pace whatever the length of the row. |
 | Direction | `direction` | `left` | `left`, `right`, `up`, `down`. |
 | Height | `height` | `20rem` | Up/down only: a vertical marquee needs a fixed height to scroll within. `rem`, `px` or `vh`. |
-| Pause on hover | `pauseOnHover` | `true` | Also pauses while a link or button inside it has keyboard focus. |
+| Pause on hover | `pauseOnHover` | `true` | Pauses while the mouse is over it. Keyboard focus on a link or button inside always pauses it, whatever this is set to. |
 
 #### Edges
 
@@ -551,14 +558,16 @@ Select the Marquee block (the wrapper) to see these in the sidebar. In List View
 - It uses the **Web Animations API** rather than CSS keyframes, so "remove unused CSS" optimisers can't break it.
 - It **re-measures on resize** (and when images finish loading) and keeps its place rather than jumping back to the start.
 - It **pauses while off screen**, so it doesn't use CPU when nobody can see it.
+- **Lazy images stay lazy.** Images in the copies keep `loading="lazy"` until the strip comes within about 300 px of the screen, then load straight away so the copies are ready as they scroll in. A logo strip far down the page doesn't download its logos during page load.
 - On **RTL sites**, left and right swap, so "left" means "towards the end of the line".
 
 #### Accessibility behaviour
 
 - **Copies are hidden from screen readers and the keyboard** (`aria-hidden="true"` and `inert`, links and buttons in them get `tabindex="-1"`, and IDs are removed). Only the original row is read out or tabbed to, so each logo or link exists once.
 - **A pause button.** WCAG 2.2.2 asks that anything moving for more than 5 seconds can be paused. Every layout has one; the sidebar warns you if it's removed. The server makes it work from the keyboard (`type="button"` on a `<button>`, otherwise `role="button"` and `tabindex="0"`), adds `aria-pressed`, and gives it `aria-label="Pause the scrolling"` unless it already has a label.
-- **Pause on hover** also covers keyboard focus, so someone tabbing through links in the row isn't chasing a moving target.
-- **Reduced motion:** visitors who prefer reduced motion get a still row. The copies are removed, the pause button is hidden, and the strip becomes scrollable so they can still see everything.
+- **The pause button comes first** in every layout and pattern, so it's reached before the links in the row.
+- **Keyboard focus always pauses it** (whatever **Pause on hover** is set to), so someone tabbing through links in the row isn't chasing a moving target. A focused link that's partly off the edge or under the fade is moved fully into view, and the edge fade is removed while focus is inside.
+- **Reduced motion:** visitors who prefer reduced motion get a still row. The copies are removed, the pause button is hidden, and the strip becomes scrollable so they can still see everything. If it overflows, the scrollable area can be focused with Tab (so it scrolls with the arrow keys) and is named for screen readers with the **Accessibility → Label**, or "Scrolling content" if there isn't one.
 
 ---
 
@@ -568,10 +577,13 @@ Not a block: an **Entrance animation** panel added to the sidebar of every Gener
 
 - Works on GenerateBlocks 2 blocks (Element, Text, Media, Shape, Query, Looper, Loop Item…) and, by the same rule, GenerateBlocks Pro's. **Not** on the legacy GB 1.x blocks (Container, Grid, Headline, Button), which have no HTML attributes to store it in.
 - Plays **once** per page view. It doesn't replay when you scroll back up.
-- **Nothing loads** on pages that don't use an animation. Pages that do get a ~1.8 KB script. Sites that use animations also get ~600 bytes of CSS in `<head>` (it only hides animated blocks, so it does nothing elsewhere).
+- **Nothing loads** on pages that don't use an animation. Pages that do get a ~1.8 KB script and ~600 bytes of CSS.
 - Visitors who prefer **reduced motion** see everything straight away, with no animation.
+- Keyboard users who tab into a block that hasn't animated in yet see it straight away, so focus is never on something invisible.
 
 > **In the editor, animations don't play on their own,** so blocks never vanish while you're editing. Choosing an animation plays it once; after that, press **Preview** in the panel.
+
+> **Leave the first thing visitors see alone.** Don't animate the hero heading or image at the top of the page: an animated block stays hidden until the script runs, which can hurt the page's Largest Contentful Paint (LCP) score. The panel's help text says the same.
 
 ### Entrance animation recipes
 
@@ -728,7 +740,7 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
-- Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` printed in `<head>` once the site has used an animation (`thingamablocks_animations_used` option), or just before the first animated block the first time. Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>`. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state).
+- Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 
 ### Storage keys
@@ -762,6 +774,7 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 
 - On the front end, PHP (`includes/class-toggle-render.php`) renders the wrapper `<div class="tmb-toggle is-off" data-tmb-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts.
 - For show/hide, PHP also prints a tiny `<style class="tmb-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
+- For a toggle that remembers the visitor's choice and has a storage key the server can work out (a sync group or HTML anchor, or any dark mode toggle), PHP prints a tiny inline script right after the wrapper. It runs as the page is parsed, reads the saved choice, and flips the wrapper's classes, the parts' ARIA state and the no-flash `<style>` before the first paint. The main script then takes over as usual.
 - The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.tmbToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
 - In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; previews the dark colours when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
 
@@ -783,9 +796,9 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 `includes/animations.php`, `src/animations/`. Built to cost nothing on pages that don't use it and very little on pages that do.
 
 - **Saved in GB's own attributes.** The editor panel (`src/animations/editor.js`) is another `editor.BlockEdit` filter. It only appears on blocks named `generateblocks/…` or `generateblocks-pro/…` that have GB 2's `htmlAttributes` attribute, which is what rules out the legacy v1 blocks. Nothing is added to the block's markup except the `data-tmb-*` attributes.
-- **Loaded only when used.** A `render_block` filter looks for `data-tmb-animate` in each rendered block. The first time it finds one, it enqueues the script (deferred, in the footer) and prints, just before that block, a few lines of CSS and a one-line inline script. No match, nothing printed. It skips the admin, REST requests and feeds.
+- **Loaded only when used.** A `render_block` filter looks for `data-tmb-animate` in each rendered block and, when it finds one, enqueues the script (deferred, in the footer). The few lines of CSS and the one-line inline script that hide animated blocks go in `<head>` when the plugin already knows the page has an animated block there: the post being viewed contains one, or a block theme rendered one (block themes render the whole template before `<head>`). Anywhere else – an animated block in a GeneratePress Element, a widget, an archive – they're printed just before the first animated block. No animated block, nothing printed. It skips the admin, REST requests, feeds, and content rendered while `<head>` is being printed (an SEO plugin building a description, say).
 - **No flash, and nothing lost.** The CSS hides animated blocks (or, for "one by one", their children) with `opacity: 0` until they get `.tmb-in`. That rule only applies when the inline script has added `tmb-animate-js` to `<html>` (so visitors without JavaScript see everything) and inside `@media screen and (prefers-reduced-motion: no-preference)` (so reduced-motion visitors are never hidden, and printing shows everything). If the main script never arrives – blocked, broken, or held back by a "delay JavaScript" optimisation – a CSS fail-safe fades everything in after 4 seconds. When the script loads it adds `tmb-animate-ready` to `<html>`, which switches the fail-safe off.
-- **The animation.** The front-end script (`src/animations/view.js`) watches the blocks with an `IntersectionObserver` and reveals each once, as it comes into view (a little above the bottom of the screen). Blocks already scrolled past – say the visitor arrived via an `#anchor` lower down – are shown without animating. It uses the **Web Animations API** with a single keyframe at offset 0 – the start state – so the browser animates from there to the block's **own** styles. The presets (`src/animations/presets.js`, shared with the editor's Preview) use only `opacity` and the individual `translate` and `scale` properties, not `transform`, so a GB transform or hover transition on the same block is left alone. `fill: backwards` keeps a block hidden during its delay. Without `IntersectionObserver`, or with reduced motion, blocks are simply shown.
+- **The animation.** The front-end script (`src/animations/view.js`) watches the blocks with an `IntersectionObserver` and reveals each once, as it comes into view (a little above the bottom of the screen). Blocks already scrolled past – say the visitor arrived via an `#anchor` lower down – are shown without animating. It uses the **Web Animations API** with a single keyframe at offset 0 – the start state – so the browser animates from there to the block's **own** styles. The presets (`src/animations/presets.js`, shared with the editor's Preview) use only `opacity` and the individual `translate` and `scale` properties, not `transform`, so a GB transform or hover transition on the same block is left alone. `fill: backwards` keeps a block hidden during its delay. Without `IntersectionObserver`, or with reduced motion, blocks are simply shown. Each batch of blocks is measured first and changed afterwards, so revealing several at once doesn't force repeated layouts. If a block receives keyboard focus before it has animated in (or during its delay), it's shown at once.
 - **The Marquee** (`src/marquee/view.js`, `makeInert`) adds `.tmb-in` to animated blocks inside its copies, so they never sit hidden waiting for an animation.
 - **Build.** These scripts aren't blocks, so there's no `block.json` for `wp-scripts` to find. `webpack.config.js` extends the default config with two extra entries, `animations/editor` and `animations/view`.
 
@@ -794,7 +807,7 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
 
 - When a post (including GeneratePress Elements and template parts) is saved, the plugin records whether it's **published** and contains a dark mode toggle, and if so that toggle's settings and dark colours. Each post is tracked separately.
-- While at least one such post exists, every front-end page gets, at the top of `<head>`:
+- While at least one such post exists, every front-end page gets, at the top of `<head>` (this is the one thing the plugin prints on pages without its blocks, because the visitor's choice has to apply on every page, not just the one with the switch):
   - `<style id="tmb-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
   - a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
 - If several posts have a dark mode toggle, the most recently saved one's settings are used.
@@ -806,7 +819,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 Things the blocks share live in one place, so a new block can reuse them:
 
-- `includes/class-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters (no `<`, `{`, `}`, `;`, `\` or `@`) with balanced brackets and quotes, so nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
+- `includes/class-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
 - `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all three blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
@@ -823,11 +836,24 @@ npm run build        # production build into build/
 npm run zip          # build, then create dist/thingamablocks.zip
 npm run playground   # local WordPress at http://127.0.0.1:9400
 npm run playground:reset  # same, starting from a fresh site
+
+npm run lint         # lint:js and lint:css together
+npm run lint:js      # ESLint (WordPress rules) on src/, scripts/ and the config files
+npm run lint:css     # Stylelint on src/**/*.scss
+npm run format       # reformat the JavaScript with Prettier (WordPress style)
+
+composer install         # once; needs PHP and Composer
+composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 ```
+
+- Node 20+ (the version in `.nvmrc` is what CI uses). `.editorconfig` sets tabs and line endings for editors that support it.
+- PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; and the official WordPress **Plugin Check** against the built zip.
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
-- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `includes/`, `patterns/`, `build/` (and `LICENSE` if present). It uses the system `zip` command and fails with a clear message if `build/` is missing.
+- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
+- **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
 ---
 
@@ -835,19 +861,22 @@ npm run playground:reset  # same, starting from a fresh site
 
 ```
 thingamablocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
+uninstall.php        Removes the plugin's options when it's deleted
+LICENSE              GPL v2
 includes/
   class-sanitize.php            Thingamablocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
-  class-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS
+  kses.php                      Lets aria-checked / aria-pressed through WordPress's content filter for Authors and Contributors
+  class-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS, remembered-choice script
   class-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
   class-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
 patterns/
-  pricing-toggle.html           "Pricing table with monthly/annual toggle" pattern (plain block markup)
-  sale-banner.html              "Sale banner with countdown" pattern
-  launch-countdown.html         "Launch countdown" pattern
-  logo-marquee.html             "Logo strip: Trusted by…" pattern
+  pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
+  sale-banner.php               "Sale banner with countdown" pattern
+  launch-countdown.php          "Launch countdown" pattern
+  logo-marquee.php              "Logo strip: Trusted by…" pattern
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
@@ -857,7 +886,7 @@ src/toggle/
   templates.js                  The four starting layouts (block variations) built from GB blocks
   view.js                       Front-end behaviour, tmb-toggle:change event, window.tmbToggle
   icon.js                       Block icon
-  style.scss                    Minimal front-end + editor CSS (cursor, hidden class, reduced motion)
+  style.scss                    Minimal front-end CSS (cursor, hidden class, reduced motion); a viewStyle, so only on pages with a Toggle
   editor.scss                   Sidebar helper styles
 src/countdown/
   block.json                    Block name, attributes, supports, asset files
@@ -891,6 +920,9 @@ build/                          Compiled output (git-ignored; created by npm run
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
 webpack.config.js               Default wp-scripts build plus the src/animations/ entries
+.eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
+phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
+.github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```

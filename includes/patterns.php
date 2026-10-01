@@ -90,5 +90,8 @@ function thingamablocks_register_patterns() {
  * @return string
  */
 function thingamablocks_pattern_json_string( $text ) {
-	return substr( (string) wp_json_encode( (string) $text, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ), 1, -1 );
+	$json = substr( (string) wp_json_encode( (string) $text, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ), 1, -1 );
+
+	// As serialize_block_attributes() does: "--" would end the block comment early.
+	return str_replace( '--', '\u002d\u002d', $json );
 }

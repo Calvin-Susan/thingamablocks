@@ -222,10 +222,18 @@ function stop( marquee ) {
 
 	if ( overflows ) {
 		marquee.viewport.setAttribute( 'tabindex', '0' );
-		marquee.viewport.setAttribute( 'role', 'region' );
-		marquee.viewport.setAttribute(
-			'aria-label',
-			String( marquee.config.scrollLabel || '' )
+
+		// Named region, unless the wrapper already is one (no nested duplicate).
+		if ( 'region' !== marquee.element.getAttribute( 'role' ) ) {
+			marquee.viewport.setAttribute( 'role', 'region' );
+			marquee.viewport.setAttribute(
+				'aria-label',
+				String( marquee.config.scrollLabel || '' )
+			);
+		}
+	} else {
+		[ 'tabindex', 'role', 'aria-label' ].forEach( ( name ) =>
+			marquee.viewport.removeAttribute( name )
 		);
 	}
 	marquee.viewport.style.removeProperty( 'mask-image' );

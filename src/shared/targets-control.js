@@ -129,7 +129,7 @@ export default function TargetsControl( {
 					{ sprintf(
 						/* translators: %s: comma-separated list of selectors. */
 						__(
-							'These will be ignored because they contain characters a selector can’t use here (such as @ ; { } or unbalanced brackets): %s',
+							'These will be ignored because they contain characters a selector can’t use here (@ ; { }, url( or /*, even inside quotes, or unbalanced brackets): %s',
 							'thingamablocks'
 						),
 						unsafe.join( ', ' )

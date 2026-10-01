@@ -128,19 +128,24 @@ function start() {
 		// while it's still waiting out its delay: show it at once, so focus is
 		// never on something invisible.
 		document.addEventListener( 'focusin', ( event ) => {
-			const element = event.target.closest?.( SELECTOR );
+			// Every animated block around the focused element, not just the nearest.
+			for (
+				let element = event.target.closest?.( SELECTOR );
+				element;
+				element = element.parentElement?.closest( SELECTOR )
+			) {
+				if ( ! element.tmbAnimate ) {
+					continue;
+				}
 
-			if ( ! element?.tmbAnimate ) {
-				return;
-			}
-
-			if ( element.classList.contains( 'tmb-in' ) ) {
-				( element.tmbAnimations || [] ).forEach( ( animation ) =>
-					animation.finish()
-				);
-			} else {
-				observer.unobserve( element );
-				showWithoutAnimating( element );
+				if ( element.classList.contains( 'tmb-in' ) ) {
+					( element.tmbAnimations || [] ).forEach( ( animation ) =>
+						animation.finish()
+					);
+				} else {
+					observer.unobserve( element );
+					showWithoutAnimating( element );
+				}
 			}
 		} );
 	}

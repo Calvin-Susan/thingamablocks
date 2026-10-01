@@ -22,16 +22,18 @@ It also adds **entrance animations** to every GenerateBlocks block: fade, slide 
 
 Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the boxes) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+
 = Toggle: starting layouts =
 
 When you insert a Toggle you pick one of four layouts. Each is fully editable afterwards.
 
 * **Switch with labels** – "Monthly" / switch / "Annual".
-* **Segmented buttons** – two buttons side by side; the active one is highlighted.
+* **Segmented buttons** – two buttons side by side; the active one is highlighted. The group is labelled "Billing period" for screen readers (change it under Accessibility).
 * **Switch** – just the switch.
 * **Dark mode switch** – a switch with a sun/moon icon in the knob.
 
-The layouts use the GeneratePress global colour variables (`--accent`, `--base-3`, `--contrast` and so on), with fallbacks for other themes.
+The layouts use the GeneratePress global colour variables (`--accent`, `--base-3`, `--contrast` and so on), with fallbacks for other themes. The switch's "off" track is a fixed grey with enough contrast in both light and dark mode.
 
 = Toggle: ready-made pricing pattern =
 
@@ -71,8 +73,9 @@ The editor shows the toggle in its starting state. Use the On/Off button in the 
 * The switch gets `role="switch"` and `aria-checked` on the server, so the markup is right before any JavaScript runs.
 * Segmented buttons get `aria-pressed`. In a toggle without a switch, on/off parts that aren't buttons get `role="button"`, `aria-pressed` and keyboard focus. Next to a switch, plain-text labels are a mouse convenience; the switch is the control.
 * `aria-controls` points at the elements the toggle controls (when they're referenced by ID).
-* A "Switch label" setting for screen readers, also used as the name of a segmented control's group. If you leave it empty, the "on" label's text is used.
-* Keyboard support: Space and Enter work on every focusable part that isn't a native button.
+* A "Switch label" setting for screen readers, also used as the name of a segmented control's group. If you leave it empty, the "on" label's text is used. The editor warns you when a switch or a buttons-only toggle has no label.
+* Keyboard support: Space and Enter work on every focusable part that isn't a native button. If a toggle hides the section it's in, focus moves to a visible toggle in the same group.
+* Authors and Contributors can save toggles too: the plugin lets the `aria-checked` and `aria-pressed` attributes through WordPress's content filter, so the blocks don't show as invalid.
 * Reveal animations and transitions are switched off for visitors who prefer reduced motion.
 
 = Countdown: starting layouts =
@@ -97,7 +100,13 @@ The editor shows the toggle in its starting state. Use the On/Off button in the 
 
 * Show an "ended" message, stay at zero, or disappear.
 * Also hide or show other elements by ID or CSS selector – e.g. hide a "Buy now" button, show a "Sold out" notice.
-* Optionally send visitors to another page (never the page they're on).
+* Optionally send visitors to another web page (an http or https address, never the page they're on).
+
+= Countdown: accessibility =
+
+* The countdown is a timer region named for screen readers: "Countdown to" the end date and time for a date countdown, otherwise "Countdown". It isn't announced every second.
+* In the Inline text layout and the sale banner, screen readers hear "days", "hours" and so on rather than the short letters.
+* The ended message is announced when the countdown ends.
 
 = Countdown: parts =
 
@@ -127,7 +136,7 @@ Client logos, short messages, big headlines, or testimonials scrolling upwards. 
 * **Big scrolling headline** – large words drifting across the page.
 * **Vertical quotes** – testimonial cards scrolling upwards.
 
-Each has a small pause button in the corner.
+Each has a small pause button in the corner. It comes first in the block, so keyboard users reach it before any links in the row.
 
 = Marquee: ready-made pattern =
 
@@ -137,17 +146,18 @@ Under Patterns → **Marquees**, **Logo strip: "Trusted by…"** is a small "Tru
 
 Select a GenerateBlocks block inside a Marquee and use the **Marquee part** panel to mark it as **The row that scrolls** (put everything that moves inside it, and set the spacing with its gap) or the **Pause button**. Style the paused button with `&[aria-pressed="true"]`, or anything else with `.tmb-marquee.is-paused`.
 
-* **Motion** – speed in pixels per second, direction (left, right, up, down), a height for up/down, and pause on hover (also while a link inside has keyboard focus).
+* **Motion** – speed in pixels per second, direction (left, right, up, down), a height for up/down, and pause on hover. Keyboard focus inside always pauses it.
 * **Edges** – fade the ends instead of cutting items off, with a fade width.
 * **Accessibility** – a label for screen readers, e.g. "Our clients".
 
-It repeats the row just enough to fill the space, matches the gap where it repeats, re-measures when the page is resized, pauses when off screen and runs the right way on RTL sites.
+It repeats the row just enough to fill the space, matches the gap where it repeats, re-measures when the page is resized, pauses when off screen and runs the right way on RTL sites. Lazy-loaded images in the copies stay lazy until the strip is near the screen.
 
 = Marquee: accessibility =
 
 * The repeated copies are hidden from screen readers and keyboard users, so each logo or link is only read once.
 * A pause button, as WCAG 2.2.2 asks for moving content. The sidebar warns you if you remove it.
-* Visitors who prefer reduced motion get a still row they can scroll.
+* Keyboard focus always pauses it, a focused link is moved fully into view, and the faded edges are removed while it has focus.
+* Visitors who prefer reduced motion get a still row they can scroll, also with the keyboard (it's focusable and named with the marquee's label, or "Scrolling content").
 
 = Entrance animations =
 
@@ -159,23 +169,30 @@ Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **E
 * **Animate the blocks inside one by one** – on blocks that hold other blocks. The block stays put and each block inside it animates in turn, with a **Time between each** you choose. Great for grids, cards and query loops: for a query loop, set it on the **Looper** block.
 * **Preview** button to play it in the editor.
 
+Tip: don't animate the first thing visitors see (a hero heading or image). It stays hidden until the script runs, which can slow the page's Largest Contentful Paint (LCP) score.
+
 Each animation plays once, when the block scrolls into view. The settings are stored as HTML attributes on the block (`data-tmb-animate`, `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`), which you can see in GenerateBlocks' HTML Attributes panel.
 
 Built to be light and safe:
 
-* Nothing loads on pages without an animation. Pages with one get a ~1.8 KB script, plus ~600 bytes of CSS in the page head on sites that use animations.
+* Nothing loads on pages without an animation. Pages with one get a ~1.8 KB script and ~600 bytes of CSS.
 * Uses the Web Animations API with opacity, translate and scale, animating to the block's own styles, so GenerateBlocks transforms and hover transitions keep working.
 * No flash: blocks are only hidden while waiting to animate when JavaScript is running and the visitor hasn't asked for reduced motion. If the script is blocked or delayed, everything is shown after 4 seconds anyway.
 * Visitors who prefer reduced motion see no animation.
+* Keyboard users who tab into a block that hasn't animated in yet see it straight away.
 * For developers: `window.tmbAnimate.init( container )` for content added with AJAX, the `thingamablocks_animation_head_markup` filter, and the `.tmb-in` class (added when a block animates) and `html.tmb-animate-js` for CSS.
 
 = Requirements =
 
-* WordPress 6.5 or newer
+* WordPress 6.6 or newer (tested up to 7.1)
 * PHP 7.4 or newer
 * GenerateBlocks 2.0 or newer (the free plugin is enough)
 
 Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
+
+= Source code =
+
+The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-readable source (`src/`), build configuration and developer tools are in the GitHub repository: https://github.com/Calvin-Susan/thingamablocks. It builds with `npm install` and `npm run build` (`@wordpress/scripts`).
 
 == Installation ==
 
@@ -210,7 +227,7 @@ Yes. Give both the same **Sync group** name (under State), for example `billing`
 
 = Does the toggle work with page caching? =
 
-Yes. The page HTML is the same for every visitor; each visitor's choice is stored in their own browser (localStorage) and applied by JavaScript. For dark mode, the inline `<head>` script reads that choice before the page paints, so cached pages don't flash light before switching to dark.
+Yes. The page HTML is the same for every visitor; each visitor's choice is stored in their own browser (localStorage) and applied by JavaScript. For dark mode, the inline `<head>` script reads that choice before the page paints, so cached pages don't flash light before switching to dark. A remembered choice on a toggle with a sync group or HTML anchor is also applied before the page paints, by a tiny script right after the toggle.
 
 It also holds up with "remove unused CSS" optimisations: hidden elements get an inline `display: none !important` and reveal animations use the Web Animations API, so neither relies on CSS rules an optimiser might strip. If you use a plugin that delays JavaScript, exclude the `tmb-toggle-color-scheme` inline script from delaying.
 
@@ -242,11 +259,11 @@ So you can click into it and edit the content. Use the **Preview** button in the
 
 = Can I put links or buttons in a marquee? =
 
-Yes. Only the original row can be reached with the keyboard and screen readers; the copies made for the loop are skipped. With **Pause on hover** on (the default), the marquee also stops while a link inside it has keyboard focus, so it isn't a moving target. Keep in mind that moving links are harder to click, so don't put anything essential only in a marquee.
+Yes. Only the original row can be reached with the keyboard and screen readers; the copies made for the loop are skipped. The marquee always stops while a link inside it has keyboard focus, and brings that link fully into view, so it isn't a moving target. Keep in mind that moving links are harder to click, so don't put anything essential only in a marquee.
 
 = Will animations slow my site down? =
 
-No. Pages without an animation load nothing extra. Pages with one load a ~1.8 KB script (deferred, in the footer); sites that use animations also get ~600 bytes of CSS in the page head. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
+No. Pages without an animation load nothing extra. Pages with one load a ~1.8 KB script (deferred, in the footer) and ~600 bytes of CSS. Keep animations off the hero at the top of the page, though: an animated block stays hidden until the script runs, which can slow your LCP score. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
 
 = Do animations work with caching/optimisation plugins? =
 
@@ -258,13 +275,14 @@ On purpose: animations don't play on their own in the editor, so blocks never di
 
 == Changelog ==
 
-= Unreleased =
-* New: entrance animations for every GenerateBlocks 2 / GB Pro block (fade, fade up/down, slide in from the left/right, zoom; speed; delay; animate the blocks inside one by one). Plays once on scroll, ~1.8 KB, only on pages that use it, with reduced-motion support and a no-JavaScript fail-safe.
-* New Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges and reduced-motion support.
-* New pattern: "Logo strip: Trusted by…", in a new Marquees category.
-* New Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time; end actions (message, stay at zero, disappear, hide/show elements, redirect).
-* New patterns: "Sale banner with countdown" and "Launch countdown", in a new Countdowns category.
-* Toggle: stricter target sanitising, namespaced storage keys, duplicate IDs all switch, and only administrators change the site-wide dark colours.
-
 = 0.1.0 =
-* Initial release.
+Initial release.
+
+* Toggle block: show/hide elements, light/dark mode with a dark colour for each theme colour, add/remove classes, or custom code. Four starting layouts, sync groups, remembered choices (applied before the page paints), and server-rendered accessibility.
+* Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time. End actions: message, stay at zero, disappear, hide/show elements, redirect. Numbers are rendered on the server.
+* Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges, keyboard and reduced-motion support.
+* Entrance animations for every GenerateBlocks 2 / GB Pro block: fade, slide or zoom in on scroll, or animate the blocks inside one by one. ~1.8 KB, reduced-motion support and a no-JavaScript fail-safe.
+* Patterns: pricing table with monthly/annual toggle, sale banner with countdown, launch countdown, and logo strip, all translatable.
+* Nothing loads on pages that don't use the plugin (except the small dark mode head script, once a dark mode toggle is published).
+* Safe for Authors and Contributors: target selectors are strictly sanitised, and toggles don't show as invalid blocks.
+* Removes its options when deleted.
