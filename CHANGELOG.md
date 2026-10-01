@@ -6,6 +6,19 @@ All notable changes to Thingamablocks are listed here.
 
 ### Added
 
+#### FAQ schema
+
+- An **FAQ schema** panel on GenerateBlocks Pro's Accordion block (`generateblocks-pro/accordion`; needs GB Pro 2.x, as free GB has no Accordion). **Add FAQ structured data** stores `data-tmb-faq="true"` in the accordion's HTML attributes. The panel previews the questions that will be included and warns about items left out because their title or content is empty.
+- **Built from the rendered accordion** on every page load, so the structured data always matches the text: each item's toggle text (without its icon) is the question, its content the answer. Collected with `pre_render_block` / `render_block_{block name}` filters (run last, after block conditions), using a stack so nested accordions keep their own items; a nested accordion is only included if it's an FAQ accordion itself. Items hidden by block conditions, and items with an empty title or content, are left out.
+- **Answers** are cleaned with `wp_kses` to the HTML Google reads in FAQ answers (`p`, `div`, `h1`–`h6`, `ul`/`ol`/`li`, `a` with `href` only, `br`, `b`/`strong`, `i`/`em`); images, icons, scripts and CSS are removed.
+- **One `FAQPage` per page**: all FAQ accordions on a page are combined into a single schema.org JSON-LD script, printed once in `wp_footer` (JSON encoded with `JSON_HEX_TAG` / `JSON_HEX_AMP`, so text can't close the script element). A repeated question is listed once. Not collected in the editor, REST responses or feeds. No other front-end script or CSS.
+- Only on single posts and pages (an archive showing several posts' content isn't one FAQ), printed late in `wp_footer` so FAQ accordions in footer Elements and overlays count. Nothing is printed on a page with a Yoast SEO or Rank Math FAQ block, which add their own `FAQPage`.
+- Developer API: the `thingamablocks_faq_schema` filter (`array|null`: the `FAQPage` data; return `null` to print nothing, e.g. when an SEO plugin already adds an `FAQPage`).
+- **Settings → Thingamablocks**: an **FAQ schema** feature switch (key `faq`) hides the panel; accordions that already have FAQ schema keep printing it. Usage is counted by `"data-tmb-faq":"true"` in saved content.
+- Docs note that since August 2023 Google only shows FAQ rich results for well-known government and health sites; the structured data is still valid and read by search engines and AI tools.
+- Browser tests (`tests/e2e/faq.spec.js`): the front end with the markup GB Pro 2.x saves (one `FAQPage` from two accordions, empty, nested and non-FAQ items left out, a repeated question listed once, answers cleaned, a `</script>` question printed safely, no FAQ accordion → no `FAQPage`) and the editor panel with stand-in Accordion blocks (GB Pro can't be installed on the local test site). The settings test covers the new switch.
+- Build: `webpack.config.js` adds the `faq/editor` entry (`src/faq/` → `build/faq/`); `includes/class-thingamablocks-faq-schema.php` loads it in the block editor.
+
 #### Settings
 
 - **Settings → Thingamablocks** (`manage_options`; also a **Settings** link on the Plugins screen): a switch for each block (Toggle, Countdown, Marquee, Dropdown, Breadcrumbs – **Show in the block inserter**) and feature (Entrance animations, Image masks – **Show the panel in the editor**), all on by default, each with a one-line description and where it's used ("In use on N items": posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash; masks are counted by an image mask in a block's GB styles).

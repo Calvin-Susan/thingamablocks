@@ -24,9 +24,11 @@ It also adds **entrance animations** to every GenerateBlocks block: fade, slide 
 
 And it adds **image masks** to the GenerateBlocks Image block: cut an image to a wave, a curve or your own SVG shape.
 
+With GenerateBlocks Pro, it adds **FAQ schema** to the Accordion block: one switch tells search engines the accordion is a list of questions and answers (schema.org FAQPage structured data), built from the accordion's own text.
+
 Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), and FAQ schema adds only the structured data itself, on pages with an FAQ accordion. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy. Each switch shows how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
 
@@ -310,11 +312,26 @@ How it works:
 * Purely visual: the image's alt text works as normal, and a linked image keeps its keyboard focus outline. Don't mask away parts of an image that carry information.
 * CSS masks work in all current browsers (Chrome and Edge 120+, Safari 15.4+, Firefox 53+). Older browsers show the image without the mask.
 
+= FAQ schema =
+
+Needs GenerateBlocks Pro 2.x (the Accordion is a Pro block). Select the **Accordion** (the outer block, not an item), open the **FAQ schema** panel and turn on **Add FAQ structured data**. The panel lists the questions that will be included and warns about any items left out because their title or content is empty.
+
+* Each item's title (without its icon) is the question, and its content the answer.
+* Read from the accordion every time the page loads, so the structured data always matches what visitors see. Edit the accordion and the schema follows; there's nothing to keep in sync.
+* Answers keep only the HTML Google reads in FAQ answers: paragraphs, headings, lists, links, line breaks, bold and italic. Images, icons and CSS are removed.
+* Items hidden by block conditions are left out. An accordion inside an answer keeps its own items; it's only included if it has FAQ schema switched on too.
+* Several FAQ accordions on one page are combined into one FAQPage, printed once in the footer. A question that appears twice is listed once.
+* Nothing else loads: no script or CSS, just the structured data.
+* Stored as `data-tmb-faq="true"` in the accordion's HTML attributes.
+* For developers: the `thingamablocks_faq_schema` filter changes the data; return `null` to print nothing (for instance if your SEO plugin already adds an FAQPage to that page).
+
+An honest note: since August 2023 Google only shows FAQ rich results for well-known government and health websites. The structured data is still valid, and search engines and AI tools still read it to understand the page, but it won't make your Google listing bigger.
+
 = Requirements =
 
 * WordPress 6.6 or newer (tested up to 7.1)
 * PHP 7.4 or newer
-* GenerateBlocks 2.0 or newer (the free plugin is enough)
+* GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block)
 
 Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 
@@ -327,14 +344,14 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need.
 
 == Frequently Asked Questions ==
 
 = Does it need GenerateBlocks Pro? =
 
-No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. It hasn't been tested with GenerateBlocks Pro yet.
+No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The one exception is FAQ schema, which adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x. The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
 
 = Why does nothing happen when I click the toggle in the editor? =
 
@@ -416,7 +433,7 @@ Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on
 
 = Can I hide blocks I don't use? =
 
-Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations and masks stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
+Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 
@@ -429,6 +446,14 @@ Yes. Page caching makes no difference: the settings are attributes in the HTML. 
 = Why doesn't my animation play in the editor? =
 
 On purpose: animations don't play on their own in the editor, so blocks never disappear while you're working on them. Choosing an animation plays it once, and the **Preview** button in the Entrance animation panel plays it again. It plays as the block scrolls into view on the front end.
+
+= Will FAQ schema get my FAQs shown in Google? =
+
+Probably not as a rich result. Since August 2023 Google only shows FAQ rich results for well-known government and health websites. The FAQPage structured data is still valid and still read by search engines (to understand the page) and by AI search tools, so it's worth having on a real FAQ, but it won't make your search listing bigger.
+
+= Will FAQ schema clash with my SEO plugin? =
+
+No: on a page with a Yoast SEO or Rank Math FAQ block (which add their own FAQPage), Thingamablocks prints nothing. If you add FAQ schema some other way (Rank Math's Schema Generator, say), switch FAQ schema off on that accordion, or use the `thingamablocks_faq_schema` filter and return `null`.
 
 = Why aren't mask SVGs uploaded to the Media Library? =
 

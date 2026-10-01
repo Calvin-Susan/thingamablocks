@@ -66,6 +66,12 @@ function thingamablocks_switches() {
 			// No backslashes: they mean different things to LIKE in MySQL and SQLite.
 			'needle'      => '"maskImage":"url(',
 		),
+		'faq'         => array(
+			'label'       => __( 'FAQ schema', 'thingamablocks' ),
+			'description' => __( 'The “FAQ schema” panel on the GenerateBlocks Pro Accordion block.', 'thingamablocks' ),
+			'type'        => 'feature',
+			'needle'      => '"data-tmb-faq":"true"',
+		),
 	);
 }
 

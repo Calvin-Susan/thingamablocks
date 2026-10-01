@@ -71,6 +71,7 @@ test.describe( 'Settings page', () => {
 			'Breadcrumbs',
 			'Entrance animations',
 			'Image masks',
+			'FAQ schema',
 		] ) {
 			await expect(
 				page.getByLabel( label, { exact: true } )

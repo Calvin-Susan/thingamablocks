@@ -16,11 +16,13 @@ Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks bl
 
 And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask" panel that crops an image to a shape from the GenerateBlocks shape library, or to an SVG of your own.
 
+And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an "FAQ schema" panel that tells search engines the accordion is a list of questions and answers (schema.org `FAQPage` structured data), built from the accordion's own text.
+
 All five blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
-**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
+**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site); everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, or masks? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -58,6 +60,10 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 - [Image masks](#image-masks)
   - [Image mask recipes](#image-mask-recipes)
   - [Image mask settings](#image-mask-settings)
+- [FAQ schema](#faq-schema)
+  - [FAQ schema recipe](#faq-schema-recipe)
+  - [What goes into the schema](#what-goes-into-the-schema)
+  - [FAQ schema and SEO plugins](#faq-schema-and-seo-plugins)
 - [Developer API](#developer-api)
 - [How it's built](#how-its-built)
 - [Development](#development)
@@ -70,7 +76,7 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
@@ -79,14 +85,14 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 **Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has a switch for each block and feature. Everything is on by default.
 
 - **Blocks** – Toggle, Countdown, Marquee, Dropdown and Breadcrumbs: **Show in the block inserter**.
-- **Features** – Entrance animations and Image masks: **Show the panel in the editor**.
+- **Features** – Entrance animations, Image masks and FAQ schema: **Show the panel in the editor**.
 
-Each switch has a one-line description and shows where it's used ("In use on 3 items" or "Not used anywhere yet"), counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, and masks by GenerateBlocks blocks with an image mask in their styles.
+Each switch has a one-line description and shows where it's used ("In use on 3 items" or "Not used anywhere yet"), counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, and FAQ schema by accordions with **Add FAQ structured data** on.
 
 **Switching off only hides things.** Nothing on your site changes:
 
 - A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited. WordPress may not let you duplicate or paste it while it's switched off (a block that's out of the inserter can't always be added again by other routes); switch it back on for that.
-- A switched-off **feature**'s sidebar panel (Entrance animation, Mask) no longer loads in the editor. Existing animations keep animating and existing masks stay.
+- A switched-off **feature**'s sidebar panel (Entrance animation, Mask, FAQ schema) no longer loads in the editor. Existing animations keep animating, existing masks stay, and accordions that already have FAQ schema keep printing it.
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
 
@@ -1013,6 +1019,47 @@ Select a GenerateBlocks Image block. The panel opens by itself on images that al
 
 ---
 
+## FAQ schema
+
+Not a block: an **FAQ schema** panel added to the sidebar of the **GenerateBlocks Pro Accordion** block. Switch it on and the page gets schema.org `FAQPage` structured data: each accordion item's title is a question, and its content the answer.
+
+- **Needs GenerateBlocks Pro 2.x.** The Accordion is a Pro block, so on a site with only free GenerateBlocks the panel never shows up (and nothing else changes).
+- **Always matches the page.** The questions and answers aren't typed in twice or saved separately: they're read from the rendered accordion every time the page loads. Edit an item and the schema follows.
+- **Nothing loads on the front end** apart from the structured data itself: one `<script type="application/ld+json">` in the footer, only on pages with an FAQ accordion. No JavaScript or CSS.
+- **Several FAQ accordions on one page** are combined into one `FAQPage`, printed once.
+
+> **An honest note on Google.** Since August 2023 Google only shows FAQ rich results (the expandable questions under a search result) for well-known government and health websites. For everyone else the structured data is still valid and still read: search engines use it to understand the page, and AI search tools and assistants read it too. It just won't make your listing bigger in Google.
+
+### FAQ schema recipe
+
+#### Turn an accordion into an FAQ
+
+1. Build the accordion as usual with GenerateBlocks Pro: each item's title is the question, its content the answer.
+2. Select the **Accordion** itself (the outer block, not an item; the List View or the breadcrumb bar at the bottom of the editor helps).
+3. Open **FAQ schema** in the sidebar and turn on **Add FAQ structured data**.
+4. Check the list under the switch: it shows the questions that will be included, and warns about any items left out because their title or content is empty.
+5. Publish, then paste the page's address into the [Schema Markup Validator](https://validator.schema.org/) to see the `FAQPage` it finds.
+
+| Setting | Stored as | Default | Notes |
+| --- | --- | --- | --- |
+| Add FAQ structured data | `data-tmb-faq="true"` | Off | Saved in the accordion's own GenerateBlocks **HTML Attributes**, like the entrance animation settings. Turning it off removes the attribute. The panel opens by itself on accordions that already have it. |
+
+### What goes into the schema
+
+- **The question** is the item's toggle text, without its open/close icon.
+- **The answer** is the item's content, cut down to the HTML Google reads in FAQ answers: paragraphs, `div`s, headings, lists, links (with just their `href`), line breaks, and bold/italic (`b`, `strong`, `i`, `em`). Everything else goes: images, icons, embedded CSS and scripts, classes, styles and other attributes. Text inside removed tags is kept, so a GenerateBlocks Text block's words still come through.
+- **Items left out:** an item with an empty title or no content (the panel warns you about these), and items hidden by block conditions (for example GenerateBlocks Pro's conditions), so visitors and search engines see the same questions. An accordion hidden as a whole adds nothing.
+- **Nested accordions** keep their own items: an accordion inside an answer doesn't add its questions to the outer one. It's only included if it has FAQ schema switched on itself.
+- **The same question twice** (say, the same FAQ accordion in the page and in a GeneratePress Element) is listed once, with the first answer.
+
+### FAQ schema and SEO plugins
+
+Yoast SEO and Rank Math add an `FAQPage` for their own FAQ blocks, so **on a page with a Yoast SEO or Rank Math FAQ block, Thingamablocks prints nothing** and leaves the page's FAQ to that block (one `FAQPage` per page). Otherwise there's no overlap, except schema you add yourself (in Rank Math's Schema Generator, say): then switch FAQ schema off on that accordion, or stop Thingamablocks printing it with the `thingamablocks_faq_schema` filter (see [PHP](#php)): return `null` and nothing is printed.
+
+**Only on single posts and pages.** An archive or blog page showing several posts' full content isn't one FAQ, so no `FAQPage` is printed there. FAQ accordions in GeneratePress Elements, overlays and other footer output on a single page are included.
+
+---
+
 ## Developer API
 
 ### Toggle: the `tmb-toggle:change` event
@@ -1169,7 +1216,7 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 
 ### PHP
 
-- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `animations`, `masks`.
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `animations`, `masks`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
@@ -1190,6 +1237,15 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 
   ```php
   add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );
+  ```
+
+- Filter `thingamablocks_faq_schema` – the `FAQPage` structured data built from the page's FAQ accordions, as an array (`@context`, `@type`, `mainEntity`: a list of `Question`s, each with a `name` and an `acceptedAnswer` whose `text` is the cleaned answer HTML), just before it's printed in the footer. Change it, or return `null` to print nothing (for instance when your SEO plugin already adds an `FAQPage` to the page).
+
+  ```php
+  // The SEO plugin handles FAQ schema on the support pages.
+  add_filter( 'thingamablocks_faq_schema', function ( $data ) {
+  	return is_page( 'support' ) ? null : $data;
+  } );
   ```
 
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
@@ -1282,14 +1338,25 @@ All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Conte
 - **Library shapes** come from the shape list GenerateBlocks gives the editor (`window.generateBlocksInfo.svgShapes`, which GB builds with its `generateblocks_svg_shapes` filter), and go through the same cleaning.
 - **Why not the Media Library?** WordPress refuses SVG uploads by default, because an SVG opened directly can run scripts. Storing the cleaned shape in the block's CSS avoids needing an SVG-upload plugin, and means a mask never depends on a file that could be deleted.
 
+### How FAQ schema works
+
+`includes/class-thingamablocks-faq-schema.php` (`Thingamablocks_Faq_Schema`), `src/faq/editor.js`. Nothing on the front end but the JSON-LD.
+
+- **The panel** (`src/faq/editor.js`) is another `editor.BlockEdit` filter, shown only on `generateblocks-pro/accordion`. It stores `data-tmb-faq="true"` in the accordion's `htmlAttributes` and previews the questions by walking the accordion's inner blocks (item → toggle text, minus the `accordion-toggle-icon`; item → content). The preview is only a guide: the schema itself is built on the server.
+- **Read while the page renders.** WordPress renders blocks inside out: an item's toggle and content before the item, the items before the accordion. A `pre_render_block` filter starts a frame on a stack when an accordion begins; `render_block_{block name}` filters for the four Accordion blocks record each toggle's text and content's HTML into the current frame, adds the pair when its item finishes, and hands the items over when the accordion finishes, if it has `data-tmb-faq="true"`. The stack keeps nested accordions apart. They run last (priority `PHP_INT_MAX`; the block-specific filters also run after the general `render_block` one), after block conditions have emptied any hidden block, so an item that renders as nothing is skipped.
+- **Cleaning.** The question is plain text (tags stripped, entities decoded, spaces collapsed; `<svg>`, `<script>`, `<style>`, `<template>` and `<noscript>` removed with their contents first). The answer goes through `wp_kses` with an allowlist of the tags Google reads in FAQ answers, links keep only `href`, and empty wrappers left behind are dropped.
+- **Printed once.** Questions are collected per page, keyed by question (so a repeat is listed once), and printed in `wp_footer` (priority 100, after footer Elements and overlays have rendered) as one `FAQPage`, through the `thingamablocks_faq_schema` filter. It's only collected on single posts and pages (`is_singular()`), and the data is `null` when the page has a Yoast SEO or Rank Math FAQ block. The JSON is encoded with `JSON_HEX_TAG` and `JSON_HEX_AMP`, so a question containing `</script>` can't break out of the script element. Nothing is collected in the editor, REST responses or feeds.
+- **Build.** `webpack.config.js` adds the `faq/editor` entry (`src/faq/` → `build/faq/`); the class enqueues it in the block editor unless FAQ schema is switched off.
+- **Tests:** `tests/e2e/faq.spec.js`. GenerateBlocks Pro can't be installed on the local test site, but WordPress runs render filters on blocks it doesn't know, so the front-end test saves the markup GB Pro 2.x saves and checks the result: one `FAQPage` from two FAQ accordions, empty items, a nested accordion and a non-FAQ accordion left out, a repeated question listed once, the answer cleaned to allowed tags, and a question containing `</script>` printed safely, a picture-only answer left out, and nothing printed alongside a Yoast SEO FAQ block. The editor test registers stand-ins for the Accordion blocks and checks the panel's switch, question preview and "left out" warning.
+
 ### How switching things off works
 
 `includes/settings.php`. The page uses the WordPress Settings API (`register_setting`, `options.php`), under **Settings** with `manage_options`. The rule is "hide, never break": nothing is unregistered.
 
 - **Blocks.** Every block stays registered in PHP, so its render callback still runs and existing content renders exactly as before. In the editor, a tiny inline script (registered before the blocks, in `enqueue_block_editor_assets`) adds a `blocks.registerBlockType` filter that sets `supports.inserter` to `false` for the switched-off blocks. That's WordPress's own way to hide a block from the inserter while existing copies still load and edit normally.
 - **Patterns.** `includes/patterns.php` tags each pattern with its block and skips registering the ones whose block is switched off.
-- **Features.** The editor scripts for the Entrance animation and Mask panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, and masks are plain GenerateBlocks CSS.
-- **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles.
+- **Features.** The editor scripts for the Entrance animation, Mask and FAQ schema panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, masks are plain GenerateBlocks CSS, and FAQ schema is built on the server from `data-tmb-faq`.
+- **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles, FAQ schema by `"data-tmb-faq":"true"` in an accordion's saved attributes.
 - **Saving.** Each switch has a hidden `0` field before its checkbox, so unticked boxes are saved as `false`; the sanitize callback keeps only known keys, as true/false.
 
 ### The dark mode head output
@@ -1367,6 +1434,7 @@ includes/
   patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
+  class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
   settings.php                  Settings → Thingamablocks: the switches, usage counts, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
@@ -1434,6 +1502,8 @@ src/mask/
   styles.js                     Reads and writes mask-* in the block's GB styles, per breakpoint (desktop / tablet / mobile)
   svg.js                        SVG cleaning, 100 KB limit, flipping, encoding as a data: URL
   editor.scss                   Panel and shape picker styles
+src/faq/
+  editor.js                     "FAQ schema" panel on the GB Pro Accordion block, question preview and "left out" warning
 src/shared/
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   variation-placeholder.js      "Choose a starting layout" placeholder
@@ -1442,12 +1512,12 @@ src/shared/
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
-webpack.config.js               Default wp-scripts build plus the src/animations/ and src/mask/ entries
+webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/ and src/faq/ entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), settings page (settings.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
