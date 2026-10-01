@@ -18,25 +18,26 @@ for ( const colorScheme of [ 'light', 'dark' ] ) {
 			page,
 		} ) => {
 			await page.goto( DEMO, { waitUntil: 'networkidle' } );
+			// The first visit to a fresh site can land on Playground's login redirect.
+			await expect(
+				page.locator( '.entry-content .tmb-marquee' ).first()
+			).toBeVisible();
 			// Let the countdowns tick and the marquees lay out.
 			await page.waitForTimeout( 1500 );
 			await page.addScriptTag( { content: AXE } );
 
 			const violations = await page.evaluate( async () => {
 				// Only the page content: the theme's header, sidebar and footer aren't ours.
-				const result = await window.axe.run(
-					document.querySelector( '.entry-content' ),
-					{
-						runOnly: [
-							'wcag2a',
-							'wcag2aa',
-							'wcag21a',
-							'wcag21aa',
-							'wcag22aa',
-							'best-practice',
-						],
-					}
-				);
+				const result = await window.axe.run( '.entry-content', {
+					runOnly: [
+						'wcag2a',
+						'wcag2aa',
+						'wcag21a',
+						'wcag21aa',
+						'wcag22aa',
+						'best-practice',
+					],
+				} );
 
 				return result.violations.map( ( violation ) => ( {
 					rule: violation.id,
