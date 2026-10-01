@@ -69,6 +69,7 @@ test.describe( 'Settings page', () => {
 			'Marquee',
 			'Dropdown',
 			'Breadcrumbs',
+			'Search',
 			'Entrance animations',
 			'Image masks',
 			'FAQ schema',
@@ -200,6 +201,26 @@ test.describe( 'Settings page', () => {
 		).toBeGreaterThan( 0 );
 
 		expect( errors ).toEqual( [] );
+	} );
+
+	test( 'the switches are switches, and switching one saves', async ( {
+		page,
+	} ) => {
+		await page.goto( SETTINGS );
+		await expect(
+			page.getByRole( 'switch', { name: 'Search', exact: true } )
+		).toBeChecked();
+
+		await setSwitches( page, { Search: false } );
+		await page.reload();
+		await expect(
+			page.getByRole( 'switch', { name: 'Search', exact: true } )
+		).not.toBeChecked();
+
+		await setSwitches( page, { Search: true } );
+		await expect(
+			page.getByRole( 'switch', { name: 'Search', exact: true } )
+		).toBeChecked();
 	} );
 
 	test( 'saves through the WordPress settings form', async ( { page } ) => {

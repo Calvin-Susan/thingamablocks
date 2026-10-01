@@ -11,6 +11,7 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Marquee**](#marquee-block) | `thingamablocks/marquee` | A smooth, endless scrolling strip of logos, messages, headlines or cards, left/right or up/down. |
 | [**Dropdown**](#dropdown-block) | `thingamablocks/dropdown` | A button that opens a drawer of links, downloads or any other blocks. |
 | [**Breadcrumbs**](#breadcrumbs-block) | `thingamablocks/breadcrumbs` | The path to the current page (Home › Blog › Category › Post), worked out automatically for whatever page is being viewed, with breadcrumb structured data for search engines. |
+| [**Search**](#search-block) | `thingamablocks/search` | A search form you style like any other GenerateBlocks blocks, that can search only the content types you choose (just products, just pages…), including an icon that opens a search. |
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
@@ -18,11 +19,11 @@ And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask"
 
 And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an "FAQ schema" panel that tells search engines the accordion is a list of questions and answers (schema.org `FAQPage` structured data), built from the accordion's own text.
 
-All five blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All six blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site); everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, or masks? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -54,6 +55,11 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
   - [How breadcrumb parts and styling work](#how-breadcrumb-parts-and-styling-work)
   - [Breadcrumbs settings](#breadcrumbs-settings)
   - [Breadcrumbs and SEO plugins](#breadcrumbs-and-seo-plugins)
+- [Search block](#search-block)
+  - [Search quick start](#search-quick-start)
+  - [How search parts and styling work](#how-search-parts-and-styling-work)
+  - [Search settings](#search-settings)
+  - [Searching only some content types](#searching-only-some-content-types)
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
@@ -76,18 +82,20 @@ All five blocks sit in the GenerateBlocks category of the inserter, and all work
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
 ## Settings
 
-**Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has a switch for each block and feature. Everything is on by default.
+**Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has an on/off switch for each block and feature, in two cards. Everything is on by default.
 
-- **Blocks** – Toggle, Countdown, Marquee, Dropdown and Breadcrumbs: **Show in the block inserter**.
-- **Features** – Entrance animations, Image masks and FAQ schema: **Show the panel in the editor**.
+- **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs and Search. On means the block is in the block inserter.
+- **Features** – Entrance animations, Image masks and FAQ schema. On means the panel shows in the editor.
 
-Each switch has a one-line description and shows where it's used ("In use on 3 items" or "Not used anywhere yet"), counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, and FAQ schema by accordions with **Add FAQ structured data** on.
+Each item has its name, a one-line description and where it's used ("In use on 3 items" or "Not used anywhere yet"), with its switch beside it, counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, and FAQ schema by accordions with **Add FAQ structured data** on.
+
+The switches are ordinary checkboxes styled as switches (with `role="switch"`, so screen readers announce them as "on" / "off"), work from the keyboard with Tab and Space, and take their "on" colour from your admin colour scheme (Users → Profile). Their styles load only on this page. Nothing changes until you press **Save Changes**.
 
 **Switching off only hides things.** Nothing on your site changes:
 
@@ -880,6 +888,106 @@ A few lines of CSS (`viewStyle`) and a small script (`viewScript`) load only on 
 
 ---
 
+## Search block
+
+A search form, built from GenerateBlocks blocks so it looks like the rest of your site. Use it for:
+
+- **A site search** in the header, sidebar or a 404 page.
+- **A product search** – tick **Products** and it only searches WooCommerce products, with WooCommerce's own results page.
+- **A "search the docs" box** – just pages, or just one custom post type.
+- **A search icon in the header** that opens a search field when clicked.
+
+The results show on your theme's normal search results page, so there's nothing extra to set up or style there.
+
+### Search quick start
+
+When you insert a Search you pick a starting style:
+
+| Style | Looks like |
+| --- | --- |
+| **Bar with button** (default) | A bordered field with a "Search" button beside it |
+| **Pill, button inside** | A rounded field with a round search-icon button inside it, at the right |
+| **Underline** | Just a line under the text and a search icon, for headers and sidebars |
+| **Icon that opens a search** | A round search icon. Clicking it opens a field with a "Search" button underneath, floating over the page and lined up with the icon's right edge |
+
+Like the other blocks' layouts, the styles use the GeneratePress global colour variables with fallbacks, and every field and button has a visible focus outline in your accent colour. The input's text in the editor ("Search…") is the **placeholder** on the site: click it and type your own, e.g. "Search products…".
+
+> **In the editor, the expanding style's field sits in the page flow under the icon**, so you can see and edit it. On the site it's hidden until the icon is clicked.
+
+**Recipe: a product search for a WooCommerce shop**
+
+1. Insert **Search** and choose **Pill, button inside**.
+2. In the block's sidebar, under **Search only**, tick **Products**.
+3. Set **Label** to "Search products", and change the placeholder text to "Search products…".
+4. Publish. Searching shows WooCommerce's product results (its own grid, with prices and sorting).
+
+**Recipe: a search icon in the GeneratePress header**
+
+1. **Appearance → Elements → Add New → Block**, a header hook such as `generate_menu_bar_items` (beside the menu), Display Rules *Entire Site*.
+2. Insert **Search** and choose **Icon that opens a search**.
+3. Publish. The field opens below the icon, and moves sideways if it would stick out of the screen on a phone.
+
+### How search parts and styling work
+
+#### Search parts
+
+Select any GenerateBlocks Element, Text, Shape or Media block inside a Search and you'll get a **Search part** panel with one setting, *This block is*:
+
+| Option | `data-search-part` value | What it does |
+| --- | --- | --- |
+| Just part of the layout | *(none)* | Nothing special – e.g. a row holding the field and button |
+| The field (box around the input) | `field` | The box the visitor types in. Style its border, background, padding, font and colour here: the input takes on its font and colour. It gets a focus outline while the visitor is typing. |
+| The input (its text is the placeholder) | `input` | A GenerateBlocks **Text** block that becomes a real `<input type="search" name="s">` on the site. Its text is the placeholder. On a search results page it shows what was searched for. Put it inside the field. |
+| The search button | `submit` | Runs the search. Use a **Text** block set to the `<button>` tag. It can be just an icon: it's then named after the block's **Label** for screen readers. |
+| A visible label | `label` | Optional. A Text block shown as a label ("Search the docs"), made into a real `<label>` for the input. |
+| A button that opens the field | `toggle` | The expanding style's icon: opens and closes the field. Put the field **next to** it, not inside it. |
+
+A search needs an input; the sidebar warns you if there isn't one. As with the other blocks, the value lives in GB's own HTML attributes.
+
+#### Styling
+
+- **Style the field, not the input.** Themes style every search input on the site (GeneratePress styles `input[type="search"]`) with selectors stronger than GenerateBlocks' own, so styles set on the input itself would lose. So the plugin resets the input to a plain, see-through text area that inherits its font and colour, and the field carries the look. The input is at least 2.75rem tall, a comfortable target, unless you give it a height.
+- **Focus:** the field shows the focus outline while the visitor types (the input's own outline is switched off inside a field). The styles set it with `&:focus-within` on the field – change or replace it there. Without one, a plain `2px` outline in the text colour is used.
+- **Buttons:** hover and focus are set with `&:is(:hover, :focus-visible)`, including a background, since themes give every `<button>` a hover background. The expanding style's icon also uses `&[aria-expanded="true"]` for while it's open.
+- **The expanding style's field** is positioned with GB styles (`position: absolute`, `top`, `right`, `width: 20rem`, `max-width: calc(100vw - 2rem)`), so change where it opens and how wide it is in the Styles panel. Like any popover, it's clipped by an ancestor with `overflow: hidden`.
+
+### Search settings
+
+Select the Search block (the wrapper) to see these in the sidebar, in a **Search** panel.
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Search only | `postTypes` | *(none)* | A tick box for each public content type on the site (Posts, Pages, Products, your custom post types). **Nothing ticked searches everything**, like WordPress's own search. See [Searching only some content types](#searching-only-some-content-types). A ticked type that no longer exists is listed as "(not found on this site)" so you can untick it. |
+| Label | `label` | "Search" | The name screen readers hear for the input (unless there's a visible label part) and for icon-only buttons. Say what's searched, e.g. "Search products". |
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the `<form>`'s `id`.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+### Searching only some content types
+
+The form sends the visitor to your site's normal search results page (`/?s=…`), with the chosen types added:
+
+- **One type WordPress can search by itself** (Posts, Products, most custom post types) is sent as WordPress's own `post_type=…`. That's how WooCommerce's product search works, so WooCommerce shows its product results page.
+- **Anything else** – Pages (which WordPress can't search on their own), or several types together – is sent as `tmb_types=page,post`, and the plugin limits the main search query to those types.
+- **Only viewable types are accepted**, whichever way they arrive. The list is checked against the content types visitors can already view (not attachments) when the page is built and again when the search runs, so editing the URL can't reach private content types.
+
+### Accessibility behaviour
+
+- **A search landmark:** the block is a `<form role="search">`, so screen reader users can jump straight to it.
+- **The input always has a name:** the visible label part if there is one (a real `<label for>`), otherwise the **Label** setting as `aria-label`. On phones the keyboard's Enter key reads "Search".
+- **Icon-only buttons are named** after the **Label** setting. The search button is a real `<button type="submit">`, so it works without JavaScript.
+- **The expanding style** follows the WAI-ARIA disclosure pattern: the icon is a real button with `aria-expanded` and `aria-controls` (set on the server, so it's right before any JavaScript runs). Opening it moves focus to the input; **Escape** closes it and returns focus to the icon; clicking or tabbing away closes it. A field that would stick out of the screen is moved sideways to fit. Visitors who prefer reduced motion see it open without the fade.
+- **Without JavaScript** the expanding style's field is simply shown and the icon (which couldn't do anything) hidden, so the search still works.
+
+#### Loading
+
+A few lines of CSS (`viewStyle`) load only on pages with a Search block. There's no script at all, except for the expanding style: a small script (about 1 KB) loads only on pages with a search that uses it.
+
+---
+
 ## Entrance animations
 
 Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
@@ -1211,12 +1319,14 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 - `[data-dropdown-part="button|drawer"]` – the button (with `aria-expanded` and `aria-controls`) and the drawer (an inline `display: none` while closed); `[data-dropdown-owned]` once a dropdown has claimed them.
 - `.tmb-breadcrumbs` – the Breadcrumbs wrapper (a `<nav>`), with `data-tmb-breadcrumbs` when collapsing is on. `.tmb-breadcrumbs__list` – the `<ol>`; `.tmb-breadcrumbs__step` – each `<li>` (`hidden` while collapsed away); `.tmb-breadcrumbs__more` – the "…" button (in an `li.tmb-breadcrumbs__more-step`).
 - `[data-breadcrumb-part="item|separator|current"]` – the parts, repeated for each step; the current page has `aria-current="page"`, separators `aria-hidden="true"`.
+- `.tmb-search` – the Search wrapper (a `<form role="search">`). `input.tmb-search__input` – the real input that replaces the input part (it keeps `data-search-part="input"`).
+- `[data-search-part="field|input|submit|label|toggle"]` – the parts; the expanding style's toggle has `aria-expanded` and `aria-controls`, and its field an inline `display: none` while closed.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
 - `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
 
 ### PHP
 
-- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `animations`, `masks`, `faq`.
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `animations`, `masks`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
@@ -1248,6 +1358,8 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
   } );
   ```
 
+- URL parameter `tmb_types` – a comma-separated list of content types to limit the main search query to (`/?s=lemon&tmb_types=page,post`), sent by Search blocks that search Pages or several types. Only viewable types are used; anything else is ignored. It's read in `pre_get_posts` rather than registered as a query variable, so it never changes which page WordPress shows.
+- Script handle `thingamablocks-search-expand` – the Search block's expanding-style script (`build/search/expand.js`), registered on every page, enqueued only by a search that uses it.
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 
 ### Storage keys
@@ -1267,15 +1379,15 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, or the Breadcrumbs' `<nav>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, the Breadcrumbs' `<nav>`, or the Search's `<form>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -1315,6 +1427,15 @@ All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Conte
 - The front-end script (`src/breadcrumbs/view.js`, a `viewScript`) only collapses long trails: it compares the first and last steps' positions to tell whether the list fits on one line, hides middle steps one at a time until it does, and re-checks with a `ResizeObserver` and when fonts load. The trail shows without it.
 - In the editor (`src/breadcrumbs/edit.js`) the canvas shows the three part templates, not a trail.
 - **Tests:** `tests/e2e/breadcrumbs.spec.js` covers page, post, archive, search and 404 trails, the markup, the home icon, leaving out the blog page and category, hiding on the home page, one `BreadcrumbList` per page, collapsing on a phone, axe checks and editor validity of every style. `tests/e2e/seo-plugins.spec.js` installs Yoast SEO and Rank Math (free) from WordPress.org, checks that the block shows Yoast's trail and leaves the structured data to Yoast, and that it uses its own trail and structured data while Rank Math's breadcrumbs are off, then deactivates them.
+
+**Search**
+
+- PHP (`includes/class-thingamablocks-search-render.php`, `Thingamablocks_Search_Render`) renders the wrapper as `<form role="search" method="get" action="{home URL}">`. A text input can't be a GenerateBlocks block, so the **input** part (a Text block) is swapped for a real `<input type="search" name="s">` with its text as the `placeholder`, the current search (`get_search_query()`) as its value, `enterkeyhint="search"`, and `aria-label` from the **Label** setting unless there's a label part. A **label** part becomes a `<label for>` pointing at the input. The **submit** button gets `type="submit"`; the expanding style's **toggle** gets `type="button"` (or `role="button"` and `tabindex="0"` if it isn't a `<button>`), `aria-expanded="false"` and `aria-controls`, and its field an ID and an inline `display:none`. Icon-only buttons (no text once the SVG is ignored) get `aria-label` from the **Label** setting. Attributes are added with `WP_HTML_Tag_Processor`, and every value is escaped.
+- **Content types** become one hidden field: `post_type` for a single publicly queryable type (WordPress and WooCommerce handle it as usual), otherwise `tmb_types`. A `pre_get_posts` hook applies `tmb_types` to the main search query only (never in the admin). Both the saved list and the incoming `tmb_types` go through `allowed_types()`, which keeps only viewable post types (`is_post_type_viewable()`, not attachments), so a forged attribute or URL can't search private types. Parts are found with `Thingamablocks_Search_Html` (`includes/class-thingamablocks-search-html.php`), a `WP_HTML_Tag_Processor` subclass whose bookmarks give each part's exact start and end, matching nested tags of the same name, so the input can be swapped in (keeping its class and ID) and a label part of any tag made a `<label>`.
+- **The input's look** comes from a few lines of CSS (`src/search/style.scss`, a `viewStyle`): a reset strong enough to beat a theme's `input[type="search"]` styles (no border, background or padding; font and colour inherited), a minimum height, and a focus outline on the field (`:focus-within`, zero specificity, so the GB styles' own `&:focus-within` wins).
+- **The expanding style's script** (`src/search/expand.js`, built by a `webpack.config.js` entry since it has no `block.json`) is registered on `init` and enqueued only by a search with both a toggle and a field. It opens and closes the field (an opacity fade with the Web Animations API, none for reduced motion), focuses the input, handles Escape, outside clicks and focus leaving, and nudges a positioned field sideways with `translate` to keep it 8 px inside the screen. Before such a search PHP prints a `<noscript><style>` that shows the field and hides the toggle when JavaScript is off.
+- In the editor (`src/search/edit.js`, `editor.scss`) the input part is shown dimmed like a placeholder, the expanding style's field sits in the page flow under the icon, and the sidebar lists the site's viewable post types (from the REST API) as tick boxes.
+- **Tests:** `tests/e2e/search.spec.js` builds each style in the editor (so GenerateBlocks compiles its CSS) and checks the landmark, the named input and buttons, the theme's input styles being reset, searching everything / only pages (`tmb_types`) / only posts (`post_type`), a forged list only letting public types through, the expanding style's opening, focus, Escape and staying on screen, the no-JavaScript fallback, clicking outside, two expanding searches sharing a field ID, every starting style being valid in the editor, parts keeping their GB class and ID with a heading as the label, that only the expanding style loads a script, and axe. `editor.spec.js` checks the block saves valid.
 
 ### How entrance animations work
 
@@ -1357,6 +1478,7 @@ All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Conte
 - **Patterns.** `includes/patterns.php` tags each pattern with its block and skips registering the ones whose block is switched off.
 - **Features.** The editor scripts for the Entrance animation, Mask and FAQ schema panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, masks are plain GenerateBlocks CSS, and FAQ schema is built on the server from `data-tmb-faq`.
 - **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles, FAQ schema by `"data-tmb-faq":"true"` in an accordion's saved attributes.
+- **The page.** Each group (Blocks, Features) is a card, and each item a row with its name (a `<label>`), description and usage count (linked to the switch with `aria-describedby`) and the switch. A switch is a real checkbox with `role="switch"` and a `tmb-switch` class, styled as a sliding switch by a small inline stylesheet that's enqueued only on this page (`admin_enqueue_scripts`, checking the page's hook). The "on" colour and focus ring use `--wp-admin-theme-color`, so they follow the user's admin colour scheme; the "off" track is dark enough to see against white (3:1), and the slide is switched off for reduced motion.
 - **Saving.** Each switch has a hidden `0` field before its checkbox, so unticked boxes are saved as `false`; the sanitize callback keeps only known keys, as true/false.
 
 ### The dark mode head output
@@ -1378,7 +1500,7 @@ Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all five blocks).
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all six blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews).
 
@@ -1408,7 +1530,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/` and `src/breadcrumbs/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/` and `build/breadcrumbs/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
@@ -1430,12 +1552,14 @@ includes/
   class-thingamablocks-dropdown-render.php     Dropdown render: config, closed drawer with an ID, button ARIA, no-JavaScript <noscript> style
   class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: SEO plugin detection, Yoast/Rank Math trails, the block's own trail for every kind of page
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
+  class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
+  class-thingamablocks-search-html.php         Search: finds a part's whole element (nested tags included) with WP_HTML_Tag_Processor bookmarks
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
   class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
-  settings.php                  Settings → Thingamablocks: the switches, usage counts, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
+  settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
   sale-banner.php               "Sale banner with countdown" pattern
@@ -1493,6 +1617,16 @@ src/breadcrumbs/
   icon.js                       Block and style icons
   style.scss                    The row of steps and the "…" button; a viewStyle, so only on pages with Breadcrumbs
   editor.scss                   Part templates side by side in the canvas, sidebar helper styles
+src/search/
+  block.json                    Block name, attributes, supports, asset files
+  index.js                      Registers the block, variations and inserter example
+  edit.js                       Editor UI: style picker, Search only / Label settings, missing-input warning
+  parts.js                      "Search part" panel added to GB Element/Text/Shape/Media blocks
+  templates.js                  The four starting styles (Bar with button, Pill, Underline, Icon that opens a search)
+  expand.js                     Front-end open/close for the expanding style (loaded only where it's used)
+  icon.js                       Block and style icons
+  style.scss                    Input reset and field focus outline; a viewStyle, so only on pages with a Search
+  editor.scss                   Input shown as a placeholder, expanding field in the page flow, sidebar helper styles
 src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
@@ -1512,12 +1646,12 @@ src/shared/
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
-webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/ and src/faq/ entries
+webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/ and src/search/expand.js entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), settings page (settings.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), search (search.spec.js), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

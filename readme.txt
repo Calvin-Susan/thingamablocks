@@ -12,13 +12,14 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds five blocks to the GenerateBlocks category in the block inserter:
+Thingamablocks adds six blocks to the GenerateBlocks category in the block inserter:
 
 * **Toggle** – a switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes.
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
 * **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
 * **Dropdown** – a button that opens a drawer of links, downloads or any other blocks.
 * **Breadcrumbs** – the path to the current page (Home › Blog › Category › Post), worked out automatically wherever you place it, with breadcrumb structured data for search engines. Works with Yoast SEO and Rank Math.
+* **Search** – a search form you style with GenerateBlocks, that can search only the content types you choose (just products, just pages…). Four starting styles, including a search icon that opens a field.
 
 It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
 
@@ -26,11 +27,11 @@ And it adds **image masks** to the GenerateBlocks Image block: cut an image to a
 
 With GenerateBlocks Pro, it adds **FAQ schema** to the Accordion block: one switch tells search engines the accordion is a list of questions and answers (schema.org FAQPage structured data), built from the accordion's own text.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), and FAQ schema adds only the structured data itself, on pages with an FAQ accordion. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block (the Search block has no script at all unless it uses the expanding style), image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), and FAQ schema adds only the structured data itself, on pages with an FAQ accordion. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
-Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy. Each switch shows how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
+Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy: each has an on/off switch, with a short description and how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
 
 = Toggle: starting layouts =
 
@@ -263,6 +264,45 @@ With Yoast SEO or Rank Math active, the block shows their trail by default, so v
 
 Change the trail with the `thingamablocks_breadcrumbs_trail` filter (a list of label and URL pairs; the last is the current page). Call `window.tmbBreadcrumbs.init()` after adding breadcrumbs with AJAX. Style the row with `.tmb-breadcrumbs__list` and the "…" button with `.tmb-breadcrumbs__more`. See the README for details.
 
+= Search: what it's for =
+
+A search form for your header, sidebar or 404 page that looks like the rest of your site, because it's built from GenerateBlocks blocks. Tick **Products** and it's a WooCommerce product search; tick **Pages** and it only searches pages. Results show on your theme's normal search results page.
+
+= Search: starting styles =
+
+* **Bar with button** – a bordered field with a "Search" button beside it.
+* **Pill, button inside** – a rounded field with a round search-icon button inside it.
+* **Underline** – just a line and a search icon, for headers and sidebars.
+* **Icon that opens a search** – a search icon; clicking it opens a field below it, floating over the page.
+
+= Search: parts =
+
+Marked in the **Search part** panel on GenerateBlocks blocks inside the Search:
+
+* **The field** – the box around the input. Style its border, background, padding, font and colour here; the input takes on its font and colour, and the field gets a focus outline while the visitor types (change it with `&:focus-within`).
+* **The input** – a Text block that becomes a real search input on the site. Its text is the placeholder; on a search results page it shows what was searched for.
+* **The search button** – a Text block set to `<button>`. It can be just an icon.
+* **A visible label** (optional) – becomes a real `<label>` for the input.
+* **A button that opens the field** – the expanding style's icon. Put the field next to it.
+
+Why style the field rather than the input? Themes (GeneratePress included) style every search input with selectors stronger than GenerateBlocks', so the plugin resets the input and lets the field carry the look.
+
+= Search: settings =
+
+* **Search only** – tick the content types to search. Nothing ticked searches everything, like WordPress's own search.
+* **Label** – what screen readers hear for the input and icon-only buttons ("Search" by default). Say what's searched, e.g. "Search products".
+
+One type WordPress can search by itself (Posts, Products) is sent as WordPress's own `post_type`, so WooCommerce shows its product results. Pages (which WordPress can't search on their own) or several types are sent as `tmb_types` and applied to the main search query. Only content types visitors can already view are accepted, so editing the URL can't reach private content.
+
+= Search: accessibility =
+
+* A search landmark (`<form role="search">`), and the input always has a name: the visible label, or the Label setting.
+* Icon-only buttons are named after the Label setting.
+* The expanding style's icon is a real button with `aria-expanded` and `aria-controls`. Opening it moves focus to the input; Escape closes it and returns focus to the icon; clicking or tabbing away closes it. The field is moved sideways if it would stick out of the screen. No fade for visitors who prefer reduced motion.
+* Without JavaScript the expanding style's field is simply shown.
+
+No script loads except for the expanding style (about 1 KB, only on pages using it); a few lines of CSS load on pages with a Search block.
+
 = Entrance animations =
 
 Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **Entrance animation** panel. The legacy GenerateBlocks 1.x blocks aren't supported.
@@ -344,7 +384,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need.
 
 == Frequently Asked Questions ==
@@ -433,7 +473,7 @@ Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on
 
 = Can I hide blocks I don't use? =
 
-Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
+Yes. Go to **Settings → Thingamablocks** (administrators only), turn off the switch for any block or feature, and save. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 
@@ -454,6 +494,10 @@ Probably not as a rich result. Since August 2023 Google only shows FAQ rich resu
 = Will FAQ schema clash with my SEO plugin? =
 
 No: on a page with a Yoast SEO or Rank Math FAQ block (which add their own FAQPage), Thingamablocks prints nothing. If you add FAQ schema some other way (Rank Math's Schema Generator, say), switch FAQ schema off on that accordion, or use the `thingamablocks_faq_schema` filter and return `null`.
+
+= Can the Search block search only WooCommerce products? =
+
+Yes. Tick **Products** under **Search only** in the block's sidebar. The search then goes to WooCommerce's own product results page. You can tick several types too (Pages and Posts, say), and the results page shows only those.
 
 = Why aren't mask SVGs uploaded to the Media Library? =
 

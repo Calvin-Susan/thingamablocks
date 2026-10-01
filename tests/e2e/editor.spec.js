@@ -83,6 +83,7 @@ test.describe( 'Editor', () => {
 			'thingamablocks/countdown',
 			'thingamablocks/dropdown',
 			'thingamablocks/marquee',
+			'thingamablocks/search',
 			'thingamablocks/toggle',
 		] );
 

@@ -1,0 +1,52 @@
+// Front end (block.json "viewStyle": only on pages with a Search block).
+
+// The input is a plain text area inside the "field" part, which carries the
+// look (border, background, padding, font, colour). Themes style every
+// search input (GeneratePress: input[type="search"]), so these few resets
+// are specific enough to win over them.
+.tmb-search input.tmb-search__input,
+.tmb-search input.tmb-search__input:focus {
+	appearance: none;
+	flex: 1 1 auto;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+// A comfortable click target, unless the input part is given a height.
+:where(.tmb-search input.tmb-search__input) {
+	min-height: 2.75rem;
+}
+
+.tmb-search input.tmb-search__input::placeholder {
+	color: inherit;
+	opacity: 0.6;
+}
+
+// Inside a field, the field shows focus (style it with &:focus-within).
+.tmb-search [data-search-part="field"] input.tmb-search__input:focus {
+	outline: none;
+}
+
+:where(.tmb-search [data-search-part="field"]:focus-within) {
+	outline: 2px solid currentcolor;
+	outline-offset: 2px;
+}
+
+:where(.tmb-search [data-search-part="submit"], .tmb-search [data-search-part="toggle"]) {
+	cursor: pointer;
+}
+
+// A label part that was a paragraph or heading stays on its own line.
+:where(.tmb-search label.tmb-search__label--block) {
+	display: block;
+}

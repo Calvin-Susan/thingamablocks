@@ -16,5 +16,7 @@ module.exports = {
 		'animations/view': './src/animations/view.js',
 		'mask/editor': './src/mask/editor.js',
 		'faq/editor': './src/faq/editor.js',
+		// Only loaded by a Search block using the expanding style.
+		'search/expand': './src/search/expand.js',
 	} ),
 };

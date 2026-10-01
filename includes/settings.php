@@ -53,6 +53,12 @@ function thingamablocks_switches() {
 			'type'        => 'block',
 			'needle'      => '<!-- wp:thingamablocks/breadcrumbs ',
 		),
+		'search'      => array(
+			'label'       => __( 'Search', 'thingamablocks' ),
+			'description' => __( 'A search form styled with GenerateBlocks that can search only the content types you choose.', 'thingamablocks' ),
+			'type'        => 'block',
+			'needle'      => '<!-- wp:thingamablocks/search ',
+		),
 		'animations'  => array(
 			'label'       => __( 'Entrance animations', 'thingamablocks' ),
 			'description' => __( 'The “Entrance animation” panel on GenerateBlocks blocks.', 'thingamablocks' ),
@@ -119,6 +125,51 @@ function thingamablocks_sanitize_settings( $input ) {
 	}
 
 	return $clean;
+}
+
+add_action( 'admin_enqueue_scripts', 'thingamablocks_settings_style' );
+/**
+ * Switches and cards for the settings page, only on that page.
+ *
+ * @param string $hook_suffix Admin page.
+ */
+function thingamablocks_settings_style( $hook_suffix ) {
+	if ( 'settings_page_thingamablocks' !== $hook_suffix ) {
+		return;
+	}
+
+	// A checkbox styled as a switch (role="switch": announced as on/off).
+	// The "off" track is dark enough to see against white (3:1).
+	$css = '.tmb-settings__intro{max-width:760px}'
+		. '.tmb-settings__card{box-sizing:border-box;max-width:760px;margin:20px 0;padding:8px 24px;border:1px solid #dcdcde;border-radius:8px;background:#fff}'
+		. '.tmb-settings__card h2{margin:16px 0 4px;font-size:1.3em}'
+		. '.tmb-settings__row{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0;border-top:1px solid #f0f0f1}'
+		. '.tmb-settings__card h2+.tmb-settings__row{border-top:0}'
+		. '.tmb-settings__label{font-size:14px;font-weight:600;color:#1d2327}'
+		. '.tmb-settings .tmb-settings__text .description{margin:4px 0 0}'
+		. '.tmb-settings__usage{display:block;margin-top:2px;color:#50575e}'
+		. '.tmb-settings input.tmb-switch{appearance:none;-webkit-appearance:none;position:relative;flex:none;box-sizing:border-box;width:48px;height:28px;margin:0;padding:0;border:0;border-radius:999px;background:#8c8f94;cursor:pointer;transition:background-color .15s ease;box-shadow:none}'
+		. '.tmb-settings input.tmb-switch::before,.tmb-settings input.tmb-switch:checked::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;margin:0;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}'
+		. '.tmb-settings input.tmb-switch:checked{background:var(--wp-admin-theme-color,#2271b1)}'
+		. '.tmb-settings input.tmb-switch:checked::before{transform:translateX(20px)}'
+		. '.tmb-settings input.tmb-switch:focus{outline:2px solid transparent;box-shadow:none}'
+		. '.tmb-settings input.tmb-switch:focus-visible{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--wp-admin-theme-color,#2271b1)}'
+		. '.rtl .tmb-settings input.tmb-switch::before{left:auto;right:3px}'
+		. '.rtl .tmb-settings input.tmb-switch:checked::before{transform:translateX(-20px)}'
+		. '@media (prefers-reduced-motion:reduce){.tmb-settings input.tmb-switch,.tmb-settings input.tmb-switch::before{transition:none}}'
+		// Windows High Contrast replaces background colours: draw it with system colours.
+		. '@media (forced-colors:active){'
+		. '.tmb-settings input.tmb-switch{forced-color-adjust:none;background:Canvas;border:2px solid ButtonText}'
+		. '.tmb-settings input.tmb-switch::before,.tmb-settings input.tmb-switch:checked::before{top:1px;left:1px;background:ButtonText;box-shadow:none}'
+		. '.rtl .tmb-settings input.tmb-switch::before,.rtl .tmb-settings input.tmb-switch:checked::before{left:auto;right:1px}'
+		. '.tmb-settings input.tmb-switch:checked{background:Highlight;border-color:Highlight}'
+		. '.tmb-settings input.tmb-switch:checked::before{background:HighlightText}'
+		. '.tmb-settings input.tmb-switch:focus-visible{outline:2px solid Highlight;outline-offset:2px}'
+		. '}';
+
+	wp_register_style( 'thingamablocks-settings', false, array(), THINGAMABLOCKS_VERSION );
+	wp_enqueue_style( 'thingamablocks-settings' );
+	wp_add_inline_style( 'thingamablocks-settings', $css );
 }
 
 add_action( 'admin_menu', 'thingamablocks_add_settings_page' );
@@ -229,35 +280,30 @@ function thingamablocks_render_settings_page() {
 		'feature' => __( 'Features', 'thingamablocks' ),
 	);
 	?>
-	<div class="wrap">
+	<div class="wrap tmb-settings">
 		<h1><?php esc_html_e( 'Thingamablocks', 'thingamablocks' ); ?></h1>
-		<p><?php esc_html_e( 'Switch off anything you don’t use to keep the editor tidy. Switching something off only hides it: content already using it keeps working on your site and can still be edited. (WordPress may not let you duplicate or paste a switched-off block, though: switch it back on for that.)', 'thingamablocks' ); ?></p>
+		<p class="tmb-settings__intro"><?php esc_html_e( 'Switch off anything you don’t use to keep the editor tidy. Switching something off only hides it: content already using it keeps working on your site and can still be edited. (WordPress may not let you duplicate or paste a switched-off block, though: switch it back on for that.)', 'thingamablocks' ); ?></p>
 
 		<form method="post" action="options.php">
 			<?php settings_fields( 'thingamablocks' ); ?>
 
 			<?php foreach ( $groups as $type => $heading ) : ?>
-				<h2><?php echo esc_html( $heading ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tbody>
-						<?php foreach ( thingamablocks_switches() as $key => $switch ) : ?>
-							<?php
-							if ( $switch['type'] !== $type ) {
-								continue;
-							}
+				<div class="tmb-settings__card">
+					<h2><?php echo esc_html( $heading ); ?></h2>
+					<?php foreach ( thingamablocks_switches() as $key => $switch ) : ?>
+						<?php
+						if ( $switch['type'] !== $type ) {
+							continue;
+						}
 
-							$id = 'thingamablocks-' . $key;
-							?>
-							<tr>
-								<th scope="row"><label for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $switch['label'] ); ?></label></th>
-								<td>
-									<input type="hidden" name="thingamablocks_settings[<?php echo esc_attr( $key ); ?>]" value="0" />
-									<label>
-										<input type="checkbox" id="<?php echo esc_attr( $id ); ?>" name="thingamablocks_settings[<?php echo esc_attr( $key ); ?>]" value="1" aria-describedby="<?php echo esc_attr( $id . '-description' ); ?>" <?php checked( thingamablocks_is_enabled( $key ) ); ?> />
-										<?php echo 'block' === $type ? esc_html__( 'Show in the block inserter', 'thingamablocks' ) : esc_html__( 'Show the panel in the editor', 'thingamablocks' ); ?>
-									</label>
-									<p class="description" id="<?php echo esc_attr( $id . '-description' ); ?>">
-										<?php echo esc_html( $switch['description'] ); ?>
+						$id = 'thingamablocks-' . $key;
+						?>
+						<div class="tmb-settings__row">
+							<div class="tmb-settings__text">
+								<label class="tmb-settings__label" for="<?php echo esc_attr( $id ); ?>"><?php echo esc_html( $switch['label'] ); ?></label>
+								<p class="description" id="<?php echo esc_attr( $id . '-description' ); ?>">
+									<?php echo esc_html( $switch['description'] ); ?>
+									<span class="tmb-settings__usage">
 										<?php
 										echo esc_html(
 											$counts[ $key ]
@@ -269,12 +315,14 @@ function thingamablocks_render_settings_page() {
 												: __( 'Not used anywhere yet.', 'thingamablocks' )
 										);
 										?>
-									</p>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
+									</span>
+								</p>
+							</div>
+							<input type="hidden" name="thingamablocks_settings[<?php echo esc_attr( $key ); ?>]" value="0" />
+							<input type="checkbox" role="switch" class="tmb-switch" id="<?php echo esc_attr( $id ); ?>" name="thingamablocks_settings[<?php echo esc_attr( $key ); ?>]" value="1" aria-describedby="<?php echo esc_attr( $id . '-description' ); ?>" <?php checked( thingamablocks_is_enabled( $key ) ); ?> />
+						</div>
+					<?php endforeach; ?>
+				</div>
 			<?php endforeach; ?>
 
 			<?php submit_button(); ?>

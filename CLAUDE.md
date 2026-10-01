@@ -4,9 +4,11 @@
 WordPress plugin by OGAL Web Design (Kyle). Read README.md for the full guide;
 the essentials:
 
-- **What's in it**: three blocks — Toggle (`thingamablocks/toggle`), Countdown
-  (`thingamablocks/countdown`), Marquee (`thingamablocks/marquee`) — plus
-  entrance animations added to every GenerateBlocks 2 / GB Pro block.
+- **What's in it**: six blocks — Toggle (`thingamablocks/toggle`), Countdown
+  (`thingamablocks/countdown`), Marquee (`thingamablocks/marquee`), Dropdown
+  (`thingamablocks/dropdown`), Breadcrumbs (`thingamablocks/breadcrumbs`),
+  Search (`thingamablocks/search`) — plus entrance animations added to every
+  GenerateBlocks 2 / GB Pro block.
 - **The core idea**: each block is a *settings-only wrapper* (like GB Pro's
   Accordion/Tabs). Everything visible inside is a real GenerateBlocks block
   (Element, Text, Shape, Media), styled with GB's own Styles panel. Parts are

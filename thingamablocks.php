@@ -31,6 +31,8 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-marquee-render.
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-dropdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-trail.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-html.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
@@ -48,6 +50,7 @@ function thingamablocks_register_blocks() {
 		'marquee'     => array( 'Thingamablocks_Marquee_Render', 'render' ),
 		'dropdown'    => array( 'Thingamablocks_Dropdown_Render', 'render' ),
 		'breadcrumbs' => array( 'Thingamablocks_Breadcrumbs_Render', 'render' ),
+		'search'      => array( 'Thingamablocks_Search_Render', 'render' ),
 	);
 
 	foreach ( $blocks as $folder => $render ) {

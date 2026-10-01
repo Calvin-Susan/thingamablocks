@@ -1,0 +1,38 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thingamablocks/search",
+	"version": "0.1.0",
+	"title": "Search",
+	"category": "generateblocks",
+	"description": "A search form built from GenerateBlocks elements, styled however you like, that can search just the content types you choose.",
+	"keywords": [ "search", "find", "form", "field", "products" ],
+	"textdomain": "thingamablocks",
+	"attributes": {
+		"postTypes": {
+			"type": "array",
+			"default": [],
+			"items": {
+				"type": "string"
+			}
+		},
+		"label": {
+			"type": "string",
+			"default": ""
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewStyle": "file:./style-index.css"
+}

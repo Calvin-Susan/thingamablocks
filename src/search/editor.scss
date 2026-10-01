@@ -1,0 +1,38 @@
+// Editor only.
+
+// The input part stands in for the input: make it look like one.
+.tmb-search [data-search-part="input"] {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	min-width: 0;
+	min-height: 2.75rem;
+	opacity: 0.6;
+}
+
+// The expanding style's field sits in the flow, so it's easy to edit.
+.tmb-search.has-toggle [data-search-part="field"] {
+	position: static !important;
+	margin-top: 8px;
+}
+
+.tmb-search-types {
+	margin: 0 0 16px;
+	padding: 0;
+	border: 0;
+
+	legend {
+		margin-bottom: 8px;
+		font-size: 11px;
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+
+	.components-checkbox-control {
+		margin-bottom: 8px;
+	}
+}
+
+.tmb-search-notice {
+	padding: 0 16px 16px;
+}
