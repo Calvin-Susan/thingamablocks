@@ -9,7 +9,7 @@
  * Run through `npm run zip`, which builds first. Uses the system `zip` command.
  */
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +27,12 @@ function fail( message ) {
 	process.exit( 1 );
 }
 
-if ( ! existsSync( join( root, 'build', 'toggle', 'block.json' ) ) ) {
+// Every block in src/ must have been built.
+const blocks = readdirSync( join( root, 'src' ) ).filter( ( name ) =>
+	existsSync( join( root, 'src', name, 'block.json' ) )
+);
+
+if ( blocks.some( ( name ) => ! existsSync( join( root, 'build', name, 'block.json' ) ) ) ) {
 	fail( 'build/ is missing or incomplete. Run `npm run build` first (or use `npm run zip`, which builds for you).' );
 }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Toggle for GenerateBlocks
- * Description:       A Toggle block for GenerateBlocks. It's built from native GenerateBlocks blocks, so you style it with the GB Styles panel, and it can show/hide elements, switch light/dark mode, or toggle classes.
+ * Description:       Add-on blocks for GenerateBlocks, built from native GB blocks so you style them with the GB Styles panel: a Toggle (show/hide, light/dark mode, classes) and a Countdown (date, evergreen, recurring).
  * Version:           0.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
