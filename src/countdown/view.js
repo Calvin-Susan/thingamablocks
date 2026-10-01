@@ -121,7 +121,16 @@ function paintNumbers( countdown, ms ) {
 				? countdown.units[ unit ]
 				: parts[ unit ];
 
-			boxes.forEach( empty ? hide : show );
+			boxes.forEach( ( box ) => {
+				( empty ? hide : show )( box );
+
+				// A separator right after a hidden unit ("00 : 14") goes with it.
+				const next = box.nextElementSibling;
+
+				if ( next && 'separator' === next.getAttribute( 'data-countdown-part' ) ) {
+					( empty ? hide : show )( next );
+				}
+			} );
 		}
 
 		leading = leading && 0 === value;

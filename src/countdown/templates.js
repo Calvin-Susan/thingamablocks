@@ -233,6 +233,8 @@ export const variations = [
 		title: __( 'Inline text', 'toggle-for-generateblocks' ),
 		description: __( '“Ends in 2d 5h 12m 9s”, for banners and buttons.', 'toggle-for-generateblocks' ),
 		icon: variationIcons.inline,
+		// Reads like a sentence: "Ends in 5h 2m 9s", not "Ends in 00d 05h 02m 09s".
+		attributes: { padNumbers: false, hideEmptyUnits: true },
 		innerBlocks: inline(),
 		scope: [ 'block' ],
 	},

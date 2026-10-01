@@ -308,7 +308,9 @@ function RecurringSettings( { attributes, setAttributes } ) {
 function TimingSettings( { attributes, setAttributes } ) {
 	const { mode } = attributes;
 	const { timezone } = getDateSettings();
-	const zoneName = timezone?.string || timezone?.abbr || siteTimeZone();
+	const offsetName = siteTimeZone();
+	const zoneName =
+		timezone?.string || ( '+00:00' === offsetName ? 'UTC' : `UTC${ offsetName }` );
 
 	return (
 		<PanelBody title={ __( 'Countdown', 'toggle-for-generateblocks' ) }>

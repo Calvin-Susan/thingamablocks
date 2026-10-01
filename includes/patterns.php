@@ -26,11 +26,29 @@ function ogal_toggle_register_patterns() {
 		array( 'label' => __( 'Toggles', 'toggle-for-generateblocks' ) )
 	);
 
+	register_block_pattern_category(
+		'ogal-countdown',
+		array( 'label' => __( 'Countdowns', 'toggle-for-generateblocks' ) )
+	);
+
 	$patterns = array(
-		'pricing-toggle' => array(
+		'pricing-toggle'   => array(
 			'title'       => __( 'Pricing table with monthly/annual toggle', 'toggle-for-generateblocks' ),
 			'description' => __( 'Three plans with a segmented toggle that switches between monthly and annual prices.', 'toggle-for-generateblocks' ),
 			'keywords'    => array( 'pricing', 'plans', 'monthly', 'annual', 'toggle' ),
+			'categories'  => array( 'ogal-toggle' ),
+		),
+		'sale-banner'      => array(
+			'title'       => __( 'Sale banner with countdown', 'toggle-for-generateblocks' ),
+			'description' => __( 'A slim banner with an inline countdown. The whole banner disappears when the sale ends.', 'toggle-for-generateblocks' ),
+			'keywords'    => array( 'sale', 'banner', 'countdown', 'offer', 'promo' ),
+			'categories'  => array( 'ogal-countdown' ),
+		),
+		'launch-countdown' => array(
+			'title'       => __( 'Launch countdown', 'toggle-for-generateblocks' ),
+			'description' => __( 'A “coming soon” section with large countdown numbers and a message for when it’s live.', 'toggle-for-generateblocks' ),
+			'keywords'    => array( 'launch', 'coming soon', 'countdown', 'timer' ),
+			'categories'  => array( 'ogal-countdown' ),
 		),
 	);
 
@@ -46,8 +64,7 @@ function ogal_toggle_register_patterns() {
 			array_merge(
 				$pattern,
 				array(
-					'categories' => array( 'ogal-toggle' ),
-					'content'    => file_get_contents( $file ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+					'content' => file_get_contents( $file ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 				)
 			)
 		);
