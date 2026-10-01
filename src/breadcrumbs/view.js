@@ -33,7 +33,9 @@ function fitsOnOneLine( list ) {
 function moreStep( trail ) {
 	const step = document.createElement( 'li' );
 	const button = document.createElement( 'button' );
-	const separator = trail.steps[ 0 ].querySelector( '[aria-hidden="true"]' );
+	const separator = trail.steps[ 0 ].querySelector(
+		':scope > .tmb-breadcrumbs__separator'
+	);
 
 	step.className = 'tmb-breadcrumbs__step tmb-breadcrumbs__more-step';
 	button.type = 'button';
@@ -75,6 +77,8 @@ function layout( trail ) {
 		return;
 	}
 
+	const fullHeight = list.offsetHeight;
+
 	trail.more = moreStep( trail );
 	steps[ 0 ].after( trail.more );
 
@@ -82,8 +86,16 @@ function layout( trail ) {
 		step.hidden = true;
 
 		if ( fitsOnOneLine( list ) ) {
-			break;
+			return;
 		}
+	}
+
+	// Still too long (a long page title on a phone, say) and no shorter for
+	// hiding steps: show the whole trail rather than hiding it for nothing.
+	if ( list.offsetHeight >= fullHeight ) {
+		steps.forEach( ( step ) => ( step.hidden = false ) );
+		trail.more.remove();
+		trail.more = null;
 	}
 }
 
@@ -96,7 +108,12 @@ function expand( trail ) {
 	trail.more = null;
 
 	// Focus the first step that was hidden, so keyboard users carry on there.
-	revealed?.querySelector( 'a, [aria-current]' )?.focus();
+	// (A step without a link, from an SEO plugin's trail say, can't take
+	// focus; then the first link does.)
+	(
+		revealed?.querySelector( 'a[href]' ) ||
+		trail.list.querySelector( 'a[href]' )
+	)?.focus();
 }
 
 function setup( element ) {

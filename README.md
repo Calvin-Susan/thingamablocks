@@ -10,16 +10,17 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Countdown**](#countdown-block) | `thingamablocks/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
 | [**Marquee**](#marquee-block) | `thingamablocks/marquee` | A smooth, endless scrolling strip of logos, messages, headlines or cards, left/right or up/down. |
 | [**Dropdown**](#dropdown-block) | `thingamablocks/dropdown` | A button that opens a drawer of links, downloads or any other blocks. |
+| [**Breadcrumbs**](#breadcrumbs-block) | `thingamablocks/breadcrumbs` | The path to the current page (Home › Blog › Category › Post), worked out automatically for whatever page is being viewed, with breadcrumb structured data for search engines. |
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
 And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask" panel that crops an image to a shape from the GenerateBlocks shape library, or to an SVG of your own.
 
-All four blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All five blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's and Dropdown's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 ---
 
@@ -42,6 +43,12 @@ All four blocks sit in the GenerateBlocks category of the inserter, and all work
   - [Dropdown quick start](#dropdown-quick-start)
   - [How dropdown parts and styling work](#how-dropdown-parts-and-styling-work)
   - [Dropdown settings](#dropdown-settings)
+- [Breadcrumbs block](#breadcrumbs-block)
+  - [Breadcrumbs quick start](#breadcrumbs-quick-start)
+  - [What the trail looks like](#what-the-trail-looks-like)
+  - [How breadcrumb parts and styling work](#how-breadcrumb-parts-and-styling-work)
+  - [Breadcrumbs settings](#breadcrumbs-settings)
+  - [Breadcrumbs and SEO plugins](#breadcrumbs-and-seo-plugins)
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
@@ -60,7 +67,7 @@ All four blocks sit in the GenerateBlocks category of the inserter, and all work
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee** and **Dropdown** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 ---
 
@@ -698,6 +705,154 @@ GenerateBlocks button icons are inline SVGs. WordPress's content filter removes 
 
 ---
 
+## Breadcrumbs block
+
+The path to the page a visitor is on: **Home › Blog › Recipes › Lemon cake**. Each step links back up the site, and the last one is the current page.
+
+You place it once and it works out the trail for **whatever page is being viewed**, so it belongs anywhere that's shared by many pages:
+
+- **A GeneratePress Element** (a Block Element on a hook such as `generate_before_main_content`, or a Content Template) – the usual choice: breadcrumbs above every page, post or archive, set up once.
+- **A block theme template** or template part.
+- **A widget** area.
+- **A single page or post**, if you only want it there.
+
+It also gives search engines the same path as breadcrumb structured data (unless your SEO plugin already does), and if you use **Yoast SEO** or **Rank Math** it shows their trail, so what visitors see matches what search engines are told.
+
+### Breadcrumbs quick start
+
+When you insert Breadcrumbs you pick a starting style:
+
+| Style | Looks like |
+| --- | --- |
+| **Chevrons** (default) | Home › Blog › Post – muted links that turn your accent colour and underline on hover, the current page in your text colour |
+| **Slashes** | Home / Blog / Post |
+| **Pills** | Each step in a soft rounded box, the current page in an accent-coloured pill |
+
+Each style is three GenerateBlocks Text blocks: a link (reading "Parent page"), a separator and the current page (reading "Current page"). **The editor shows these templates, not the real trail** – the trail depends on the page being viewed, so it's built on the front end. Style the three blocks the way you want every step to look, then view any page on the site.
+
+Like the other blocks' layouts, the styles use the GeneratePress global colour variables with fallbacks. Separators are plain characters (`›`, `/`), not icons, so Authors and Contributors can save the block without anything being stripped.
+
+**Recipe: breadcrumbs above every post and page with GeneratePress**
+
+1. **Appearance → Elements → Add New → Block**.
+2. Insert **Breadcrumbs** and choose a style.
+3. Under **Element Settings**, set the **Hook** to `generate_before_main_content` (or wherever you want it), and **Display Rules** to *Entire Site*, excluding the front page if you like (it's hidden there by default anyway).
+4. Publish, and view a post: Home › Blog › Category › Post.
+
+### What the trail looks like
+
+The block builds the trail from WordPress's own data. On each kind of page:
+
+| Page | Trail |
+| --- | --- |
+| A page | Home › Parent page › … › Page |
+| A post | Home › Blog page › Category › Post. The category is the **primary category** set in Yoast SEO or Rank Math if there is one, otherwise the post's first category, with its parent categories before it. The blog page is the **Posts page** from Settings → Reading (only when the site has a static front page). Either can be switched off. |
+| The blog page | Home › Blog page |
+| A custom post type item | Home › Post type archive (e.g. "Projects", if the post type has an archive) › parent items › Item |
+| A media attachment | The trail of the post it's attached to, then the attachment |
+| A category, tag or custom taxonomy archive | Home › parent terms › Term. Categories and tags also get the blog page in front. |
+| A post type archive | Home › Archive name |
+| An author archive | Home › Author's name |
+| A date archive | Home › 2026 › October › 1 |
+| Search results | Home › Search results for "…" |
+| 404 | Home › Page not found (not a link) |
+| **WooCommerce** shop | Home › Shop |
+| **WooCommerce** product category or tag | Home › Shop › parent categories › Category |
+| **WooCommerce** product | Home › Shop › Product category (the primary one, if Yoast or Rank Math sets it) › Product |
+
+The front page has no trail by default (it would just be "Home"). With **Use Yoast SEO's / Rank Math's breadcrumbs** on, the SEO plugin's trail is used instead of this one – see [Breadcrumbs and SEO plugins](#breadcrumbs-and-seo-plugins).
+
+### How breadcrumb parts and styling work
+
+#### Breadcrumb parts
+
+Select a GenerateBlocks Element, Text, Shape or Media block inside Breadcrumbs and you'll get a **Breadcrumb part** panel with one setting, *This block is*:
+
+| Option | `data-breadcrumb-part` value | What it does |
+| --- | --- | --- |
+| Not a part (not shown) | *(none)* | Not shown on the site |
+| Link to each page | `item` | The link for every step before the current page. Use a GenerateBlocks **Text** block set to the `<a>` tag. |
+| Separator | `separator` | Shown between steps; hidden from screen readers |
+| The current page | `current` | The last step. Not a link; gets `aria-current="page"`. |
+
+**They're templates.** You style each one once, and on the site it's repeated for every step with that page's title and link. The text you type in them in the editor is only a placeholder. Only blocks set as a part are shown – anything else you put inside Breadcrumbs is left out.
+
+The sidebar warns you if there's no **Link to each page** part. If there's no current page part, the current page is plain text; without a separator, the steps sit side by side with no separator. A Text block with a GenerateBlocks icon keeps its icon on every step.
+
+#### Styling
+
+- **Everything visible** – link, separator, current page – is styled in the GB Styles panel, hover and focus included (the styles set `&:is(:hover, :focus-visible)` and `&:focus-visible` on the link).
+- **The current page** has its own part, so it needs no special selector. If you'd rather style it from global CSS, use `[aria-current="page"]`.
+- **The row**: the plugin lays the steps out in a wrapping row with a `0.5em` gap. To change the gap or alignment, target `.tmb-breadcrumbs__list` / `.tmb-breadcrumbs__step` in global CSS.
+- **The "…" button** (when a long trail collapses) isn't a GB block. It inherits the text colour and font; style it with `.tmb-breadcrumbs__more`.
+
+### Breadcrumbs settings
+
+Select the Breadcrumbs block (the wrapper) to see these in the sidebar.
+
+#### Trail
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Use Yoast SEO's / Rank Math's breadcrumbs | `useSeoPlugin` | `true` | Only shown when one of them is active. Shows the plugin's trail; turn off to use this block's own trail and the settings below. |
+| Home | `home` | `text` | `text`, `icon` (a house) or `both`. Applies to this block's own trail only. |
+| Home label | `homeLabel` | "Home" | With **Icon**, it's kept as hidden text so screen readers still hear "Home". |
+| Show the blog page on posts | `showBlogPage` | `true` | Home › Blog › Category › Post. Also puts the blog page before category and tag archives. |
+| Show the category on posts | `showCategory` | `true` | The primary category if your SEO plugin sets one, otherwise the first, with its parents. |
+| Show the current page | `showCurrent` | `true` | As the last step, not a link. Off: the trail ends at the parent, as a link. |
+| Show on the home page | `showOnHome` | `false` | Off: nothing is printed on the front page. |
+| Collapse when it doesn't fit | `collapse` | `true` | See [Collapsing long trails](#collapsing-long-trails). |
+
+#### Search engines
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Breadcrumb structured data | `schema` | `auto` | **Automatic (only if no SEO plugin adds it)**, **Always add it** or **Never add it**. A schema.org `BreadcrumbList` with the full trail, printed once per page (in the footer) however many Breadcrumbs blocks it has. |
+
+#### Accessibility
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Label | `ariaLabel` | "Breadcrumb" | Names the breadcrumb navigation for screen readers. Change it if a page has two breadcrumb blocks, or for a translation. |
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the `<nav>`'s `id`.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+### Breadcrumbs and SEO plugins
+
+**Why it matters:** SEO plugins tell search engines the path to each page with breadcrumb structured data, and Google can show it in search results. If the breadcrumbs visitors see say something different, that's confusing. So when **Yoast SEO** or **Rank Math** is active, the block shows *their* trail by default (**Use Yoast SEO's / Rank Math's breadcrumbs**), and leaves the structured data to them.
+
+- **Yoast SEO**: its trail is used, and on **Automatic** the block adds no structured data (Yoast always includes a `BreadcrumbList`).
+- **Rank Math**: its trail is used when its breadcrumbs are switched on (Rank Math → General Settings → Breadcrumbs); on **Automatic** the block then adds no structured data. With Rank Math's breadcrumbs off, the block uses its own trail and adds the structured data itself.
+- With the SEO plugin's trail, change *what's in it* in the SEO plugin's breadcrumb settings. The block's **Home**, **blog page** and **category** settings apply only to its own trail; **Show the current page**, **Show on the home page** and **Collapse** always apply.
+- **If the SEO plugin's breadcrumbs fail for any reason** (an update changes them, an error), the block quietly uses its own trail. It never takes the page down.
+- **Other SEO plugins.** All in One SEO, The SEO Framework and Slim SEO are detected too (they add breadcrumb structured data by default), so **Automatic** leaves it to them; their trails aren't used. For anything else that adds it (SEOPress with its breadcrumbs on, say), set **Breadcrumb structured data** to **Never add it**, or tell the block site-wide with the [`thingamablocks_breadcrumbs_seo_schema`](#php) filter.
+
+### Collapsing long trails
+
+With **Collapse when it doesn't fit** on, a trail that would wrap onto a second line (usually on a phone) hides steps from the middle – oldest first, only as many as needed – behind a **…** button: **Home › … › Parent › Page**. The first step and the last two always stay. Pressing **…** shows the full trail and moves keyboard focus to the first step it revealed. It re-checks when the screen is rotated or resized, and after web fonts load.
+
+Without JavaScript, or with collapsing off, a long trail simply wraps.
+
+#### Accessibility behaviour
+
+- **A labelled navigation landmark**: a `<nav aria-label="Breadcrumb">` holding an ordered list (`<ol>`), one `<li>` per step, so screen readers announce it as breadcrumb navigation and say how many steps there are.
+- **The current page** has `aria-current="page"` and isn't a link.
+- **Separators are hidden from screen readers** (`aria-hidden="true"`); the list already says how the steps relate.
+- **Home as an icon** keeps "Home" (or your Home label) as hidden text, so it's never an unnamed link.
+- **Easy to hit:** the styles' links, and the … button, are at least 24 px tall (WCAG 2.5.8).
+- **The … button** is a real `<button>` named "Show the full path", with a visible focus outline.
+- **Server-rendered:** the whole trail is in the HTML before any JavaScript runs; JavaScript only collapses it.
+
+#### Loading
+
+A few lines of CSS (`viewStyle`) and a small script (`viewScript`) load only on pages with a Breadcrumbs block. No JavaScript is needed to show the trail – only to collapse long ones.
+
+---
+
 ## Entrance animations
 
 Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
@@ -936,6 +1091,16 @@ window.tmbDropdown.toggle( element );            // open or close (pass the .tmb
 - `init( root )` sets up every dropdown inside `root` (default `document`) that isn't set up yet; calling it more than once is safe.
 - `open`, `close` and `toggle` take the wrapper element or its HTML anchor. Opening one closes any other that's open, as a click would. They don't move keyboard focus.
 
+### Breadcrumbs: `window.tmbBreadcrumbs`
+
+```js
+window.tmbBreadcrumbs.init( container ); // set up breadcrumbs added later, e.g. by AJAX
+```
+
+- `init( root )` sets up collapsing for every Breadcrumbs block inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. Only trails with **Collapse when it doesn't fit** on need it – the trail itself is plain HTML from the server.
+
+The Breadcrumbs block fires no events. Its PHP filters are under [PHP](#php).
+
 ### Entrance animations: `window.tmbAnimate`
 
 ```js
@@ -959,6 +1124,8 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 - `.tmb-marquee__viewport` > `.tmb-marquee__track` – added by the script: the viewport clips and carries the edge fade; the track holds the row and its copies, and is what moves.
 - `.tmb-dropdown` – the Dropdown wrapper, with `.is-open` while open, `data-placement="bottom|top"` while open, and the `--tmb-dropdown-gap` custom property (the **Space between button and drawer**).
 - `[data-dropdown-part="button|drawer"]` – the button (with `aria-expanded` and `aria-controls`) and the drawer (an inline `display: none` while closed); `[data-dropdown-owned]` once a dropdown has claimed them.
+- `.tmb-breadcrumbs` – the Breadcrumbs wrapper (a `<nav>`), with `data-tmb-breadcrumbs` when collapsing is on. `.tmb-breadcrumbs__list` – the `<ol>`; `.tmb-breadcrumbs__step` – each `<li>` (`hidden` while collapsed away); `.tmb-breadcrumbs__more` – the "…" button (in an `li.tmb-breadcrumbs__more-step`).
+- `[data-breadcrumb-part="item|separator|current"]` – the parts, repeated for each step; the current page has `aria-current="page"`, separators `aria-hidden="true"`.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
 - `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
 
@@ -967,6 +1134,24 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
 - Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
+- Filter `thingamablocks_breadcrumbs_trail` – change the breadcrumb trail. Receives `$trail`, a list of steps (`array( 'label' => 'Recipes', 'url' => 'https://…' )`, the last being the current page; a step with an empty `url` isn't a link), and `$options`, the block's cleaned settings. It runs after the trail is built (or taken from the SEO plugin). Labels are stripped of HTML and escaped afterwards, and steps without a label are dropped.
+
+  ```php
+  // Projects have no archive, so link them to the "Our work" page.
+  add_filter( 'thingamablocks_breadcrumbs_trail', function ( $trail ) {
+  	if ( is_singular( 'project' ) ) {
+  		array_splice( $trail, 1, 0, array( array( 'label' => 'Our work', 'url' => home_url( '/our-work/' ) ) ) );
+  	}
+  	return $trail;
+  } );
+  ```
+
+- Filter `thingamablocks_breadcrumbs_seo_schema` ( `$adds`, `$plugin` ) – whether an SEO plugin already adds breadcrumb structured data, so blocks on **Automatic** don't add it again. `$adds` is what the block detected (Yoast, Rank Math with its breadcrumbs on, All in One SEO, The SEO Framework, Slim SEO); return `true` for an SEO plugin it doesn't know, or `false` if you've switched your plugin's breadcrumb schema off.
+
+  ```php
+  add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );
+  ```
+
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 
 ### Storage keys
@@ -986,15 +1171,15 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-All four blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper `<div>` is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All five blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, or the Breadcrumbs' `<nav>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -1023,6 +1208,17 @@ All four blocks save only their inner blocks (`save` returns `<InnerBlocks.Conte
 - The positioning lives in a small stylesheet (`src/dropdown/style.scss`), loaded as a `viewStyle` only on pages with a Dropdown. Every rule is wrapped in `:where()`, so it has no specificity and any GB style wins. The wrapper is `position: relative; display: inline-block`, so it's as wide as the button, and the drawer is `position: absolute; width: 100%` below it.
 - The front-end script (`src/dropdown/view.js`, loaded only on pages with a Dropdown) opens and closes it, measures the room above and below to choose the side (`data-placement`), sets the drawer's `left` to line it up and keep it on screen (allowing for a theme's list margins), and handles Escape, outside clicks, focus leaving, the Down arrow, one-at-a-time, the events and `window.tmbDropdown`. The reveal animations (`src/dropdown/reveal.js`) use the Web Animations API and are shared with the editor's **Preview** button.
 - In the editor (`src/dropdown/edit.js`, `editor.scss`) the drawer sits in the page flow under the button rather than floating, and is shown only while the dropdown or something inside it is selected.
+
+**Breadcrumbs**
+
+- The trail is worked out in PHP when the page is rendered (`includes/class-thingamablocks-breadcrumbs-trail.php`, `Thingamablocks_Breadcrumbs_Trail`): from Yoast SEO's or Rank Math's breadcrumbs when that's switched on (their APIs are wrapped in a `try`/`catch`, so any failure falls back to the block's own trail), otherwise from WordPress's conditional tags (`is_singular()`, `is_category()`…), page and term ancestors, the Posts page setting, the primary category post meta Yoast and Rank Math save, and WooCommerce's shop page. Then the `thingamablocks_breadcrumbs_trail` filter, then every label is stripped of HTML.
+- PHP (`includes/class-thingamablocks-breadcrumbs-render.php`) renders each **part template once through GenerateBlocks** (`WP_Block::render()`), so GB prints its CSS as usual. It then **repeats** that HTML for every step with the `WP_HTML_Tag_Processor`: sets the link's `href` (or removes it for a step without a page), adds `aria-current="page"` to the current page and `aria-hidden="true"` to separators, and swaps in the step's escaped title (inside GB's `.gb-text` span when the Text block has an icon). Each step is an `<li>` in `<nav class="tmb-breadcrumbs" aria-label="…"><ol class="tmb-breadcrumbs__list">`. Settings are checked against their allowed values.
+- The structured data is a `<script type="application/ld+json">` `BreadcrumbList` built from the same trail, printed in the footer (`wp_footer`) for the first Breadcrumbs block on the page that wants it, so a render nobody sees (an excerpt, say) can't use it up. On **Automatic** it's skipped when an SEO plugin already adds one (see the `thingamablocks_breadcrumbs_seo_schema` filter). Only GenerateBlocks Text blocks can be the link and current-page parts (they hold text); a separator can also be a Shape.
+- The block's sidebar learns which SEO plugin is active from a small inline script before the editor script (`window.tmbBreadcrumbs = { plugin: 'yoast' | 'rank-math' | '' }`, added in `thingamablocks.php`).
+- A small stylesheet (`src/breadcrumbs/style.scss`, a `viewStyle`) lays the steps out in a wrapping flex row and styles the "…" button; everything else comes from the GB parts.
+- The front-end script (`src/breadcrumbs/view.js`, a `viewScript`) only collapses long trails: it compares the first and last steps' positions to tell whether the list fits on one line, hides middle steps one at a time until it does, and re-checks with a `ResizeObserver` and when fonts load. The trail shows without it.
+- In the editor (`src/breadcrumbs/edit.js`) the canvas shows the three part templates, not a trail.
+- **Tests:** `tests/e2e/breadcrumbs.spec.js` covers page, post, archive, search and 404 trails, the markup, the home icon, leaving out the blog page and category, hiding on the home page, one `BreadcrumbList` per page, collapsing on a phone, axe checks and editor validity of every style. `tests/e2e/seo-plugins.spec.js` installs Yoast SEO and Rank Math (free) from WordPress.org, checks that the block shows Yoast's trail and leaves the structured data to Yoast, and that it uses its own trail and structured data while Rank Math's breadcrumbs are off, then deactivates them.
 
 ### How entrance animations work
 
@@ -1065,7 +1261,7 @@ Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all four blocks).
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all five blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews).
 
@@ -1095,7 +1291,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/` and `src/dropdown/` into `build/toggle/`, `build/countdown/`, `build/marquee/` and `build/dropdown/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/` and `src/breadcrumbs/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/` and `build/breadcrumbs/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
@@ -1105,7 +1301,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 ## File map
 
 ```
-thingamablocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
+thingamablocks.php   Plugin header, block registration, Breadcrumbs editor data (active SEO plugin), GB category fallback, "needs GB 2.0" notice
 uninstall.php        Removes the plugin's options when it's deleted
 LICENSE              GPL v2
 includes/
@@ -1115,6 +1311,8 @@ includes/
   class-thingamablocks-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
   class-thingamablocks-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   class-thingamablocks-dropdown-render.php     Dropdown render: config, closed drawer with an ID, button ARIA, no-JavaScript <noscript> style
+  class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: SEO plugin detection, Yoast/Rank Math trails, the block's own trail for every kind of page
+  class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
@@ -1166,6 +1364,16 @@ src/dropdown/
   icon.js                       Block and layout icons
   style.scss                    Positioning (zero-specificity :where() rules); a viewStyle, so only on pages with a Dropdown
   editor.scss                   Drawer in the page flow while selected, sidebar helper styles
+src/breadcrumbs/
+  block.json                    Block name, attributes, supports, asset files
+  index.js                      Registers the block, variations and inserter example
+  edit.js                       Editor UI: style picker, Trail / Search engines / Accessibility settings, missing-link warning
+  parts.js                      "Breadcrumb part" panel added to GB Element/Text/Shape/Media blocks
+  templates.js                  The three starting styles (Chevrons, Slashes, Pills)
+  view.js                       Front-end collapsing of long trails, window.tmbBreadcrumbs
+  icon.js                       Block and style icons
+  style.scss                    The row of steps and the "…" button; a viewStyle, so only on pages with Breadcrumbs
+  editor.scss                   Part templates side by side in the canvas, sidebar helper styles
 src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
@@ -1188,7 +1396,7 @@ webpack.config.js               Default wp-scripts build plus the src/animations
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org)
 tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

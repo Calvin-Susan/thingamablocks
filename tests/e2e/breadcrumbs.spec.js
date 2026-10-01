@@ -131,6 +131,17 @@ test.describe( 'Breadcrumbs', () => {
 			categories: [ site.subcategory.id ],
 			content: markup + markup,
 		} );
+		// A published page under a private one: the private parent stays out.
+		site.privateParent = await make( '/wp/v2/pages', {
+			title: 'Secret parent',
+			status: 'private',
+		} );
+		site.underPrivate = await make( '/wp/v2/pages', {
+			title: 'Public child',
+			status: 'publish',
+			parent: site.privateParent.id,
+			content: bare,
+		} );
 		site.barePost = await make( '/wp/v2/posts', {
 			title: 'Plain post',
 			status: 'publish',
@@ -166,18 +177,27 @@ test.describe( 'Breadcrumbs', () => {
 	test.afterAll( async ( { browser } ) => {
 		const page = await browser.newPage();
 
-		await rest( page, `/wp/v2/widgets/${ site.widget.id }`, {
-			method: 'DELETE',
-			params: { force: 'true' },
-		} );
-		await rest( page, '/wp/v2/settings', {
-			method: 'POST',
-			data: {
-				show_on_front: site.reading.show_on_front,
-				page_on_front: site.reading.page_on_front,
-				page_for_posts: site.reading.page_for_posts,
-			},
-		} );
+		// Settings first, so a half-finished setup never leaves the site with
+		// a test page as its front page.
+		if ( site.reading ) {
+			await rest( page, '/wp/v2/settings', {
+				method: 'POST',
+				data: {
+					show_on_front: site.reading.show_on_front,
+					page_on_front: site.reading.page_on_front,
+					page_for_posts: site.reading.page_for_posts,
+					timezone_string: site.reading.timezone_string,
+				},
+			} );
+		}
+
+		if ( site.widget?.id ) {
+			await rest( page, `/wp/v2/widgets/${ site.widget.id }`, {
+				method: 'DELETE',
+				params: { force: 'true' },
+			} );
+		}
+
 		await page.close();
 	} );
 
@@ -384,5 +404,81 @@ test.describe( 'Breadcrumbs', () => {
 		} );
 
 		expect( await invalidBlocks( page ) ).toEqual( [] );
+	} );
+
+	test( 'private parents and title prefixes stay out of the trail', async ( {
+		page,
+	} ) => {
+		await page.goto( site.underPrivate.link, { waitUntil: 'networkidle' } );
+
+		const steps = await trailText( page );
+
+		expect( steps.slice( -1 ) ).toEqual( [ 'Public child' ] );
+		expect( steps.join( ' ' ) ).not.toMatch( /Secret parent|Private:/ );
+	} );
+
+	test( 'date archives name the right month in any timezone', async ( {
+		page,
+	} ) => {
+		// West of UTC, date maths can turn the 1st into the month before.
+		await rest( page, '/wp/v2/settings', {
+			method: 'POST',
+			data: { timezone_string: 'America/New_York' },
+		} );
+
+		const date = new Date( site.post.date );
+		const month = date.toLocaleString( 'en-US', { month: 'long' } );
+
+		await page.goto(
+			`/${ date.getFullYear() }/${ String( date.getMonth() + 1 ).padStart(
+				2,
+				'0'
+			) }/`,
+			{ waitUntil: 'networkidle' }
+		);
+
+		expect( await trailText( page ) ).toEqual( [
+			'Home',
+			String( date.getFullYear() ),
+			month,
+		] );
+	} );
+
+	test( 'with the home icon, the … step gets a real separator, not the icon', async ( {
+		page,
+	} ) => {
+		// Three levels, so there's a middle step to hide.
+		const deep = await rest( page, '/wp/v2/pages', {
+			method: 'POST',
+			data: {
+				title: 'Care',
+				status: 'publish',
+				parent: site.child.id,
+				content: await breadcrumbsMarkup( page, { home: 'icon' } ),
+			},
+		} );
+
+		await page.goto( deep.link, { waitUntil: 'networkidle' } );
+
+		const nav = page.locator( 'main nav.tmb-breadcrumbs' );
+		const more = nav.locator( '.tmb-breadcrumbs__more-step' );
+
+		// Narrow the trail until it collapses (the width depends on the theme).
+		for ( let width = 400; width > 120; width -= 10 ) {
+			await nav.evaluate( ( element, next ) => {
+				element.style.width = `${ next }px`;
+			}, width );
+			await page.waitForTimeout( 50 );
+
+			if ( await more.count() ) {
+				break;
+			}
+		}
+
+		await expect( more ).toHaveCount( 1 );
+		await expect( more.locator( 'svg' ) ).toHaveCount( 0 );
+		await expect(
+			more.locator( '.tmb-breadcrumbs__separator' )
+		).toHaveCount( 1 );
 	} );
 } );

@@ -22,10 +22,20 @@ async function setPlugin( page, slug, status ) {
 	);
 
 	if ( ! installed && 'active' === status ) {
-		await rest( page, '/wp/v2/plugins', {
-			method: 'POST',
-			data: { slug, status },
-		} );
+		// Installing needs WordPress.org; if it can't be reached, skip rather
+		// than fail.
+		const response = await page.request.post(
+			'/?rest_route=/wp/v2/plugins',
+			{
+				headers: { 'X-WP-Nonce': page.tmbNonce },
+				data: { slug, status },
+			}
+		);
+
+		test.skip(
+			! response.ok(),
+			`Couldn't install ${ slug } from WordPress.org`
+		);
 		return;
 	}
 
@@ -119,7 +129,19 @@ test.describe( 'Breadcrumbs with SEO plugins', () => {
 				window.wp.data
 					.dispatch( 'core/block-editor' )
 					.insertBlocks( block );
-				await new Promise( ( resolve ) => setTimeout( resolve, 1500 ) );
+				// Wait for GenerateBlocks to compile each part's CSS.
+				await new Promise( ( resolve ) => {
+					const check = () =>
+						window.wp.data
+							.select( 'core/block-editor' )
+							.getBlock( block.clientId )
+							.innerBlocks.every(
+								( inner ) => inner.attributes.css
+							)
+							? resolve()
+							: setTimeout( check, 100 );
+					check();
+				} );
 
 				return serialize( [
 					window.wp.data

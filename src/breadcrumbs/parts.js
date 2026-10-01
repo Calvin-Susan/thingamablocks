@@ -12,12 +12,10 @@ import {
 import { PanelBody, SelectControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 
-const PART_BLOCKS = [
-	'generateblocks/element',
-	'generateblocks/text',
-	'generateblocks/shape',
-	'generateblocks/media',
-];
+// Links and the current page take text, so they're Text blocks; a separator
+// can also be a Shape (an icon). Matches parts() in the PHP render class.
+const PART_BLOCKS = [ 'generateblocks/text', 'generateblocks/shape' ];
+const TEXT_ONLY = [ 'item', 'current' ];
 
 function helpText( value ) {
 	if ( 'item' === value ) {
@@ -120,7 +118,11 @@ const withBreadcrumbPartControl = createHigherOrderComponent(
 										'thingamablocks'
 									),
 								},
-							] }
+							].filter(
+								( option ) =>
+									'generateblocks/text' === name ||
+									! TEXT_ONLY.includes( option.value )
+							) }
 							help={ helpText( value ) }
 							onChange={ onChange }
 						/>

@@ -30,7 +30,7 @@ import VariationPlaceholder from '../shared/variation-placeholder';
 import { breadcrumbsIcon } from './icon';
 
 // Which SEO plugin is active, from includes/class-thingamablocks-breadcrumbs-trail.php.
-const seo = () => window.tmbBreadcrumbs || {};
+const seo = () => window.tmbBreadcrumbsEditor || {};
 
 const SEO_NAMES = {
 	yoast: 'Yoast SEO',

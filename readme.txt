@@ -12,20 +12,21 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds four blocks to the GenerateBlocks category in the block inserter:
+Thingamablocks adds five blocks to the GenerateBlocks category in the block inserter:
 
 * **Toggle** – a switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes.
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
 * **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
 * **Dropdown** – a button that opens a drawer of links, downloads or any other blocks.
+* **Breadcrumbs** – the path to the current page (Home › Blog › Category › Post), worked out automatically wherever you place it, with breadcrumb structured data for search engines. Works with Yoast SEO and Rank Math.
 
 It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
 
 And it adds **image masks** to the GenerateBlocks Image block: cut an image to a wave, a curve or your own SVG shape.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's and Dropdown's few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 = Toggle: starting layouts =
 
@@ -214,6 +215,50 @@ Like any popover, a drawer inside a container with `overflow: hidden` is cut off
 
 The Dropdown fires `tmb-dropdown:open` and `tmb-dropdown:close` on its wrapper, and has `window.tmbDropdown.init()`, `.open()`, `.close()` and `.toggle()`, which take the wrapper element or its HTML anchor. See the README for details.
 
+= Breadcrumbs: what it's for =
+
+The path to the page a visitor is on, each step a link back up the site. Place it once – in a GeneratePress Element on a hook, a block theme template, a widget, or a single page – and it works out the trail for whatever page is being viewed.
+
+= Breadcrumbs: starting styles =
+
+* **Chevrons** – Home › Blog › Post.
+* **Slashes** – Home / Blog / Post.
+* **Pills** – each step in a soft rounded box, the current page in your accent colour.
+
+= Breadcrumbs: parts =
+
+Each style is three GenerateBlocks Text blocks, marked in the **Breadcrumb part** panel: **Link to each page** (a Text block using the `<a>` tag), **Separator** and **The current page**. They're templates: style them once in the Styles panel and they're repeated for every step, with each page's title and link. The editor shows the templates, not the real trail. Only blocks set as a part are shown.
+
+= Breadcrumbs: the trail =
+
+* Pages: Home › parent pages › Page (private and draft parents are left out).
+* Posts: Home › Blog page › Category (with its parents) › Post. The category is the primary one set in Yoast SEO or Rank Math, otherwise the first.
+* Custom post types: Home › the post type's archive (if it has one) › Item.
+* Category, tag and other term archives with their parent terms; author, date and search pages; and the 404 page.
+* WooCommerce: Home › Shop › Product category › Product, and the shop and product category pages.
+
+= Breadcrumbs: settings =
+
+* **Trail** – Use Yoast SEO's / Rank Math's breadcrumbs (on by default, shown when one is active); Home as Text, Icon or Both, and its label; show the blog page on posts; show the category on posts; show the current page; show on the home page (off by default); collapse when it doesn't fit.
+* **Search engines** – Breadcrumb structured data: Automatic (only if no SEO plugin adds it), Always or Never.
+* **Accessibility** – the label for screen readers ("Breadcrumb" by default).
+
+= Breadcrumbs: SEO plugins =
+
+With Yoast SEO or Rank Math active, the block shows their trail by default, so visitors see the same path search engines are told, and on Automatic it leaves the structured data to them (Yoast always adds it; Rank Math when its breadcrumbs are on). If the SEO plugin's breadcrumbs fail for any reason, the block quietly uses its own trail. All in One SEO, The SEO Framework and Slim SEO are detected too, so Automatic leaves the structured data to them. For any other SEO plugin that adds it, choose **Never**, or return `true` from the `thingamablocks_breadcrumbs_seo_schema` filter.
+
+= Breadcrumbs: accessibility =
+
+* A `<nav>` landmark with a label, holding an ordered list.
+* The current page has `aria-current="page"` and isn't a link. Separators are hidden from screen readers.
+* A home icon keeps "Home" as hidden text for screen readers.
+* Links and the "…" button are at least 24 px tall.
+* Long trails collapse to Home › … › Parent › Page when they don't fit on one line; the … button shows the rest and moves focus there. Without JavaScript they simply wrap.
+
+= Breadcrumbs: for developers =
+
+Change the trail with the `thingamablocks_breadcrumbs_trail` filter (a list of label and URL pairs; the last is the current page). Call `window.tmbBreadcrumbs.init()` after adding breadcrumbs with AJAX. Style the row with `.tmb-breadcrumbs__list` and the "…" button with `.tmb-breadcrumbs__more`. See the README for details.
+
 = Entrance animations =
 
 Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **Entrance animation** panel. The legacy GenerateBlocks 1.x blocks aren't supported.
@@ -278,7 +323,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee** and **Dropdown** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown** and **Breadcrumbs** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 == Frequently Asked Questions ==
 
@@ -351,6 +396,18 @@ GenerateBlocks button icons (like the dropdown's chevron) are inline SVGs, and W
 = Why is my dropdown's drawer cut off? =
 
 It's probably inside a container with `overflow: hidden` (some sliders and cards use it). Like any popover, the drawer can't show outside that container. Move the dropdown out of it, or remove the overflow setting.
+
+= Where should I put the Breadcrumbs block? =
+
+Anywhere shared by many pages: the easiest is a GeneratePress Block Element on a hook such as `generate_before_main_content`, displayed on the entire site. The block works out the trail for whichever page is being viewed. It's hidden on the front page unless you turn on **Show on the home page**.
+
+= Why does the Breadcrumbs block show "Parent page" in the editor? =
+
+The editor shows the three part templates (a link, a separator and the current page) so you can style them. The real trail depends on the page being viewed, so it's built on the front end.
+
+= Will it duplicate my SEO plugin's breadcrumb schema? =
+
+Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on **Automatic** (the default) the block adds no structured data when one of them already does (Rank Math: when its breadcrumbs are switched on). If another SEO plugin adds breadcrumb structured data, set **Breadcrumb structured data** to **Never** in the block's Search engines panel, or add `add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );` to tell every block at once. Either way, the block never prints it more than once per page.
 
 = Will animations slow my site down? =
 

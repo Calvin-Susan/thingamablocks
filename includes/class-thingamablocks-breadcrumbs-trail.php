@@ -5,7 +5,7 @@
  * Built from WordPress's own data (or, when asked, taken from Yoast SEO or
  * Rank Math, so what visitors see matches the structured data those plugins
  * give search engines). Each step is a label and a URL; the last step is the
- * current page.
+ * current page. Only pages visitors can see are included.
  *
  * @package Thingamablocks
  */
@@ -18,6 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Works out the breadcrumb trail.
  */
 class Thingamablocks_Breadcrumbs_Trail {
+	/**
+	 * Where the last trail came from: 'own' or the SEO plugin's name.
+	 *
+	 * @var string
+	 */
+	private static $source = 'own';
+
 	/**
 	 * The SEO plugin whose breadcrumbs can be used, if one is active.
 	 *
@@ -36,25 +43,64 @@ class Thingamablocks_Breadcrumbs_Trail {
 	}
 
 	/**
-	 * Whether the active SEO plugin already gives search engines breadcrumb
+	 * Whether an active SEO plugin already gives search engines breadcrumb
 	 * structured data (so adding ours would duplicate it).
 	 *
 	 * @return bool
 	 */
 	public static function seo_plugin_adds_schema() {
 		$plugin = self::seo_plugin();
+		$adds   = false;
 
-		// Yoast includes a BreadcrumbList in its schema on every page.
 		if ( 'yoast' === $plugin ) {
-			return true;
+			// Yoast includes a BreadcrumbList in its schema on every page.
+			$adds = true;
+		} elseif ( 'rank-math' === $plugin ) {
+			// Rank Math adds it when its breadcrumbs are switched on.
+			$adds = self::rank_math_breadcrumbs_on();
+		} else {
+			// These add one by default.
+			$adds = function_exists( 'aioseo' )
+				|| function_exists( 'tsf' )
+				|| function_exists( 'the_seo_framework' )
+				|| defined( 'SLIM_SEO_VER' );
 		}
 
-		// Rank Math adds it when its breadcrumbs are switched on.
-		if ( 'rank-math' === $plugin && class_exists( '\RankMath\Helper' ) ) {
-			return (bool) \RankMath\Helper::get_settings( 'general.breadcrumbs' );
+		/**
+		 * Filter whether an SEO plugin already adds breadcrumb structured data.
+		 * Return true for a plugin that isn't detected, or false if you've
+		 * switched a plugin's own breadcrumb schema off.
+		 *
+		 * @param bool   $adds   Whether it does.
+		 * @param string $plugin Detected plugin whose trail can be used ('' if none).
+		 */
+		return (bool) apply_filters( 'thingamablocks_breadcrumbs_seo_schema', $adds, $plugin );
+	}
+
+	/**
+	 * Whether Rank Math's breadcrumbs are switched on.
+	 *
+	 * @return bool
+	 */
+	private static function rank_math_breadcrumbs_on() {
+		if ( ! class_exists( '\RankMath\Helper' ) ) {
+			return false;
 		}
 
-		return (bool) apply_filters( 'thingamablocks_breadcrumbs_seo_schema', false );
+		if ( method_exists( '\RankMath\Helper', 'is_breadcrumbs_enabled' ) ) {
+			return (bool) \RankMath\Helper::is_breadcrumbs_enabled();
+		}
+
+		return (bool) \RankMath\Helper::get_settings( 'general.breadcrumbs' );
+	}
+
+	/**
+	 * Where the last trail came from: 'own', 'yoast' or 'rank-math'.
+	 *
+	 * @return string
+	 */
+	public static function source() {
+		return self::$source;
 	}
 
 	/**
@@ -71,10 +117,15 @@ class Thingamablocks_Breadcrumbs_Trail {
 	 * @return array List of [ 'label' => string, 'url' => string ]. The last is the current page.
 	 */
 	public static function get( $options ) {
-		$trail = array();
+		$trail        = array();
+		self::$source = 'own';
 
 		if ( ! empty( $options['use_seo_plugin'] ) ) {
 			$trail = self::from_seo_plugin();
+
+			if ( ! empty( $trail ) ) {
+				self::$source = self::seo_plugin();
+			}
 		}
 
 		if ( empty( $trail ) ) {
@@ -87,25 +138,29 @@ class Thingamablocks_Breadcrumbs_Trail {
 		 * @param array $trail   List of [ 'label' => string, 'url' => string ].
 		 * @param array $options Block options.
 		 */
-		$trail = apply_filters( 'thingamablocks_breadcrumbs_trail', $trail, $options );
+		$trail   = apply_filters( 'thingamablocks_breadcrumbs_trail', $trail, $options );
+		$charset = get_bloginfo( 'charset' );
+		$clean   = array();
 
-		// Only well-formed steps with a label.
-		return array_values(
-			array_filter(
-				array_map(
-					function ( $step ) {
-						return is_array( $step ) ? array(
-							'label' => trim( wp_strip_all_tags( (string) ( $step['label'] ?? '' ) ) ),
-							'url'   => (string) ( $step['url'] ?? '' ),
-						) : null;
-					},
-					(array) $trail
-				),
-				function ( $step ) {
-					return $step && '' !== $step['label'];
-				}
-			)
-		);
+		foreach ( (array) $trail as $step ) {
+			if ( ! is_array( $step ) ) {
+				continue;
+			}
+
+			// Real tags out first, then entities decoded: "I <3 cats" survives,
+			// "&amp;" becomes "&". Output escapes it again.
+			$label = preg_replace( '#</?[a-zA-Z][^>]*>#', '', (string) ( $step['label'] ?? '' ) );
+			$label = trim( html_entity_decode( $label, ENT_QUOTES, $charset ) );
+
+			if ( '' !== $label ) {
+				$clean[] = array(
+					'label' => $label,
+					'url'   => (string) ( $step['url'] ?? '' ),
+				);
+			}
+		}
+
+		return $clean;
 	}
 
 	/**
@@ -166,48 +221,28 @@ class Thingamablocks_Breadcrumbs_Trail {
 		$shop = self::shop_page();
 
 		if ( is_home() ) {
-			$blog = (int) get_option( 'page_for_posts' );
-			$trail[] = self::step( $blog ? get_the_title( $blog ) : __( 'Blog', 'thingamablocks' ), $blog ? get_permalink( $blog ) : '' );
+			$blog    = (int) get_option( 'page_for_posts' );
+			$trail[] = $blog ? self::post_step( $blog ) : self::step( __( 'Blog', 'thingamablocks' ), '' );
 		} elseif ( is_singular() ) {
-			$post = get_queried_object();
+			$post  = get_queried_object();
 			$trail = array_merge( $trail, self::before_post( $post, $options, $shop ) );
-			$trail[] = self::step( get_the_title( $post ), get_permalink( $post ) );
+
+			$trail[] = self::post_step( $post );
 		} elseif ( is_category() || is_tag() || is_tax() ) {
-			$term = get_queried_object();
-
-			if ( $shop && in_array( $term->taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
-				$trail[] = self::step( get_the_title( $shop ), get_permalink( $shop ) );
-			} elseif ( in_array( $term->taxonomy, array( 'category', 'post_tag' ), true ) && ! empty( $options['blog_page'] ) ) {
-				$trail = array_merge( $trail, self::blog_page() );
-			}
-
-			$trail = array_merge( $trail, self::term_ancestors( $term ) );
-			$trail[] = self::step( $term->name, get_term_link( $term ) );
+			$trail = array_merge( $trail, self::before_term( get_queried_object(), $options, $shop ) );
 		} elseif ( is_post_type_archive() ) {
 			$type = get_queried_object();
 
 			if ( $shop && 'product' === ( $type->name ?? '' ) ) {
-				$trail[] = self::step( get_the_title( $shop ), get_permalink( $shop ) );
+				$trail[] = self::post_step( $shop );
 			} else {
 				$trail[] = self::step( post_type_archive_title( '', false ), get_post_type_archive_link( $type->name ?? '' ) );
 			}
 		} elseif ( is_author() ) {
-			$author = get_queried_object();
+			$author  = get_queried_object();
 			$trail[] = self::step( $author->display_name ?? '', get_author_posts_url( $author->ID ?? 0 ) );
 		} elseif ( is_date() ) {
-			$year = (int) get_query_var( 'year' );
-			$month = (int) get_query_var( 'monthnum' );
-			$day = (int) get_query_var( 'day' );
-
-			$trail[] = self::step( (string) $year, get_year_link( $year ) );
-
-			if ( $month ) {
-				$trail[] = self::step( wp_date( 'F', mktime( 0, 0, 0, $month, 1, $year ) ), get_month_link( $year, $month ) );
-			}
-
-			if ( $day ) {
-				$trail[] = self::step( (string) $day, get_day_link( $year, $month, $day ) );
-			}
+			$trail = array_merge( $trail, self::date_steps() );
 		} elseif ( is_search() ) {
 			/* translators: %s: search terms. */
 			$trail[] = self::step( sprintf( __( 'Search results for “%s”', 'thingamablocks' ), get_search_query( false ) ), get_search_link() );
@@ -216,6 +251,76 @@ class Thingamablocks_Breadcrumbs_Trail {
 		}
 
 		return $trail;
+	}
+
+	/**
+	 * The steps for a term archive: the shop, blog page or post type archive
+	 * it belongs to, its parents, then the term.
+	 *
+	 * @param WP_Term $term    Term.
+	 * @param array   $options Options.
+	 * @param int     $shop    WooCommerce shop page ID, or 0.
+	 * @return array Steps.
+	 */
+	private static function before_term( $term, $options, $shop ) {
+		$steps    = array();
+		$taxonomy = get_taxonomy( $term->taxonomy );
+		$types    = $taxonomy ? (array) $taxonomy->object_type : array();
+
+		if ( $shop && in_array( $term->taxonomy, array( 'product_cat', 'product_tag' ), true ) ) {
+			$steps[] = self::post_step( $shop );
+		} elseif ( in_array( 'post', $types, true ) ) {
+			if ( ! empty( $options['blog_page'] ) ) {
+				$steps = self::blog_page();
+			}
+		} elseif ( 1 === count( $types ) ) {
+			// A custom post type's taxonomy: its archive first, as on its posts.
+			$steps = self::post_type_archive( $types[0] );
+		}
+
+		$steps   = array_merge( $steps, self::term_ancestors( $term ) );
+		$steps[] = self::step( $term->name, get_term_link( $term ) );
+
+		return $steps;
+	}
+
+	/**
+	 * Year, month and day steps for a date archive (pretty or plain permalinks).
+	 *
+	 * @return array Steps.
+	 */
+	private static function date_steps() {
+		global $wp_locale;
+
+		$year  = (int) get_query_var( 'year' );
+		$month = (int) get_query_var( 'monthnum' );
+		$day   = (int) get_query_var( 'day' );
+		$m     = (string) get_query_var( 'm' );
+
+		// Plain permalinks: ?m=20260315.
+		if ( ! $year && preg_match( '/^(\d{4})(\d{2})?(\d{2})?/', $m, $parts ) ) {
+			$year  = (int) $parts[1];
+			$month = (int) ( $parts[2] ?? 0 );
+			$day   = (int) ( $parts[3] ?? 0 );
+		}
+
+		if ( ! $year ) {
+			return array();
+		}
+
+		$steps = array( self::step( (string) $year, get_year_link( $year ) ) );
+
+		if ( $month ) {
+			// The month's name straight from the locale: no date maths, so no
+			// timezone can turn the 1st into the last day of the month before.
+			$steps[] = self::step( $wp_locale->get_month( $month ), get_month_link( $year, $month ) );
+		}
+
+		if ( $month && $day ) {
+			$steps[] = self::step( (string) $day, get_day_link( $year, $month, $day ) );
+		}
+
+		return $steps;
 	}
 
 	/**
@@ -236,35 +341,24 @@ class Thingamablocks_Breadcrumbs_Trail {
 			}
 
 			if ( ! empty( $options['category'] ) ) {
-				$category = self::primary_term( $post, 'category' );
-
-				if ( $category ) {
-					$steps = array_merge( $steps, self::term_ancestors( $category ) );
-					$steps[] = self::step( $category->name, get_term_link( $category ) );
-				}
+				$steps = array_merge( $steps, self::term_steps( self::primary_term( $post, 'category' ) ) );
 			}
 
 			return $steps;
 		}
 
 		if ( 'product' === $post->post_type && $shop ) {
-			$steps[] = self::step( get_the_title( $shop ), get_permalink( $shop ) );
-			$category = self::primary_term( $post, 'product_cat' );
+			$steps[] = self::post_step( $shop );
 
-			if ( $category ) {
-				$steps = array_merge( $steps, self::term_ancestors( $category ) );
-				$steps[] = self::step( $category->name, get_term_link( $category ) );
-			}
-
-			return $steps;
+			return array_merge( $steps, self::term_steps( self::primary_term( $post, 'product_cat' ) ) );
 		}
 
-		if ( 'attachment' === $post->post_type && $post->post_parent ) {
-			$parent = get_post( $post->post_parent );
+		if ( 'attachment' === $post->post_type ) {
+			$parent = $post->post_parent ? get_post( $post->post_parent ) : null;
 
-			if ( $parent ) {
-				$steps = array_merge( $steps, self::before_post( $parent, $options, $shop ) );
-				$steps[] = self::step( get_the_title( $parent ), get_permalink( $parent ) );
+			if ( $parent && is_post_publicly_viewable( $parent ) ) {
+				$steps   = self::before_post( $parent, $options, $shop );
+				$steps[] = self::post_step( $parent );
 			}
 
 			return $steps;
@@ -272,20 +366,31 @@ class Thingamablocks_Breadcrumbs_Trail {
 
 		// A custom post type with an archive page.
 		if ( 'page' !== $post->post_type ) {
-			$archive = get_post_type_archive_link( $post->post_type );
-			$type = get_post_type_object( $post->post_type );
+			$steps = self::post_type_archive( $post->post_type );
+		}
 
-			if ( $archive && $type ) {
-				$steps[] = self::step( $type->labels->name, $archive );
+		// Parent pages (or parents in any hierarchical post type). Private and
+		// draft parents are left out: visitors can't see them.
+		foreach ( array_reverse( get_post_ancestors( $post ) ) as $ancestor ) {
+			if ( is_post_publicly_viewable( $ancestor ) ) {
+				$steps[] = self::post_step( $ancestor );
 			}
 		}
 
-		// Parent pages (or parents in any hierarchical post type).
-		foreach ( array_reverse( get_post_ancestors( $post ) ) as $ancestor ) {
-			$steps[] = self::step( get_the_title( $ancestor ), get_permalink( $ancestor ) );
-		}
-
 		return $steps;
+	}
+
+	/**
+	 * A post type's archive page, if it has one.
+	 *
+	 * @param string $post_type Post type.
+	 * @return array Zero or one step.
+	 */
+	private static function post_type_archive( $post_type ) {
+		$archive = get_post_type_archive_link( $post_type );
+		$type    = get_post_type_object( $post_type );
+
+		return $archive && $type ? array( self::step( $type->labels->name, $archive ) ) : array();
 	}
 
 	/**
@@ -296,7 +401,7 @@ class Thingamablocks_Breadcrumbs_Trail {
 	private static function blog_page() {
 		$blog = (int) get_option( 'page_for_posts' );
 
-		return $blog && 'page' === get_option( 'show_on_front' ) ? array( self::step( get_the_title( $blog ), get_permalink( $blog ) ) ) : array();
+		return $blog && 'page' === get_option( 'show_on_front' ) ? array( self::post_step( $blog ) ) : array();
 	}
 
 	/**
@@ -330,6 +435,23 @@ class Thingamablocks_Breadcrumbs_Trail {
 	}
 
 	/**
+	 * A term with its parents, outermost first.
+	 *
+	 * @param WP_Term|null $term Term.
+	 * @return array Steps.
+	 */
+	private static function term_steps( $term ) {
+		if ( ! $term ) {
+			return array();
+		}
+
+		$steps   = self::term_ancestors( $term );
+		$steps[] = self::step( $term->name, get_term_link( $term ) );
+
+		return $steps;
+	}
+
+	/**
 	 * A term's parents, outermost first.
 	 *
 	 * @param WP_Term $term Term.
@@ -350,12 +472,37 @@ class Thingamablocks_Breadcrumbs_Trail {
 	}
 
 	/**
-	 * The WooCommerce shop page, if WooCommerce is active.
+	 * The WooCommerce shop page, if WooCommerce is active and it isn't also
+	 * the front page (where "Home" already covers it).
 	 *
 	 * @return int Page ID, or 0.
 	 */
 	private static function shop_page() {
-		return function_exists( 'wc_get_page_id' ) ? max( 0, (int) wc_get_page_id( 'shop' ) ) : 0;
+		if ( ! function_exists( 'wc_get_page_id' ) ) {
+			return 0;
+		}
+
+		$shop  = max( 0, (int) wc_get_page_id( 'shop' ) );
+		$front = 'page' === get_option( 'show_on_front' ) ? (int) get_option( 'page_on_front' ) : 0;
+
+		return $shop === $front ? 0 : $shop;
+	}
+
+	/**
+	 * A step for a post or page: its title as written (without the
+	 * "Private:" or "Protected:" prefixes WordPress adds) and its link.
+	 *
+	 * @param WP_Post|int $post Post.
+	 * @return array Step.
+	 */
+	private static function post_step( $post ) {
+		$post = get_post( $post );
+
+		if ( ! $post ) {
+			return self::step( '', '' );
+		}
+
+		return self::step( apply_filters( 'the_title', $post->post_title, $post->ID ), get_permalink( $post ) );
 	}
 
 	/**
@@ -367,7 +514,7 @@ class Thingamablocks_Breadcrumbs_Trail {
 	 */
 	private static function step( $label, $url ) {
 		return array(
-			'label' => html_entity_decode( (string) $label, ENT_QUOTES, get_bloginfo( 'charset' ) ),
+			'label' => (string) $label,
 			'url'   => is_string( $url ) ? $url : '',
 		);
 	}

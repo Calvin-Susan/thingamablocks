@@ -51,9 +51,12 @@ class Thingamablocks_Breadcrumbs_Render {
 		$items = '';
 		$last  = count( $steps ) - 1;
 
+		// The home icon is for this block's own trail, not an SEO plugin's.
+		$own_trail = 'own' === Thingamablocks_Breadcrumbs_Trail::source();
+
 		foreach ( $steps as $index => $step ) {
 			$is_current = $index === $last && $options['show_current'];
-			$is_home    = 0 === $index && empty( $options['use_seo_plugin_trail'] );
+			$is_home    = 0 === $index && $own_trail;
 
 			$items .= '<li class="tmb-breadcrumbs__step">'
 				. self::crumb( $parts, $step, $is_current, $is_home ? $options['home'] : 'text' )
@@ -76,11 +79,12 @@ class Thingamablocks_Breadcrumbs_Render {
 			$wrapper['id'] = $attributes['anchor'];
 		}
 
+		self::queue_schema( $trail, $options );
+
 		return sprintf(
-			'<nav %1$s><ol class="tmb-breadcrumbs__list">%2$s</ol></nav>%3$s',
+			'<nav %1$s><ol class="tmb-breadcrumbs__list">%2$s</ol></nav>',
 			get_block_wrapper_attributes( $wrapper ),
-			$items,
-			self::schema( $trail, $options )
+			$items
 		);
 	}
 
@@ -100,8 +104,6 @@ class Thingamablocks_Breadcrumbs_Render {
 		$label  = sanitize_text_field( $attributes['homeLabel'] ?? '' );
 		$aria   = sanitize_text_field( $attributes['ariaLabel'] ?? '' );
 
-		$use_seo_plugin = $flag( 'useSeoPlugin', true );
-
 		return array(
 			'home'                 => in_array( $home, array( 'text', 'icon', 'both' ), true ) ? $home : 'text',
 			'home_label'           => '' !== $label ? $label : __( 'Home', 'thingamablocks' ),
@@ -111,9 +113,7 @@ class Thingamablocks_Breadcrumbs_Render {
 			'blog_page'            => $flag( 'showBlogPage', true ),
 			'category'             => $flag( 'showCategory', true ),
 			'collapse'             => $flag( 'collapse', true ),
-			'use_seo_plugin'       => $use_seo_plugin,
-			// The home icon only replaces our own home step, not an SEO plugin's.
-			'use_seo_plugin_trail' => $use_seo_plugin && '' !== Thingamablocks_Breadcrumbs_Trail::seo_plugin(),
+			'use_seo_plugin'       => $flag( 'useSeoPlugin', true ),
 			'schema'               => in_array( $schema, array( 'auto', 'always', 'never' ), true ) ? $schema : 'auto',
 		);
 	}
@@ -135,8 +135,15 @@ class Thingamablocks_Breadcrumbs_Render {
 
 				$html_attributes = (array) ( $inner->attributes['htmlAttributes'] ?? array() );
 				$part            = $html_attributes['data-breadcrumb-part'] ?? '';
+				// Links and the current page take text, so they must be Text
+				// blocks; a separator can also be a Shape (an icon).
+				$allowed = array(
+					'item'      => array( 'generateblocks/text' ),
+					'current'   => array( 'generateblocks/text' ),
+					'separator' => array( 'generateblocks/text', 'generateblocks/shape' ),
+				);
 
-				if ( in_array( $part, array( 'item', 'separator', 'current' ), true ) && ! isset( $parts[ $part ] ) ) {
+				if ( isset( $allowed[ $part ] ) && in_array( $inner->name, $allowed[ $part ], true ) && ! isset( $parts[ $part ] ) ) {
 					$parts[ $part ] = trim( $inner->render() );
 				} elseif ( count( $inner->inner_blocks ) ) {
 					$walk( $inner->inner_blocks );
@@ -199,6 +206,7 @@ class Thingamablocks_Breadcrumbs_Render {
 
 		if ( $processor->next_tag() ) {
 			$processor->set_attribute( 'aria-hidden', 'true' );
+			$processor->add_class( 'tmb-breadcrumbs__separator' );
 		}
 
 		return $processor->get_updated_html();
@@ -279,27 +287,43 @@ class Thingamablocks_Breadcrumbs_Render {
 
 	/**
 	 * Breadcrumb structured data (schema.org BreadcrumbList) for search
-	 * engines, once per page: when asked, or automatically when no SEO plugin
-	 * already adds it.
+	 * engines: when asked, or automatically when no SEO plugin already adds
+	 * it. Printed once, in the footer, for the first breadcrumbs on the page
+	 * (so a render nobody sees, like an excerpt, can't use it up).
 	 *
 	 * @param array $trail   Trail (including the current page).
 	 * @param array $options Options.
-	 * @return string Script tag, or ''.
 	 */
-	private static function schema( $trail, $options ) {
-		static $printed = false;
-
+	private static function queue_schema( $trail, $options ) {
 		$wanted = 'always' === $options['schema']
 			|| ( 'auto' === $options['schema'] && ! Thingamablocks_Breadcrumbs_Trail::seo_plugin_adds_schema() );
 
-		if ( $printed || ! $wanted || count( $trail ) < 2 ) {
-			return '';
+		if ( ! $wanted || count( $trail ) < 2 || null !== self::$schema_trail ) {
+			return;
 		}
 
-		$printed = true;
-		$items   = array();
+		self::$schema_trail = $trail;
+		add_action( 'wp_footer', array( __CLASS__, 'print_schema' ) );
+	}
 
-		foreach ( array_values( $trail ) as $index => $step ) {
+	/**
+	 * The trail queued for structured data.
+	 *
+	 * @var array|null
+	 */
+	private static $schema_trail = null;
+
+	/**
+	 * Print the queued structured data.
+	 */
+	public static function print_schema() {
+		if ( empty( self::$schema_trail ) ) {
+			return;
+		}
+
+		$items = array();
+
+		foreach ( array_values( self::$schema_trail ) as $index => $step ) {
 			$item = array(
 				'@type'    => 'ListItem',
 				'position' => $index + 1,
@@ -319,6 +343,9 @@ class Thingamablocks_Breadcrumbs_Render {
 			'itemListElement' => $items,
 		);
 
-		return '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . '</script>';
+		self::$schema_trail = array();
+
+		// JSON with "<", ">" and "&" escaped can't end the script element.
+		echo '<script type="application/ld+json">' . wp_json_encode( $data, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

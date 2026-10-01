@@ -67,7 +67,7 @@ add_action( 'enqueue_block_editor_assets', 'thingamablocks_breadcrumbs_editor_da
 function thingamablocks_breadcrumbs_editor_data() {
 	wp_add_inline_script(
 		generate_block_asset_handle( 'thingamablocks/breadcrumbs', 'editorScript' ),
-		'window.tmbBreadcrumbs = ' . wp_json_encode( array( 'plugin' => Thingamablocks_Breadcrumbs_Trail::seo_plugin() ) ) . ';',
+		'window.tmbBreadcrumbsEditor = ' . wp_json_encode( array( 'plugin' => Thingamablocks_Breadcrumbs_Trail::seo_plugin() ) ) . ';',
 		'before'
 	);
 }

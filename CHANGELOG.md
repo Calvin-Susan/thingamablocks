@@ -6,6 +6,21 @@ All notable changes to Thingamablocks are listed here.
 
 ### Added
 
+#### Breadcrumbs
+
+- A fifth block, **Breadcrumbs** (`thingamablocks/breadcrumbs`): the path to the current page, worked out on the server for whatever page is being viewed, so it can go in a page, a template, a GeneratePress Element on a hook, or a widget. A settings-only wrapper like the others: a GenerateBlocks Text link marked **Link to each page**, a **Separator** and **The current page** in the new **Breadcrumb part** panel (`data-breadcrumb-part="item|separator|current"`) are templates, rendered once by GenerateBlocks (so their CSS prints) and repeated for every step with the `WP_HTML_Tag_Processor`. Only blocks set as a part are shown; the sidebar warns if there's no link part.
+- Starting styles: **Chevrons** (default), **Slashes** and **Pills**. Separators are characters, not SVGs, so nothing is stripped when Authors or Contributors save.
+- **The trail**: parent pages (private and draft parents are left out, and titles never get WordPress's "Private:" or "Protected:" prefix); on posts the blog page (Settings → Reading) and the category with its parents (the primary category from Yoast SEO or Rank Math if set); custom post type archives; attachments under their parent; term archives with parent terms; author, date, search and 404 pages; WooCommerce shop, product categories and products.
+- **Trail** settings: **Use Yoast SEO's / Rank Math's breadcrumbs** (on by default, shown when one is active); **Home** as Text, Icon or Both, with a **Home label**; **Show the blog page on posts**; **Show the category on posts**; **Show the current page** (`aria-current="page"`, not a link); **Show on the home page** (off by default); **Collapse when it doesn't fit**.
+- **SEO plugins**: with Yoast SEO or Rank Math active, the block shows their trail, so visitors see what search engines are told. Their APIs are guarded, so any failure falls back to the block's own trail.
+- **Search engines** panel: **Breadcrumb structured data** (schema.org `BreadcrumbList`, once per page) – **Automatic** (only when no SEO plugin adds it: Yoast always does, Rank Math when its breadcrumbs are on, All in One SEO, The SEO Framework and Slim SEO by default), **Always** or **Never**. Printed in the footer. The `thingamablocks_breadcrumbs_seo_schema` filter can override the detection either way.
+- **Collapse**: a trail that doesn't fit on one line becomes Home › … › Parent › Page; the **…** button shows the rest and moves focus to the first revealed step. Without JavaScript the trail wraps.
+- **Accessibility**: `<nav>` with a label (**Accessibility** panel, "Breadcrumb" by default) around an `<ol>`; separators `aria-hidden`; a home icon keeps "Home" as hidden text; links and the … button at least 24 px tall.
+- Styling hooks: `.tmb-breadcrumbs`, `.tmb-breadcrumbs__list`, `.tmb-breadcrumbs__step`, `.tmb-breadcrumbs__more`, plus the parts' GB styles and `[aria-current="page"]`.
+- Developer API: the `thingamablocks_breadcrumbs_trail` filter (`$trail` – a list of `label` / `url`, the last being the current page – and `$options`) and `window.tmbBreadcrumbs.init( root )` for trails added with AJAX.
+- Loads only on pages with Breadcrumbs (`viewStyle` and a small `viewScript`); no JavaScript is needed to show the trail.
+- Browser tests: `tests/e2e/breadcrumbs.spec.js` (page, post, archive, search and 404 trails, markup, home icon, one `BreadcrumbList`, collapse on a phone, axe, editor validity) and `tests/e2e/seo-plugins.spec.js` (installs Yoast SEO and Rank Math from WordPress.org).
+
 #### Dropdown
 
 - A fourth block, **Dropdown** (`thingamablocks/dropdown`): a button that opens a drawer of links, downloads or any other blocks. A settings-only wrapper like the others. Mark a GenerateBlocks Button (`<button>` tag) as **The button that opens it** and a GenerateBlocks Element as **The drawer** in the new **Dropdown part** panel (`data-dropdown-part="button|drawer"`); the sidebar warns if either is missing. A button that isn't a `<button>` gets `role="button"`, `tabindex="0"` and Space/Enter support.
