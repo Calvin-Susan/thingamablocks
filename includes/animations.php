@@ -6,11 +6,13 @@
  * and stores the choice in the block's own HTML attributes
  * (data-tmb-animate="fade-up", data-tmb-speed, data-tmb-delay,
  * data-tmb-animate-children), so GenerateBlocks saves and renders them like
- * any other attribute.
+ * any other attribute. A block can also be a replay button
+ * (data-tmb-replay="some-id other-id", or "*" for the whole page) that plays
+ * the animations inside those blocks again.
  *
  * On the front end nothing loads unless a block on the page uses one. Then
  * this prints a few lines of CSS that hide animated blocks until they animate
- * in (in <head> where possible), and loads a ~1 KB (gzipped) script.
+ * in (in <head> where possible), and loads a ~1.6 KB (gzipped) script.
  *
  * @package Thingamablocks
  */
@@ -89,7 +91,7 @@ function thingamablocks_animation_print_head() {
 	}
 
 	$post = is_singular() ? get_queried_object() : null;
-	$used = thingamablocks_animation_seen() || ( $post instanceof WP_Post && false !== strpos( $post->post_content, 'data-tmb-animate' ) );
+	$used = thingamablocks_animation_seen() || ( $post instanceof WP_Post && thingamablocks_animation_in( $post->post_content ) );
 
 	if ( ! $used ) {
 		return;
@@ -133,17 +135,33 @@ function thingamablocks_animation_seen( $set = null ) {
 	return $seen;
 }
 
-add_filter( 'render_block', 'thingamablocks_animation_render_block', 20 );
 /**
- * When an animated block renders, load the script (in the footer, deferred).
- * If the CSS wasn't printed in <head>, put it just before the block instead.
+ * Whether some markup has an animated block or a replay button.
+ *
+ * @param string $content Markup.
+ * @return bool
+ */
+function thingamablocks_animation_in( $content ) {
+	return false !== strpos( $content, 'data-tmb-animate' ) || false !== strpos( $content, 'data-tmb-replay' );
+}
+
+add_filter( 'render_block', 'thingamablocks_animation_render_block', 20, 2 );
+/**
+ * When an animated block or a replay button renders, load the script (in the
+ * footer, deferred). If the CSS wasn't printed in <head>, put it just before
+ * the block instead.
  *
  * @param string $content Rendered block.
+ * @param array  $block   Parsed block.
  * @return string
  */
-function thingamablocks_animation_render_block( $content ) {
-	if ( is_admin() || false === strpos( $content, 'data-tmb-animate' ) ) {
+function thingamablocks_animation_render_block( $content, $block = array() ) {
+	if ( is_admin() || ! thingamablocks_animation_in( $content ) ) {
 		return $content;
+	}
+
+	if ( isset( $block['attrs']['htmlAttributes']['data-tmb-replay'] ) ) {
+		$content = thingamablocks_animation_replay_button( $content );
 	}
 
 	// Only blocks rendered on the page, not in a REST or feed context.
@@ -176,6 +194,52 @@ function thingamablocks_animation_render_block( $content ) {
 }
 
 /**
+ * Make a replay button behave like one before any JavaScript runs: a real
+ * <button> gets type="button"; anything else gets role="button" (and is made
+ * focusable). aria-controls names the blocks it replays.
+ *
+ * @param string $content The replay button block's markup.
+ * @return string
+ */
+function thingamablocks_animation_replay_button( $content ) {
+	$tags = new WP_HTML_Tag_Processor( $content );
+
+	// The block's own tag: normally the first, but a filter may print something before it.
+	do {
+		if ( ! $tags->next_tag() ) {
+			return $content;
+		}
+	} while ( null === $tags->get_attribute( 'data-tmb-replay' ) );
+
+	$value = $tags->get_attribute( 'data-tmb-replay' );
+	$ids   = array();
+
+	foreach ( is_string( $value ) ? preg_split( '/\s+/', trim( $value ) ) : array() as $id ) {
+		if ( preg_match( '/^[A-Za-z][\w\-]*$/D', $id ) ) {
+			$ids[] = $id;
+		}
+	}
+
+	if ( $ids ) {
+		$tags->set_attribute( 'aria-controls', implode( ' ', array_unique( $ids ) ) );
+	}
+
+	if ( 'BUTTON' === $tags->get_tag() ) {
+		if ( null === $tags->get_attribute( 'type' ) ) {
+			$tags->set_attribute( 'type', 'button' );
+		}
+	} elseif ( null === $tags->get_attribute( 'role' ) ) {
+		$tags->set_attribute( 'role', 'button' );
+
+		if ( null === $tags->get_attribute( 'tabindex' ) && ! ( 'A' === $tags->get_tag() && null !== $tags->get_attribute( 'href' ) ) ) {
+			$tags->set_attribute( 'tabindex', '0' );
+		}
+	}
+
+	return $tags->get_updated_html();
+}
+
+/**
  * The CSS and one-line script that hide animated blocks until they animate in.
  *
  * - Nothing is hidden unless JavaScript is running (html.tmb-animate-js) and
@@ -184,6 +248,10 @@ function thingamablocks_animation_render_block( $content ) {
  *   a fail-safe that shows them after 4 seconds if the script never comes.
  * - After it arrives (html.tmb-animate-ready), only blocks the script is
  *   watching (.tmb-wait) are hidden, so nothing can get stuck invisible.
+ * - Replay buttons are hidden where nothing would replay: without JavaScript,
+ *   and for visitors who've asked for reduced motion. Until the script says
+ *   replaying works (html.tmb-replay-on) they're invisible but keep their
+ *   space, so nothing shifts when they appear.
  *
  * @return string
  */
@@ -197,7 +265,10 @@ function thingamablocks_animation_head_markup() {
 	$css = '@media screen and (prefers-reduced-motion:no-preference){'
 		. $before . '{opacity:0;animation:tmb-animate-failsafe 0s 4s forwards}'
 		. $after . '{opacity:0}'
-		. '}@keyframes tmb-animate-failsafe{to{opacity:1}}';
+		. '}@keyframes tmb-animate-failsafe{to{opacity:1}}'
+		. ':root:not(.tmb-animate-js) [data-tmb-replay]{display:none!important}'
+		. ':root:not(.tmb-replay-on) [data-tmb-replay]{visibility:hidden}'
+		. '@media (prefers-reduced-motion:reduce){[data-tmb-replay]{display:none!important}}';
 
 	$style = '<style id="tmb-animate-css">' . $css . '</style>';
 

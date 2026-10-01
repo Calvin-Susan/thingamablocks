@@ -4,7 +4,7 @@
  * The settings are stored in the block's own GenerateBlocks HTML attributes,
  * so GenerateBlocks saves and renders them; nothing about its markup changes.
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import {
@@ -15,6 +15,7 @@ import { useSelect } from '@wordpress/data';
 import { getBlockType } from '@wordpress/blocks';
 import {
 	Button,
+	FormTokenField,
 	PanelBody,
 	RangeControl,
 	SelectControl,
@@ -26,13 +27,19 @@ import {
 } from '@wordpress/components';
 
 import { animateIn } from './presets';
+import { usePageIds } from '../shared/targets-control';
 
 const KEYS = {
 	type: 'data-tmb-animate',
 	speed: 'data-tmb-speed',
 	delay: 'data-tmb-delay',
 	children: 'data-tmb-animate-children',
+	replay: 'data-tmb-replay',
 };
+
+// What "replay everything on the page" is stored as (not a valid ID).
+const WHOLE_PAGE = '*';
+const isPlainId = ( value ) => /^[A-Za-z][\w-]*$/.test( value );
 
 /**
  * GenerateBlocks 2 blocks (and GB Pro's) keep custom attributes in
@@ -103,7 +110,9 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 		const merged = { ...settings, ...next };
 		const updated = { ...htmlAttributes };
 
-		Object.values( KEYS ).forEach( ( key ) => delete updated[ key ] );
+		Object.values( KEYS )
+			.filter( ( key ) => KEYS.replay !== key )
+			.forEach( ( key ) => delete updated[ key ] );
 
 		// Only store what differs from the defaults, so markup stays tidy.
 		if ( merged.type ) {
@@ -129,7 +138,10 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 		<InspectorControls>
 			<PanelBody
 				title={ __( 'Entrance animation', 'thingamablocks' ) }
-				initialOpen={ !! settings.type }
+				initialOpen={
+					!! settings.type ||
+					undefined !== htmlAttributes[ KEYS.replay ]
+				}
 				className="tmb-animation-panel"
 			>
 				<SelectControl
@@ -274,8 +286,125 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 						</Button>
 					</>
 				) }
+				{ /* On a container, the whole container would become the button. */ }
+				{ ( 0 === blockCount ||
+					undefined !== htmlAttributes[ KEYS.replay ] ) && (
+					<ReplayControl
+						value={ htmlAttributes[ KEYS.replay ] }
+						onChange={ ( replay ) => {
+							const updated = { ...htmlAttributes };
+
+							delete updated[ KEYS.replay ];
+
+							if ( undefined !== replay ) {
+								updated[ KEYS.replay ] = replay;
+							}
+
+							setAttributes( { htmlAttributes: updated } );
+						} }
+					/>
+				) }
 			</PanelBody>
 		</InspectorControls>
+	);
+}
+
+/**
+ * Make the block a button that plays the animations in some blocks again.
+ *
+ * @param {Object}   props
+ * @param {string}   props.value    Space-separated IDs, "*" or undefined (off).
+ * @param {Function} props.onChange New value.
+ */
+function ReplayControl( { value, onChange } ) {
+	const pageIds = usePageIds();
+	const on = undefined !== value;
+	const ids =
+		on && WHOLE_PAGE !== value
+			? value.split( /\s+/ ).filter( Boolean )
+			: [];
+	const missing = ids.filter( ( id ) => ! pageIds.includes( id ) );
+
+	return (
+		<div className="tmb-animation-control tmb-animation-replay">
+			<ToggleControl
+				__nextHasNoMarginBottom
+				label={ __( 'Replay button', 'thingamablocks' ) }
+				help={ __(
+					'Clicking this block plays the entrance animations again. Best on a Text block set to Button. Hidden for visitors who prefer reduced motion.',
+					'thingamablocks'
+				) }
+				checked={ on }
+				onChange={ ( checked ) =>
+					onChange( checked ? WHOLE_PAGE : undefined )
+				}
+			/>
+			{ on && (
+				<>
+					<FormTokenField
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __(
+							'Replay the blocks with these IDs',
+							'thingamablocks'
+						) }
+						value={ ids }
+						suggestions={ pageIds.filter(
+							( id ) => ! ids.includes( id )
+						) }
+						onChange={ ( tokens ) => {
+							const next = tokens
+								.map( ( token ) =>
+									( 'string' === typeof token
+										? token
+										: token.value
+									)
+										.trim()
+										.replace( /^#/, '' )
+								)
+								.filter( isPlainId );
+
+							onChange(
+								next.length
+									? [ ...new Set( next ) ].join( ' ' )
+									: WHOLE_PAGE
+							);
+						} }
+						__experimentalExpandOnFocus
+						__experimentalShowHowTo={ false }
+						help={
+							ids.length
+								? __(
+										'Plays the animations inside these blocks (and on them) again.',
+										'thingamablocks'
+								  )
+								: __(
+										'Empty: replays every animation on the page. Add a section’s HTML ID to replay just that section.',
+										'thingamablocks'
+								  )
+						}
+					/>
+					{ missing.length > 0 && (
+						<p
+							style={ {
+								margin: '8px 0 0',
+								color: '#b26200',
+								fontSize: '12px',
+							} }
+						>
+							{ sprintf(
+								/* translators: %s: comma-separated list of element IDs. */
+								__(
+									'Not found on this page: %s. That’s fine if it lives in a header, footer or other template part.',
+									'thingamablocks'
+								),
+								missing.join( ', ' )
+							) }
+						</p>
+					) }
+				</>
+			) }
+		</div>
 	);
 }
 

@@ -270,19 +270,21 @@ Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **E
 * **Delay** – 0 to 2000 ms.
 * **Animate the blocks inside one by one** – on blocks that hold other blocks. The block stays put and each block inside it animates in turn, with a **Time between each** you choose. Great for grids, cards and query loops: for a query loop, set it on the **Looper** block.
 * **Preview** button to play it in the editor.
+* **Replay button** – turn this on for a block (best a Text block set to Button) and clicking it plays the entrance animations again. List the HTML IDs of the sections to replay, or leave it empty for the whole page. Only what's on screen replays straight away (blocks below it play when scrolled to), and the button never hides itself. Offered on blocks with nothing inside them.
 
 Tip: don't animate the first thing visitors see (a hero heading or image). It stays hidden until the script runs, which can slow the page's Largest Contentful Paint (LCP) score.
 
-Each animation plays once, when the block scrolls into view. The settings are stored as HTML attributes on the block (`data-tmb-animate`, `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`), which you can see in GenerateBlocks' HTML Attributes panel.
+Each animation plays once, when the block scrolls into view (or again from a replay button). The settings are stored as HTML attributes on the block (`data-tmb-animate`, `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`, `data-tmb-replay`), which you can see in GenerateBlocks' HTML Attributes panel.
 
 Built to be light and safe:
 
-* Nothing loads on pages without an animation. Pages with one get a ~1.8 KB script and ~600 bytes of CSS.
+* Nothing loads on pages without an animation or a replay button. Pages with one get a ~3.7 KB script (1.6 KB gzipped) and ~750 bytes of CSS.
 * Uses the Web Animations API with opacity, translate and scale, animating to the block's own styles, so GenerateBlocks transforms and hover transitions keep working.
 * No flash: blocks are only hidden while waiting to animate when JavaScript is running and the visitor hasn't asked for reduced motion. If the script is blocked or delayed, everything is shown after 4 seconds anyway.
 * Visitors who prefer reduced motion see no animation.
 * Keyboard users who tab into a block that hasn't animated in yet see it straight away.
-* For developers: `window.tmbAnimate.init( container )` for content added with AJAX, the `thingamablocks_animation_head_markup` filter, and the `.tmb-in` class (added when a block animates) and `html.tmb-animate-js` for CSS.
+* Replay buttons work like real buttons before JavaScript runs (`type="button"`, or `role="button"` and keyboard focus, plus `aria-controls`), respond to Enter and Space, and are hidden for visitors who prefer reduced motion or have JavaScript off.
+* For developers: `window.tmbAnimate.init( container )` for content added with AJAX, `window.tmbAnimate.replay( element )` to replay animations (no argument: whole page), the `thingamablocks_animation_head_markup` filter, and the `.tmb-in` class (added when a block animates) and `html.tmb-animate-js` for CSS.
 
 = Image masks =
 
@@ -418,7 +420,7 @@ Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any 
 
 = Will animations slow my site down? =
 
-No. Pages without an animation load nothing extra. Pages with one load a ~1.8 KB script (deferred, in the footer) and ~600 bytes of CSS. Keep animations off the hero at the top of the page, though: an animated block stays hidden until the script runs, which can slow your LCP score. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
+No. Pages without an animation load nothing extra. Pages with one load a ~3.7 KB script (1.6 KB gzipped; deferred, in the footer) and ~750 bytes of CSS. Keep animations off the hero at the top of the page, though: an animated block stays hidden until the script runs, which can slow your LCP score. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
 
 = Do animations work with caching/optimisation plugins? =
 
@@ -446,7 +448,7 @@ Initial release.
 * Toggle block: show/hide elements, light/dark mode with a dark colour for each theme colour, add/remove classes, or custom code. Four starting layouts, sync groups, remembered choices (applied before the page paints), and server-rendered accessibility.
 * Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time. End actions: message, stay at zero, disappear, hide/show elements, redirect. Numbers are rendered on the server.
 * Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges, keyboard and reduced-motion support.
-* Entrance animations for every GenerateBlocks 2 / GB Pro block: fade, slide or zoom in on scroll, or animate the blocks inside one by one. ~1.8 KB, reduced-motion support and a no-JavaScript fail-safe.
+* Entrance animations for every GenerateBlocks 2 / GB Pro block: fade, slide or zoom in on scroll, or animate the blocks inside one by one. ~1.6 KB gzipped, reduced-motion support and a no-JavaScript fail-safe.
 * Patterns: pricing table with monthly/annual toggle, sale banner with countdown, launch countdown, and logo strip, all translatable.
 * Nothing loads on pages that don't use the plugin (except the small dark mode head script, once a dark mode toggle is published).
 * Safe for Authors and Contributors: target selectors are strictly sanitised, and toggles don't show as invalid blocks.

@@ -10,10 +10,14 @@
  * with a fail-safe that shows them after 4s. Once the script is ready it only
  * hides blocks it is actually watching (marked .tmb-wait), so content it never
  * sees can't get stuck invisible. See includes/animations.php.
+ *
+ * Replay buttons (data-tmb-replay="pricing features", or "*" for the whole
+ * page) play the animations inside those blocks again.
  */
 import { animateIn } from './presets';
 
 const SELECTOR = '[data-tmb-animate]';
+const REPLAY = '[data-tmb-replay]';
 const root = document.documentElement;
 
 // Never let a "one by one" group take longer than this to start its last item.
@@ -21,14 +25,19 @@ const MAX_STAGGER = 1200;
 
 let observer = null;
 
+// Whether this visitor sees animations at all (replay buttons are shown).
+let canReplay = false;
+
 /**
  * Work out what to animate. Only reads layout, so a batch of blocks can be
  * measured together before any of them changes (no layout thrashing).
  *
- * @param {Element} element Animated block.
+ * @param {Element}      element Animated block.
+ * @param {Element|null} keep    Leave this (and what's around it) alone: a
+ *                               replay button mustn't vanish while it's used.
  * @return {Function} Starts the animation.
  */
-function prepare( element ) {
+function prepare( element, keep = null ) {
 	const type = element.getAttribute( 'data-tmb-animate' );
 	const speed = element.getAttribute( 'data-tmb-speed' ) || 'normal';
 	const delay = Number( element.getAttribute( 'data-tmb-delay' ) ) || 0;
@@ -39,11 +48,18 @@ function prepare( element ) {
 		null === stagger
 			? [ element ]
 			: [ ...element.children ].filter(
-					( child ) => child.getClientRects().length
+					( child ) =>
+						child.getClientRects().length &&
+						! child.contains( keep )
 			  );
 	const step = Number( stagger ) || 0;
 
 	return () => {
+		// A replay: stop whatever is still playing first.
+		( element.tmbAnimations || [] ).forEach( ( animation ) =>
+			animation.cancel()
+		);
+
 		// Same frame: drop the "hidden" rule and start the animation from hidden.
 		element.classList.add( 'tmb-in' );
 		element.tmbAnimations = targets
@@ -87,6 +103,133 @@ function init( container = document ) {
 	];
 
 	elements.forEach( observer ? watch : showWithoutAnimating );
+}
+
+/**
+ * Hide a block that has already played again and watch for it to scroll
+ * back into view (a replay of a block that's below the screen).
+ *
+ * @param {Element} element Animated block.
+ */
+function rewatch( element ) {
+	( element.tmbAnimations || [] ).forEach( ( animation ) =>
+		animation.cancel()
+	);
+	element.tmbAnimations = [];
+	element.tmbAnimate = true;
+	element.classList.remove( 'tmb-in' );
+	element.classList.add( 'tmb-wait' );
+	observer.observe( element );
+}
+
+/**
+ * Play the animations inside some blocks again: blocks on screen play now,
+ * blocks below it play when they're scrolled to, blocks above it (or still
+ * waiting to be seen) are left alone. Can also be called by hand:
+ * window.tmbAnimate.replay( element ).
+ *
+ * @param {ParentNode}   container Where to look (document for the whole page).
+ * @param {Element|null} keep      Don't hide this element (the button pressed).
+ */
+function replay( container = document, keep = null ) {
+	if ( ! canReplay ) {
+		return;
+	}
+
+	const height = window.innerHeight;
+	const elements = [
+		...( container.matches?.( SELECTOR ) ? [ container ] : [] ),
+		...container.querySelectorAll( SELECTOR ),
+	].filter(
+		( element ) =>
+			element.classList.contains( 'tmb-in' ) &&
+			// "One by one" blocks skip the child holding the button instead.
+			( null !== element.getAttribute( 'data-tmb-animate-children' ) ||
+				! element.contains( keep ) )
+	);
+
+	// Measure everything, then start everything (no layout thrashing).
+	elements
+		.map( ( element ) => {
+			const rect = element.getBoundingClientRect();
+
+			if ( rect.bottom <= 0 ) {
+				return null;
+			}
+
+			if ( rect.top >= height ) {
+				return observer ? () => rewatch( element ) : null;
+			}
+
+			return prepare( element, keep );
+		} )
+		.filter( Boolean )
+		.forEach( ( begin ) => begin() );
+}
+
+/**
+ * The blocks a replay button names: a space-separated list of IDs, or "*"
+ * for the whole page. Anything else is ignored (the attribute can be forged).
+ *
+ * @param {Element} button Replay button.
+ * @return {ParentNode[]} Containers.
+ */
+function replayTargets( button ) {
+	const value = ( button.getAttribute( 'data-tmb-replay' ) || '' ).trim();
+
+	if ( '*' === value ) {
+		return [ document ];
+	}
+
+	return value
+		.split( /\s+/ )
+		.filter( ( id ) => /^[A-Za-z][\w-]*$/.test( id ) )
+		.map( ( id ) => document.getElementById( id ) )
+		.filter( Boolean );
+}
+
+function onReplay( event ) {
+	const button = event.target.closest?.( REPLAY );
+
+	if ( ! button || event.defaultPrevented ) {
+		return;
+	}
+
+	if ( 'keydown' === event.type ) {
+		// Elements that aren't real buttons get role="button" from PHP: Enter
+		// and Space press them, like a button. (A <button> does this itself.)
+		if (
+			event.target !== button ||
+			'BUTTON' === button.tagName ||
+			( 'Enter' !== event.key && ' ' !== event.key ) ||
+			event.altKey ||
+			event.ctrlKey ||
+			event.metaKey
+		) {
+			return;
+		}
+
+		// No page scroll for Space; no replay after replay for a held key.
+		event.preventDefault();
+
+		if ( event.repeat ) {
+			return;
+		}
+	} else {
+		// A link or field inside the button does its own thing.
+		const control = event.target.closest(
+			'a[href], button, input, select, textarea, summary, label, [tabindex]'
+		);
+
+		if ( control && control !== button && button.contains( control ) ) {
+			return;
+		}
+
+		// A link used as a replay button replays rather than navigates.
+		event.preventDefault();
+	}
+
+	replayTargets( button ).forEach( ( target ) => replay( target, button ) );
 }
 
 function start() {
@@ -152,8 +295,16 @@ function start() {
 
 	init();
 
-	// From here on, only blocks marked .tmb-wait are hidden.
+	document.addEventListener( 'click', onReplay );
+	document.addEventListener( 'keydown', onReplay );
+
+	// Replay works even when the first play was skipped for arriving late.
+	canReplay = ! reduced && !! Element.prototype.animate;
+
+	// From here on, only blocks marked .tmb-wait are hidden (and replay
+	// buttons are shown if they'll work).
 	root.classList.add( 'tmb-animate-ready' );
+	root.classList.toggle( 'tmb-replay-on', canReplay );
 
 	// Pick up animated blocks added later (filters, infinite scroll, modals).
 	// Mutation callbacks run before the next paint, so new blocks don't flash.
@@ -181,4 +332,4 @@ if ( 'loading' === document.readyState ) {
 	start();
 }
 
-window.tmbAnimate = { init };
+window.tmbAnimate = { init, replay };
