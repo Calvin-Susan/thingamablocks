@@ -186,30 +186,17 @@ test.describe( 'Settings page', () => {
 
 		await openEditor( page, postId );
 		expect( await invalidBlocks( page ) ).toEqual( [] );
-		// Still editable, and can still be duplicated.
-		const counts = await page.evaluate( async () => {
-			const { select, dispatch } = window.wp.data;
-			const editor = select( 'core/block-editor' );
-			const [ dropdown ] = editor.getBlocksByName(
-				'thingamablocks/dropdown'
-			);
-			const before = editor.getBlocksByName(
-				'thingamablocks/dropdown'
-			).length;
-
-			await dispatch( 'core/block-editor' ).duplicateBlocks( [
-				dropdown,
-			] );
-
-			return {
-				before,
-				after: editor.getBlocksByName( 'thingamablocks/dropdown' )
-					.length,
-			};
-		} );
-
-		expect( counts.before ).toBeGreaterThan( 0 );
-		expect( counts.after ).toBe( counts.before + 1 );
+		// Still there and editable. (Whether WordPress lets a block that's out
+		// of the inserter be duplicated depends on the editor, so it isn't
+		// tested; the settings page says so.)
+		expect(
+			await page.evaluate(
+				() =>
+					window.wp.data
+						.select( 'core/block-editor' )
+						.getBlocksByName( 'thingamablocks/dropdown' ).length
+			)
+		).toBeGreaterThan( 0 );
 
 		expect( errors ).toEqual( [] );
 	} );

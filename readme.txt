@@ -28,7 +28,7 @@ Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settin
 
 Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's and Breadcrumbs' few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
-Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy. Each switch shows how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited.
+Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy. Each switch shows how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
 
 = Toggle: starting layouts =
 
@@ -414,7 +414,7 @@ Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on
 
 = Can I hide blocks I don't use? =
 
-Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited, and existing animations and masks stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
+Yes. Go to **Settings → Thingamablocks** (administrators only) and untick any block or feature. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations and masks stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 

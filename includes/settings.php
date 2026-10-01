@@ -172,7 +172,7 @@ function thingamablocks_usage_counts() {
 
 	// The SUM( … LIKE %s ) list is built from a fixed string above; every value is a placeholder.
 	$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient.
-		$wpdb->prepare(
+		$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the %s placeholders are in $sums.
 			'SELECT ' . implode( ', ', $sums ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$likes
 		),
@@ -225,7 +225,7 @@ function thingamablocks_render_settings_page() {
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Thingamablocks', 'thingamablocks' ); ?></h1>
-		<p><?php esc_html_e( 'Switch off anything you don’t use to keep the editor tidy. Switching something off only hides it: content already using it keeps working on your site and can still be edited.', 'thingamablocks' ); ?></p>
+		<p><?php esc_html_e( 'Switch off anything you don’t use to keep the editor tidy. Switching something off only hides it: content already using it keeps working on your site and can still be edited. (WordPress may not let you duplicate or paste a switched-off block, though: switch it back on for that.)', 'thingamablocks' ); ?></p>
 
 		<form method="post" action="options.php">
 			<?php settings_fields( 'thingamablocks' ); ?>

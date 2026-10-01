@@ -85,7 +85,7 @@ Each switch has a one-line description and shows where it's used ("In use on 3 i
 
 **Switching off only hides things.** Nothing on your site changes:
 
-- A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited.
+- A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited. WordPress may not let you duplicate or paste it while it's switched off (a block that's out of the inserter can't always be added again by other routes); switch it back on for that.
 - A switched-off **feature**'s sidebar panel (Entrance animation, Mask) no longer loads in the editor. Existing animations keep animating and existing masks stay.
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
