@@ -7,44 +7,92 @@
  * mask-* properties at the right level: tablet and mobile inherit desktop
  * through the CSS cascade, and everything is visible (and editable) in GB's
  * own Styles panel.
+ *
+ * Values are kept as the CSS text that's stored, so a value typed in GB's
+ * Styles panel (say a position of "right 10px bottom") survives untouched
+ * until it's changed here.
  */
-import { fromMaskImage, toMaskImage, flipSvg, unflipSvg } from './svg';
+import {
+	cleanSvg,
+	fromMaskImage,
+	toMaskImage,
+	buildMaskSvg,
+	unflipSvg,
+} from './svg';
 
-// The editor's preview devices, mapped to GenerateBlocks' default breakpoints.
-// Each level inherits from the ones before it.
-export const LEVELS = [
-	{ device: 'Desktop', key: null },
-	{ device: 'Tablet', key: '@media (max-width:1024px)' },
-	{ device: 'Mobile', key: '@media (max-width:767px)' },
-];
+// The Size setting that lets the shape distort to fill the image.
+export const STRETCH = '100% 100%';
 
-const PROPERTIES = [ 'maskImage', 'maskSize', 'maskPosition', 'maskRepeat' ];
+/**
+ * mask-image for settings: the shape, flipped, and allowed to distort only
+ * when the size is Stretch.
+ *
+ * @param {Object} settings Settings.
+ * @return {string} CSS value.
+ */
+function imageFor( settings ) {
+	return toMaskImage(
+		buildMaskSvg( settings.svg, settings.flip, STRETCH === settings.size )
+	);
+}
 
-const DEFAULTS = {
+/**
+ * The editor's preview devices, mapped to GenerateBlocks' breakpoints. Each
+ * level inherits from the ones before it. The breakpoints are looked up the
+ * way GenerateBlocks does, so a site that changed them gets its own.
+ *
+ * @return {Array<{device: string, key: string|null}>} Levels.
+ */
+export function getLevels() {
+	const rules = window.gb?.stylesBuilder?.defaultAtRules || [];
+	const rule = ( id, fallback ) =>
+		rules.find( ( item ) => item.id === id )?.value || fallback;
+
+	return [
+		{ device: 'Desktop', key: null },
+		{
+			device: 'Tablet',
+			key: rule( 'mediumSmallWidth', '@media (max-width:1024px)' ),
+		},
+		{
+			device: 'Mobile',
+			key: rule( 'smallWidth', '@media (max-width:767px)' ),
+		},
+	];
+}
+
+// Setting → CSS property.
+const PROPERTIES = {
+	size: 'maskSize',
+	position: 'maskPosition',
+	repeat: 'maskRepeat',
+};
+
+export const DEFAULTS = {
 	svg: '',
 	flip: '',
 	size: 'contain',
-	position: { x: 0.5, y: 0.5 },
-	repeat: false,
+	position: '50% 50%',
+	repeat: 'no-repeat',
 };
 
 /**
  * The style properties set at one level.
  *
  * @param {Object} styles GB styles.
- * @param {number} level  Index in LEVELS.
+ * @param {number} level  Index in getLevels().
  * @return {Object} Properties.
  */
 function propertiesAt( styles, level ) {
-	const key = LEVELS[ level ].key;
+	const key = getLevels()[ level ].key;
 
 	return ( key ? styles?.[ key ] : styles ) || {};
 }
 
 /**
- * Turn CSS values into panel settings.
+ * The settings stored at one level (only the ones it sets).
  *
- * @param {Object} values mask-* values.
+ * @param {Object} values Properties at a level.
  * @return {Object} Settings.
  */
 function toSettings( values ) {
@@ -53,41 +101,30 @@ function toSettings( values ) {
 	if ( undefined !== values.maskImage ) {
 		// "none" turns an inherited mask off at this size. A mask-image typed
 		// by hand in GB's Styles panel (not an SVG from here) reads as no shape.
+		// Cleaned again on the way in: the stored value could have been edited
+		// by hand, and cleaning also gives one canonical form to compare.
 		const { svg, flip } = unflipSvg( fromMaskImage( values.maskImage ) );
 
-		settings.svg = svg;
-		settings.flip = flip;
+		settings.svg = svg ? cleanSvg( svg ).svg || '' : '';
+		settings.flip = settings.svg ? flip : '';
 	}
 
-	if ( undefined !== values.maskSize ) {
-		settings.size = values.maskSize;
-	}
-
-	if ( undefined !== values.maskPosition ) {
-		const [ x, y ] = String( values.maskPosition )
-			.split( /\s+/ )
-			.map( ( part ) => parseFloat( part ) / 100 );
-
-		settings.position = {
-			x: Number.isFinite( x ) ? x : 0.5,
-			y: Number.isFinite( y ) ? y : 0.5,
-		};
-	}
-
-	if ( undefined !== values.maskRepeat ) {
-		settings.repeat = 'no-repeat' !== values.maskRepeat;
-	}
+	Object.entries( PROPERTIES ).forEach( ( [ name, property ] ) => {
+		if ( undefined !== values[ property ] ) {
+			settings[ name ] = String( values[ property ] );
+		}
+	} );
 
 	return settings;
 }
 
 /**
- * The settings in effect at a level (its own values over the inherited ones),
- * and which of them are its own.
+ * The settings in effect at a level (its own over the inherited ones), and
+ * the inherited ones on their own.
  *
  * @param {Object} styles GB styles.
- * @param {number} level  Index in LEVELS.
- * @return {{settings: Object, own: Object, inherited: Object}} Settings.
+ * @param {number} level  Index in getLevels().
+ * @return {{settings: Object, inherited: Object}} Settings.
  */
 export function readMask( styles, level ) {
 	let inherited = { ...DEFAULTS };
@@ -99,65 +136,40 @@ export function readMask( styles, level ) {
 		};
 	}
 
-	const own = toSettings( propertiesAt( styles, level ) );
-
-	return { settings: { ...inherited, ...own }, own, inherited };
+	return {
+		settings: {
+			...inherited,
+			...toSettings( propertiesAt( styles, level ) ),
+		},
+		inherited,
+	};
 }
 
 /**
- * CSS values for settings.
+ * Change mask settings at one level.
  *
- * @param {Object} settings Settings (only the ones to write).
- * @return {Object} mask-* values.
- */
-function toValues( settings ) {
-	const values = {};
-
-	if ( undefined !== settings.svg ) {
-		values.maskImage = settings.svg
-			? toMaskImage( flipSvg( settings.svg, settings.flip || '' ) )
-			: undefined;
-	}
-
-	if ( undefined !== settings.size ) {
-		values.maskSize = settings.size;
-	}
-
-	if ( undefined !== settings.position ) {
-		const { x, y } = settings.position;
-		values.maskPosition = `${ Math.round( x * 100 ) }% ${ Math.round(
-			y * 100
-		) }%`;
-	}
-
-	if ( undefined !== settings.repeat ) {
-		values.maskRepeat = settings.repeat ? 'repeat' : 'no-repeat';
-	}
-
-	return values;
-}
-
-/**
- * New styles with the mask settings changed at one level.
+ * Only the properties being changed are written, except where no wider
+ * level has a mask yet: there every setting is written, so the CSS is
+ * complete on its own (the browser's defaults, like repeating, never leak
+ * in). A smaller level never stores a value equal to what it inherits, so
+ * changing desktop later still flows down.
  *
- * A level where no wider level has a mask yet writes every setting, so its
- * CSS is complete (the browser's own defaults, like repeating, never leak
- * in). Otherwise it writes only what differs from what it inherits, so
- * changing desktop later still flows down to tablet and mobile. The shape
- * and its flip are one CSS value (mask-image), so they're written together.
+ * The shape and its flip share one CSS value (mask-image). When the shape is
+ * replaced, smaller levels that only flipped it are updated to flip the new
+ * shape; a smaller level with a different shape of its own keeps it.
  *
  * @param {Object} styles  GB styles.
- * @param {number} level   Index in LEVELS.
+ * @param {number} level   Index in getLevels().
  * @param {Object} changes Settings to change.
  * @return {Object} New styles.
  */
 export function writeMask( styles, level, changes ) {
 	const { settings, inherited } = readMask( styles, level );
 	const next = { ...settings, ...changes };
+	const own = { ...propertiesAt( styles, level ) };
 
-	// No shape here: nothing to write, or, if a wider screen has one,
-	// switch it off at this size.
 	if ( ! next.svg ) {
+		// No shape here: none at all, or switch an inherited one off at this size.
 		return setLevel(
 			styles,
 			level,
@@ -165,40 +177,80 @@ export function writeMask( styles, level, changes ) {
 		);
 	}
 
-	if ( ! inherited.svg ) {
-		return setLevel( styles, level, toValues( next ) );
+	const complete = ! inherited.svg;
+	const differs = ( name ) => complete || next[ name ] !== inherited[ name ];
+	const values = {};
+
+	// The image carries the shape, its flip and whether it may stretch; it's
+	// stored here only if it differs from the one inherited.
+	const image = imageFor( next );
+
+	if ( complete || image !== imageFor( inherited ) ) {
+		values.maskImage = image;
 	}
 
-	const same = ( name ) =>
-		JSON.stringify( next[ name ] ) === JSON.stringify( inherited[ name ] );
-	const write = {};
-
-	if ( ! same( 'svg' ) || ! same( 'flip' ) ) {
-		write.svg = next.svg;
-		write.flip = next.flip;
-	}
-
-	[ 'size', 'position', 'repeat' ].forEach( ( name ) => {
-		if ( ! same( name ) ) {
-			write[ name ] = next[ name ];
+	Object.entries( PROPERTIES ).forEach( ( [ name, property ] ) => {
+		if ( name in changes || complete ) {
+			if ( differs( name ) ) {
+				values[ property ] = next[ name ];
+			}
+		} else if ( undefined !== own[ property ] ) {
+			// Untouched: keep exactly what's stored.
+			values[ property ] = own[ property ];
 		}
 	} );
 
-	return setLevel( styles, level, toValues( write ) );
+	let result = setLevel( styles, level, values );
+
+	if ( 'svg' in changes && changes.svg !== settings.svg ) {
+		result = carryShape( result, level, settings.svg, changes.svg );
+	}
+
+	return result;
+}
+
+/**
+ * After the shape changes at a level, smaller levels that only flipped (or
+ * stretched) the old shape get the new shape, flipped and stretched as before.
+ *
+ * @param {Object} styles GB styles.
+ * @param {number} level  Level whose shape changed.
+ * @param {string} from   Old shape.
+ * @param {string} to     New shape.
+ * @return {Object} New styles.
+ */
+function carryShape( styles, level, from, to ) {
+	let next = styles;
+
+	for ( let index = level + 1; index < getLevels().length; index++ ) {
+		const own = propertiesAt( next, index );
+		const { svg, flip } = toSettings( { maskImage: own.maskImage } );
+
+		if ( undefined !== own.maskImage && svg && svg === from ) {
+			const { size } = readMask( next, index ).settings;
+
+			next = setLevel( next, index, {
+				...own,
+				maskImage: imageFor( { svg: to, flip, size } ),
+			} );
+		}
+	}
+
+	return next;
 }
 
 /**
  * New styles with the mask removed: everywhere from desktop, or just one
- * breakpoint's own changes (so it inherits again).
+ * smaller level's own changes (so it inherits again).
  *
  * @param {Object} styles GB styles.
- * @param {number} level  Index in LEVELS.
+ * @param {number} level  Index in getLevels().
  * @return {Object} New styles.
  */
 export function clearMask( styles, level ) {
 	let next = styles;
 
-	LEVELS.forEach( ( _, index ) => {
+	getLevels().forEach( ( _, index ) => {
 		if ( 0 === level || index === level ) {
 			next = setLevel( next, index, {} );
 		}
@@ -207,35 +259,35 @@ export function clearMask( styles, level ) {
 	return next;
 }
 
+const MASK_PROPERTIES = [ 'maskImage', ...Object.values( PROPERTIES ) ];
+
 /**
  * Replace one level's mask-* properties, leaving every other style alone.
  *
  * @param {Object} styles GB styles.
- * @param {number} level  Index in LEVELS.
- * @param {Object} values mask-* values (undefined ones are left out).
+ * @param {number} level  Index in getLevels().
+ * @param {Object} values mask-* values.
  * @return {Object} New styles.
  */
 function setLevel( styles, level, values ) {
-	const key = LEVELS[ level ].key;
+	const key = getLevels()[ level ].key;
 	const current = { ...propertiesAt( styles, level ) };
 
-	PROPERTIES.forEach( ( name ) => delete current[ name ] );
+	MASK_PROPERTIES.forEach( ( name ) => delete current[ name ] );
 	Object.entries( values ).forEach( ( [ name, value ] ) => {
-		if ( undefined !== value ) {
+		if ( undefined !== value && MASK_PROPERTIES.includes( name ) ) {
 			current[ name ] = value;
 		}
 	} );
 
+	const next = { ...( styles || {} ) };
+
 	if ( ! key ) {
 		// Desktop properties sit at the top level, next to the breakpoint objects.
-		const next = { ...( styles || {} ) };
-
-		PROPERTIES.forEach( ( name ) => delete next[ name ] );
+		MASK_PROPERTIES.forEach( ( name ) => delete next[ name ] );
 
 		return { ...next, ...current };
 	}
-
-	const next = { ...( styles || {} ) };
 
 	if ( Object.keys( current ).length ) {
 		next[ key ] = current;
@@ -250,11 +302,41 @@ function setLevel( styles, level, values ) {
  * Whether a level has a mask setting of its own.
  *
  * @param {Object} styles GB styles.
- * @param {number} level  Index in LEVELS.
+ * @param {number} level  Index in getLevels().
  * @return {boolean} Has its own settings.
  */
 export function hasOwnMask( styles, level ) {
 	const properties = propertiesAt( styles, level );
 
-	return PROPERTIES.some( ( name ) => undefined !== properties[ name ] );
+	return MASK_PROPERTIES.some( ( name ) => undefined !== properties[ name ] );
+}
+
+/**
+ * A position for the focal point picker, if the stored value is two
+ * percentages (as the picker writes); otherwise null (set elsewhere).
+ *
+ * @param {string} position mask-position.
+ * @return {{x: number, y: number}|null} Focal point.
+ */
+export function focalPoint( position ) {
+	const match = String( position )
+		.trim()
+		.match( /^(-?[\d.]+)%\s+(-?[\d.]+)%$/ );
+
+	return match
+		? {
+				x: parseFloat( match[ 1 ] ) / 100,
+				y: parseFloat( match[ 2 ] ) / 100,
+		  }
+		: null;
+}
+
+/**
+ * mask-position for a focal point.
+ *
+ * @param {{x: number, y: number}} point Focal point.
+ * @return {string} CSS value.
+ */
+export function positionFromPoint( { x, y } ) {
+	return `${ Math.round( x * 100 ) }% ${ Math.round( y * 100 ) }%`;
 }

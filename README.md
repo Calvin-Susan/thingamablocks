@@ -12,11 +12,13 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
+And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask" panel that crops an image to a shape from the GenerateBlocks shape library, or to an SVG of your own.
+
 All three blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 ---
 
@@ -38,6 +40,9 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
+- [Image masks](#image-masks)
+  - [Image mask recipes](#image-mask-recipes)
+  - [Image mask settings](#image-mask-settings)
 - [Developer API](#developer-api)
 - [How it's built](#how-its-built)
 - [Development](#development)
@@ -50,7 +55,7 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar.
+3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 ---
 
@@ -627,6 +632,74 @@ The animations move a block by at most 2rem (1.5rem for up/down) and zoom from 9
 
 ---
 
+## Image masks
+
+Not a block: a **Mask** panel added to the sidebar of the GenerateBlocks **Image** block (GB 2's `generateblocks/media`). Pick a shape and the image is cut to it: the solid parts of the shape show the image, the empty parts are see-through. Think wavy edges, a blob, a circle, an arch.
+
+- Shapes come from the **GenerateBlocks shape library** (the waves, angles, curves and triangles GB uses for its Shape block, plus any shapes added to that library), or from an **SVG you upload or paste** in the panel.
+- **Nothing loads on the front end.** The mask is written into the image's GenerateBlocks styles as `mask-image`, `mask-size`, `mask-position` and `mask-repeat`, and GenerateBlocks compiles and prints it with the rest of the block's CSS. The image's HTML doesn't change.
+- **Responsive like GB's Styles panel.** The panel follows the editor's preview device (Desktop / Tablet / Mobile), so you can change or remove the mask on smaller screens.
+- Only the Image block (GB 2). Not the legacy GB 1.x Image block, and not other blocks.
+
+> **Your SVGs don't go into the Media Library.** WordPress blocks SVG uploads, for good reason: an SVG can carry scripts. Instead the panel reads the file in your browser, cleans it down to plain shapes and stores it with the image (see [Uploaded and pasted SVGs](#uploaded-and-pasted-svgs)).
+
+### Image mask recipes
+
+#### Give a photo a wavy edge
+
+1. Select the Image block and open **Mask** in the sidebar.
+2. Click **Choose a shape**. On the **Shape library** tab, pick one of the waves.
+3. Set **Size** to **Stretch** so the shape spans the whole image, and use **Flip** (Horizontally / Vertically) if the wave faces the wrong way.
+
+#### Use your own shape (a blob, a logo outline)
+
+1. Export the shape from your design tool as an SVG, filled in solid black (any colour works; only the solid areas matter).
+2. In **Mask**, click **Choose a shape** → **Upload or paste**, then **Choose an .svg file**, or paste the SVG code and click **Use this SVG**.
+3. Leave **Size** on **Contain** to keep the shape's proportions, and use **Position** to place it.
+
+#### A different mask on phones
+
+1. Set up the mask as usual with the editor previewing **Desktop**.
+2. Switch the editor's preview device (the device menu in the top toolbar) to **Mobile**. The panel now says "Editing: Mobile".
+3. Change what you need, say **Size** to **Cover**, or click **Remove at this size** to show the plain image on phones. Everything you don't change is inherited from desktop.
+
+### Image mask settings
+
+Select a GenerateBlocks Image block. The panel opens by itself on images that already have a mask.
+
+| Setting | Stored as | Default | Notes |
+| --- | --- | --- | --- |
+| **Choose a shape** / **Replace shape** | `mask-image` | – | Opens the shape picker: **Shape library** or **Upload or paste**. |
+| Size | `mask-size` | Contain | **Contain** (whole shape fits, proportions kept), **Cover** (fills the image, proportions kept, may crop the shape), **Stretch** (fills the image exactly, `100% 100%`; the only option that distorts the shape), **Custom** (a shape width in `%`, `px` or `rem`, height in proportion; starts at 80%). |
+| Position | `mask-position` | Centre | A focal point picker over the image, stored as percentages. Moves the shape within the image (or, with Cover, chooses which part of the shape is kept). A position typed in GB's Styles panel (like `right 10px bottom`) is kept and shown under the picker until you move the point. |
+
+**Why shapes don't distort (unless you choose Stretch).** Shapes made as section dividers, including GenerateBlocks' own waves, angles and curves, are marked to always stretch to fill whatever they're in (`preserveAspectRatio="none"`). As a mask that would make every size look the same, squashed. The panel removes that marker, so Contain, Cover and Custom keep the shape's true proportions, and adds it back only for Stretch.
+| Flip | inside `mask-image` | Off | **Horizontally** and/or **Vertically**. The flip is built into the stored SVG. |
+| Repeat the shape | `mask-repeat` | Off | Tiles the shape (`repeat`) instead of showing it once (`no-repeat`). |
+| **Remove mask** | – | – | On Desktop: removes the mask at every screen size. |
+| **Remove at this size** | `mask-image: none` | – | On Tablet or Mobile: turns the mask off on that screen size and smaller. |
+| **Reset Tablet / Mobile to inherited settings** | – | – | Shown when that size has changes of its own; clears them so it follows the larger size again. |
+
+**Screen sizes.** The panel edits whichever device the editor is previewing, just like GB's Styles panel. Desktop settings apply everywhere. On Tablet and Mobile only what you change is stored, under GenerateBlocks' default breakpoints (`@media (max-width:1024px)` and `@media (max-width:767px)`), so everything else keeps following desktop, including later desktop changes.
+
+**You'll see it in GB's Styles panel too.** The `mask-*` properties sit in the block's GenerateBlocks styles like any other CSS, so you can see or fine-tune them there. (A `mask-image` you type by hand in the Styles panel shows in the Mask panel as "no shape"; the panel only reads shapes it wrote.)
+
+#### Uploaded and pasted SVGs
+
+- **Cleaned in the browser** to plain shapes: paths, rectangles, circles, ellipses, lines, polygons, groups, gradients and the like. Scripts, event handlers (`onclick`…), styles, text, embedded images and links to other files are removed.
+- **Up to 100 KB** after cleaning. Masks are simple shapes; a bigger file is usually an illustration with images inside.
+- **It needs a size**: a `viewBox` (or a width and height) so it can be scaled to the image.
+- If a file can't be used, the picker says why: not a valid SVG, no `viewBox` (or width and height), no shapes found, or too detailed (over 100 KB).
+- **Stored with the image**, encoded inside its CSS. That's also true of library shapes: picking one stores a copy. So editing a shape in the library later doesn't change images that already use it (pick it again to update one), and deleting a library shape never breaks a page.
+
+**The shape library and GenerateBlocks Pro.** The Shape library tab lists every shape in GenerateBlocks' library, including any added to it. That's expected to include shapes from GenerateBlocks Pro's Asset Library, but it hasn't been confirmed with GB Pro yet (GB Pro can't be tested locally).
+
+**Accessibility.** A mask is purely visual: the image keeps its alt text and is read as normal. A linked image keeps its keyboard focus outline, because the outline is drawn on the link, which isn't masked. Tip: don't mask away parts of an image that carry information (text in the image, a face in a team photo, part of a chart).
+
+**Browser support.** CSS masks are supported in all current browsers (Chrome and Edge 120+, Safari 15.4+, Firefox 53+). Older browsers simply show the image without the mask.
+
+---
+
 ## Developer API
 
 ### Toggle: the `tmb-toggle:change` event
@@ -802,6 +875,17 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 - **The Marquee** (`src/marquee/view.js`, `makeInert`) adds `.tmb-in` to animated blocks inside its copies, so they never sit hidden waiting for an animation.
 - **Build.** These scripts aren't blocks, so there's no `block.json` for `wp-scripts` to find. `webpack.config.js` extends the default config with two extra entries, `animations/editor` and `animations/view`.
 
+### How image masks work
+
+`includes/mask.php`, `src/mask/`. Editor-only: there's no front-end script or CSS at all.
+
+- **The panel** (`src/mask/editor.js`) is another `editor.BlockEdit` filter, shown only on `generateblocks/media`. `includes/mask.php` just enqueues it and its CSS in the block editor.
+- **Saved as GB styles** (`src/mask/styles.js`). GenerateBlocks keeps a block's styles as an object of CSS properties, with nested objects for its breakpoints, and compiles them to CSS itself whenever they change. The panel writes `maskImage`, `maskSize`, `maskPosition` and `maskRepeat` into that object at the level the editor is previewing (`@media (max-width:1024px)` for Tablet, `@media (max-width:767px)` for Mobile), leaving every other style alone. Desktop always writes every value, so browser defaults (like repeating) never leak in; Once a larger size has a mask, Tablet and Mobile write only what differs from what they inherit, so the CSS cascade does the inheriting, exactly as with the rest of GB.
+- **The shape** (`src/mask/svg.js`) is parsed with `DOMParser` and rebuilt from an allowlist of SVG shape elements and attributes; references may only point inside the same SVG (`#id`), and anything mentioning `javascript:`, `data:`, `http(s):` or an external `url()` is dropped. The `width`/`height` are removed (the mask's size comes from the CSS) and a `viewBox` is required. It's then percent-encoded – quotes and brackets too, so it can't end the `url()` or the CSS rule early – into a `data:image/svg+xml` URL. A browser never runs scripts in an SVG used as a CSS image anyway; the cleaning is belt and braces, and keeps the CSS small.
+- **Flipping** wraps the shape in a group with a known ID (`tmb-flip-x`, `-y` or `-xy`) and a mirror transform, so the panel can read the flip back from the stored CSS.
+- **Library shapes** come from the shape list GenerateBlocks gives the editor (`window.generateBlocksInfo.svgShapes`, which GB builds with its `generateblocks_svg_shapes` filter), and go through the same cleaning.
+- **Why not the Media Library?** WordPress refuses SVG uploads by default, because an SVG opened directly can run scripts. Storing the cleaned shape in the block's CSS avoids needing an SVG-upload plugin, and means a mask never depends on a file that could be deleted.
+
 ### The dark mode head output
 
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
@@ -851,7 +935,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), which have no `block.json`.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
@@ -873,6 +957,7 @@ includes/
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
+  mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
   sale-banner.php               "Sale banner with countdown" pattern
@@ -912,6 +997,11 @@ src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
   view.js                       Front-end reveal on scroll, one-by-one children, window.tmbAnimate
+src/mask/
+  editor.js                     "Mask" panel on the GB Image block, shape picker (library / upload or paste), error messages
+  styles.js                     Reads and writes mask-* in the block's GB styles, per breakpoint (desktop / tablet / mobile)
+  svg.js                        SVG cleaning, 100 KB limit, flipping, encoding as a data: URL
+  editor.scss                   Panel and shape picker styles
 src/shared/
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   variation-placeholder.js      "Choose a starting layout" placeholder
@@ -920,12 +1010,13 @@ src/shared/
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
-webpack.config.js               Default wp-scripts build plus the src/animations/ entries
+webpack.config.js               Default wp-scripts build plus the src/animations/ and src/mask/ entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js)
+tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```

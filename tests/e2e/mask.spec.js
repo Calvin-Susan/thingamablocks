@@ -126,7 +126,24 @@ test.describe( 'Image mask', () => {
 			maskPosition: '50% 50%',
 			maskRepeat: 'no-repeat',
 		} );
-		expect( await css( blocks[ 0 ] ) ).toContain( 'mask-image:url(' );
+		// GB compiles the CSS in an effect, so wait for it.
+		await expect
+			.poll( () => css( blocks[ 0 ] ) )
+			.toContain( 'mask-image:url(' );
+
+		// Library shapes are made to stretch (preserveAspectRatio="none"); a
+		// mask keeps the shape's proportions unless Size is Stretch.
+		expect( decode( current.maskImage ) ).not.toContain(
+			'preserveAspectRatio'
+		);
+		await panel.getByRole( 'radio', { name: 'Stretch' } ).click();
+		expect( decode( ( await styles( blocks[ 0 ] ) ).maskImage ) ).toContain(
+			'preserveAspectRatio="none"'
+		);
+		await panel.getByRole( 'radio', { name: 'Contain' } ).click();
+		expect(
+			decode( ( await styles( blocks[ 0 ] ) ).maskImage )
+		).not.toContain( 'preserveAspectRatio' );
 
 		// Replace it with an uploaded SVG full of things that must not survive.
 		await panel.getByRole( 'button', { name: 'Replace shape' } ).click();
@@ -199,9 +216,11 @@ test.describe( 'Image mask', () => {
 			maskSize: 'cover',
 		} );
 		expect( current.maskSize ).toBe( 'contain' );
-		expect( await css( blocks[ 0 ] ) ).toMatch(
-			/@media \(max-width:1024px\)\{\.gb-media-\w+\{mask-size:cover\}\}/
-		);
+		await expect
+			.poll( () => css( blocks[ 0 ] ) )
+			.toMatch(
+				/@media \(max-width:1024px\)\{\.gb-media-\w+\{mask-size:cover\}\}/
+			);
 
 		// Back on desktop, the desktop value is untouched.
 		await page.evaluate( () =>
@@ -333,5 +352,133 @@ test.describe( 'Image mask', () => {
 		await expect(
 			panel.getByRole( 'button', { name: 'Horizontally' } )
 		).toHaveAttribute( 'aria-pressed', 'true' );
+	} );
+
+	test( 'the panel keeps other settings intact and cleans what it reads', async ( {
+		page,
+	} ) => {
+		const dialogs = [];
+		page.on( 'dialog', ( dialog ) => {
+			dialogs.push( dialog.message() );
+			dialog.dismiss();
+		} );
+
+		const image = await testImage( page );
+		await newPost( page );
+
+		const blob = require( 'node:fs' ).readFileSync(
+			fixture( 'blob.svg' ),
+			'utf8'
+		);
+		const evil =
+			'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" onload="alert(1)"><script>alert(2)</script><rect width="10" height="10"/></svg>';
+
+		// A mask written by hand (or forged) straight into the block's styles,
+		// plus a position typed in GB's Styles panel.
+		const clientId = await page.evaluate(
+			( { id, url, svg } ) => {
+				const block = window.wp.blocks.createBlock(
+					'generateblocks/media',
+					{
+						tagName: 'img',
+						mediaId: id,
+						htmlAttributes: { src: url, alt: 'Test photo' },
+						styles: {
+							// Encoded the way the panel encodes, so it reads as a shape.
+							maskImage: `url("data:image/svg+xml,${ encodeURIComponent(
+								svg
+							).replace( /[()']/g, ( char ) =>
+								encodeURIComponent( char ) === char
+									? '%' + char.charCodeAt( 0 ).toString( 16 )
+									: encodeURIComponent( char )
+							) }")`,
+							maskSize: 'contain',
+							maskPosition: 'right 10px bottom',
+							maskRepeat: 'no-repeat',
+						},
+					}
+				);
+
+				window.wp.data
+					.dispatch( 'core/block-editor' )
+					.insertBlocks( block );
+				window.wp.data
+					.dispatch( 'core/block-editor' )
+					.selectBlock( block.clientId );
+
+				return block.clientId;
+			},
+			{ ...image, svg: evil }
+		);
+		const styles = () =>
+			page.evaluate(
+				( id ) =>
+					window.wp.data
+						.select( 'core/block-editor' )
+						.getBlockAttributes( id ).styles,
+				clientId
+			);
+		const panel = page.locator( '.tmb-mask-panel' );
+
+		// The panel shows the forged shape only as an image: nothing runs.
+		await expect(
+			panel.getByRole( 'button', { name: 'Replace shape' } )
+		).toBeVisible();
+		await expect( panel ).toContainText( 'right 10px bottom' );
+
+		// Changing the size leaves the typed position alone, and re-stores the
+		// shape cleaned.
+		await panel.getByRole( 'radio', { name: 'Cover' } ).click();
+		let current = await styles();
+		expect( current.maskPosition ).toBe( 'right 10px bottom' );
+		expect( current.maskSize ).toBe( 'cover' );
+		expect( decode( current.maskImage ) ).not.toMatch( /script|onload/ );
+		expect( decode( current.maskImage ) ).toContain( '<rect' );
+
+		// Flip at tablet only, then replace the shape on desktop: tablet gets
+		// the new shape, still flipped.
+		await page.evaluate( () =>
+			window.wp.data.dispatch( 'core/editor' ).setDeviceType( 'Tablet' )
+		);
+		await panel.getByRole( 'button', { name: 'Horizontally' } ).click();
+		current = await styles();
+		expect(
+			decode( current[ '@media (max-width:1024px)' ].maskImage )
+		).toContain( 'tmb-flip-x' );
+
+		await page.evaluate( () =>
+			window.wp.data.dispatch( 'core/editor' ).setDeviceType( 'Desktop' )
+		);
+		await panel.getByRole( 'button', { name: 'Replace shape' } ).click();
+		const modal = page.getByRole( 'dialog', {
+			name: 'Choose a mask shape',
+		} );
+		await modal.getByRole( 'tab', { name: 'Upload or paste' } ).click();
+		await modal.getByLabel( 'Or paste SVG code' ).fill( blob );
+		await modal.getByRole( 'button', { name: 'Use this SVG' } ).click();
+		await expect( modal ).toBeHidden();
+
+		current = await styles();
+		const tablet = decode(
+			current[ '@media (max-width:1024px)' ].maskImage
+		);
+		expect( tablet ).toContain( 'tmb-flip-x' );
+		expect( tablet ).toContain( '<path' );
+		expect( tablet ).not.toContain( '<rect' );
+
+		// "Remove at this size" switches the mask off at tablet only.
+		await page.evaluate( () =>
+			window.wp.data.dispatch( 'core/editor' ).setDeviceType( 'Mobile' )
+		);
+		await panel
+			.getByRole( 'button', { name: 'Remove at this size' } )
+			.click();
+		current = await styles();
+		expect( current[ '@media (max-width:767px)' ].maskImage ).toBe(
+			'none'
+		);
+		expect( current.maskImage ).toContain( 'data:image/svg+xml' );
+
+		expect( dialogs ).toEqual( [] );
 	} );
 } );

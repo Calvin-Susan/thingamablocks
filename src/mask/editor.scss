@@ -25,6 +25,19 @@
 	margin-bottom: 16px;
 }
 
+.tmb-mask-panel__flip-group {
+	margin-bottom: 16px;
+}
+
+// Matches the labels of the components around it.
+.tmb-mask-panel__label {
+	margin: 0 0 8px;
+	font-size: 11px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-transform: uppercase;
+}
+
 .tmb-mask-panel__flip {
 	display: flex;
 	gap: 8px;
@@ -49,7 +62,7 @@
 	}
 }
 
-.tmb-mask-library__group h3 {
+.tmb-mask-library__group h2 {
 	margin: 16px 0 8px;
 	font-size: 13px;
 }

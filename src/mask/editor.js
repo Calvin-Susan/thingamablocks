@@ -13,9 +13,8 @@ import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
 import { InspectorControls } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
-import { useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import {
-	BaseControl,
 	Button,
 	FocalPointPicker,
 	FormFileUpload,
@@ -34,11 +33,40 @@ import {
 } from '@wordpress/components';
 
 import { cleanSvg, flipSvg, svgPreviewUrl, MAX_SVG_LENGTH } from './svg';
-import { LEVELS, readMask, writeMask, clearMask, hasOwnMask } from './styles';
+import {
+	getLevels,
+	readMask,
+	writeMask,
+	clearMask,
+	hasOwnMask,
+	focalPoint,
+	positionFromPoint,
+	STRETCH,
+} from './styles';
 import './editor.scss';
 
 const BLOCK = 'generateblocks/media';
-const SIZES = [ 'contain', 'cover', '100% 100%' ];
+const SIZES = [ 'contain', 'cover', STRETCH ];
+
+// What each size does to the shape. Only Stretch distorts it.
+const SIZE_HELP = () => ( {
+	contain: __(
+		'The whole shape fits inside the image, keeping its proportions.',
+		'thingamablocks'
+	),
+	cover: __(
+		'The shape fills the image, keeping its proportions, so its edges may be cut off.',
+		'thingamablocks'
+	),
+	[ STRETCH ]: __(
+		'The shape is stretched to fill the image exactly, so it may look squashed. Good for edge shapes like waves.',
+		'thingamablocks'
+	),
+	custom: __(
+		'The shape’s width; its height follows its proportions.',
+		'thingamablocks'
+	),
+} );
 
 function errorMessage( error ) {
 	switch ( error ) {
@@ -133,7 +161,7 @@ function ShapeModal( { onChoose, onClose } ) {
 			size="medium"
 			className="tmb-mask-modal"
 		>
-			<TabPanel tabs={ tabs }>
+			<TabPanel tabs={ tabs } onSelect={ () => setError( '' ) }>
 				{ ( tab ) =>
 					'library' === tab.name ? (
 						<div className="tmb-mask-library">
@@ -150,7 +178,7 @@ function ShapeModal( { onChoose, onClose } ) {
 									key={ group.key }
 									className="tmb-mask-library__group"
 								>
-									<h3>{ group.label }</h3>
+									<h2>{ group.label }</h2>
 									<div className="tmb-mask-library__grid">
 										{ group.shapes.map( ( shape ) => (
 											<Button
@@ -185,7 +213,10 @@ function ShapeModal( { onChoose, onClose } ) {
 								onChange={ async ( event ) => {
 									const file = event.target.files?.[ 0 ];
 
-									if ( file ) {
+									// Don't read a huge file just to reject it.
+									if ( file && file.size > 2_000_000 ) {
+										setError( errorMessage( 'too-big' ) );
+									} else if ( file ) {
 										use( await file.text() );
 									}
 								} }
@@ -236,13 +267,32 @@ function MaskPanel( { attributes, setAttributes } ) {
 		( select ) => select( 'core/editor' )?.getDeviceType?.() || 'Desktop',
 		[]
 	);
+	const levels = getLevels();
 	const level = Math.max(
 		0,
-		LEVELS.findIndex( ( item ) => item.device === device )
+		levels.findIndex( ( item ) => item.device === device )
 	);
 	const { styles } = attributes;
-	const { settings } = readMask( styles, level );
+	// Reading parses the stored SVG; only redo it when the styles change.
+	const { settings } = useMemo(
+		() => readMask( styles, level ),
+		[ styles, level ]
+	);
 	const hasOwn = hasOwnMask( styles, level );
+	const point = focalPoint( settings.position );
+	const [ customSize, setCustomSize ] = useState( settings.size );
+
+	useEffect( () => setCustomSize( settings.size ), [ settings.size ] );
+
+	// The image itself, for the position picker, unless it's a dynamic tag.
+	const src = attributes.htmlAttributes?.src || '';
+	const pickerUrl = useMemo(
+		() =>
+			/^(https?:)?\/\/|^\//.test( src ) && ! src.includes( '{{' )
+				? src
+				: svgPreviewUrl( settings.svg ),
+		[ src, settings.svg ]
+	);
 
 	const update = ( changes ) =>
 		setAttributes( { styles: writeMask( styles, level, changes ) } );
@@ -259,7 +309,7 @@ function MaskPanel( { attributes, setAttributes } ) {
 		Desktop: __( 'Desktop', 'thingamablocks' ),
 		Tablet: __( 'Tablet', 'thingamablocks' ),
 		Mobile: __( 'Mobile', 'thingamablocks' ),
-	}[ LEVELS[ level ].device ];
+	}[ levels[ level ].device ];
 
 	return (
 		<InspectorControls>
@@ -343,6 +393,7 @@ function MaskPanel( { attributes, setAttributes } ) {
 							__nextHasNoMarginBottom
 							isBlock
 							label={ __( 'Size', 'thingamablocks' ) }
+							help={ SIZE_HELP()[ sizeMode ] }
 							value={ sizeMode }
 							onChange={ ( mode ) =>
 								update( {
@@ -372,36 +423,62 @@ function MaskPanel( { attributes, setAttributes } ) {
 							<UnitControl
 								__next40pxDefaultSize
 								label={ __( 'Shape width', 'thingamablocks' ) }
-								value={ settings.size }
+								value={ customSize }
 								units={ [
 									{ value: '%', label: '%' },
 									{ value: 'px', label: 'px' },
 									{ value: 'rem', label: 'rem' },
 								] }
-								onChange={ ( value ) =>
-									/^\d+(\.\d+)?(%|px|rem)$/.test(
-										value || ''
-									) && update( { size: value } )
-								}
+								onChange={ ( value ) => {
+									// Let the field be cleared while typing; only store valid sizes.
+									setCustomSize( value || '' );
+
+									if (
+										/^\d+(\.\d+)?(%|px|rem)$/.test(
+											value || ''
+										)
+									) {
+										update( { size: value } );
+									}
+								} }
 							/>
 						) }
 
 						<FocalPointPicker
 							__nextHasNoMarginBottom
 							label={ __( 'Position', 'thingamablocks' ) }
-							url={
-								attributes.htmlAttributes?.src ||
-								svgPreviewUrl( settings.svg )
+							url={ pickerUrl }
+							value={ point || { x: 0.5, y: 0.5 } }
+							onChange={ ( position ) =>
+								update( {
+									position: positionFromPoint( position ),
+								} )
 							}
-							value={ settings.position }
-							onChange={ ( position ) => update( { position } ) }
+							help={
+								point
+									? undefined
+									: sprintf(
+											/* translators: %s: CSS mask-position value. */
+											__(
+												'Currently “%s” (set in the Styles panel). Moving the point replaces it.',
+												'thingamablocks'
+											),
+											settings.position
+									  )
+							}
 						/>
 
-						<BaseControl
-							__nextHasNoMarginBottom
-							id="tmb-mask-flip"
-							label={ __( 'Flip', 'thingamablocks' ) }
+						<div
+							role="group"
+							aria-labelledby="tmb-mask-flip-label"
+							className="tmb-mask-panel__flip-group"
 						>
+							<p
+								id="tmb-mask-flip-label"
+								className="tmb-mask-panel__label"
+							>
+								{ __( 'Flip', 'thingamablocks' ) }
+							</p>
 							<div className="tmb-mask-panel__flip">
 								<Button
 									variant="secondary"
@@ -420,13 +497,17 @@ function MaskPanel( { attributes, setAttributes } ) {
 									{ __( 'Vertically', 'thingamablocks' ) }
 								</Button>
 							</div>
-						</BaseControl>
+						</div>
 
 						<ToggleControl
 							__nextHasNoMarginBottom
 							label={ __( 'Repeat the shape', 'thingamablocks' ) }
-							checked={ settings.repeat }
-							onChange={ ( repeat ) => update( { repeat } ) }
+							checked={ 'no-repeat' !== settings.repeat }
+							onChange={ ( repeat ) =>
+								update( {
+									repeat: repeat ? 'repeat' : 'no-repeat',
+								} )
+							}
 						/>
 					</>
 				) }

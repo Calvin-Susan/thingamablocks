@@ -4,6 +4,18 @@ All notable changes to Thingamablocks are listed here.
 
 ## Unreleased
 
+### Added
+
+#### Image masks
+
+- A **Mask** panel on the GenerateBlocks Image block (GB 2's `generateblocks/media` only). **Choose a shape** opens a picker with two tabs: **Shape library** (the GenerateBlocks shape library – GB's built-in waves, angles, curves and triangles plus any shapes added to it; GenerateBlocks Pro's Asset Library shapes are expected to appear but this isn't confirmed with GB Pro yet) and **Upload or paste** (an .svg file or SVG code). The solid parts of the shape show the image; empty parts are see-through.
+- Settings: **Size** (Contain, Cover, Stretch, or a Custom width in %, px or rem; only Stretch distorts the shape, even for library shapes made to stretch), **Position** (focal point picker), **Flip** (horizontally / vertically), **Repeat the shape** (off by default), **Replace shape** and **Remove mask**.
+- **Breakpoints**: the panel follows the editor's preview device, like GB's Styles panel. Desktop applies everywhere; Tablet and Mobile store only what you change, under GB's `@media (max-width:1024px)` / `@media (max-width:767px)`, so they inherit desktop. **Remove at this size** turns the mask off on that size and smaller (`mask-image: none`); **Reset Tablet/Mobile to inherited settings** clears that size's own changes.
+- Saved as `mask-image`, `mask-size`, `mask-position` and `mask-repeat` in the block's GenerateBlocks styles, so it's visible and editable in GB's Styles panel and GB compiles and prints it with the block's CSS. **Nothing loads on the front end**, and the image's HTML is unchanged. Linked images keep their keyboard focus outline (drawn on the link, which isn't masked).
+- **SVG safety**: SVGs are never added to the Media Library. They're cleaned in the browser to an allowlist of shape elements and attributes (no scripts, event handlers, styles, embedded images or external references), capped at 100 KB, and percent-encoded (quotes and brackets too) into a `data:` URL. Library shapes are stored as a copy, so later edits to the library don't change existing images and deleting a library shape never breaks a page. Clear errors for invalid SVGs, a missing `viewBox`, no shapes, or a file that's too big.
+- Browser tests (`tests/e2e/mask.spec.js`, fixtures in `tests/e2e/fixtures/`): the panel writes styles per breakpoint, a malicious SVG is cleaned, the front end shows the mask with a tablet override and loads nothing from the plugin, linked masked images keep their focus ring, and saved posts reopen as valid blocks.
+- Build: `webpack.config.js` adds the `mask/editor` entry (`src/mask/` → `build/mask/`); `includes/mask.php` loads it in the block editor.
+
 ## 0.1.0 – 2026-10-01
 
 Initial release. Requires WordPress 6.6+ (tested up to 7.1), PHP 7.4+ and GenerateBlocks 2.0+.

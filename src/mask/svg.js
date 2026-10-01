@@ -125,8 +125,13 @@ export function cleanSvg( source ) {
 
 	// The shape must say how big it is, so it can be scaled to the image.
 	if ( ! root.getAttribute( 'viewBox' ) ) {
-		const width = parseFloat( root.getAttribute( 'width' ) );
-		const height = parseFloat( root.getAttribute( 'height' ) );
+		// Only absolute sizes: "100%" says nothing about the shape's proportions.
+		const size = ( name ) => {
+			const value = ( root.getAttribute( name ) || '' ).trim();
+			return /^\d*\.?\d+(px)?$/.test( value ) ? parseFloat( value ) : 0;
+		};
+		const width = size( 'width' );
+		const height = size( 'height' );
 
 		if ( ! ( width > 0 && height > 0 ) ) {
 			return { error: 'no-viewbox' };
@@ -139,9 +144,13 @@ export function cleanSvg( source ) {
 		return { error: 'no-viewbox' };
 	}
 
-	// The mask size comes from the CSS, not the file.
+	// The mask size comes from the CSS, not the file. And the shape keeps its
+	// proportions unless the Size setting is Stretch: shapes made as section
+	// dividers (like GenerateBlocks' own) say preserveAspectRatio="none",
+	// which would make every size distort them. See buildMaskSvg().
 	root.removeAttribute( 'width' );
 	root.removeAttribute( 'height' );
+	root.removeAttribute( 'preserveAspectRatio' );
 
 	if (
 		! root.querySelector(
@@ -177,7 +186,9 @@ function cleanElement( element ) {
 			! /^xmlns/.test( name ) &&
 			( ! pattern || pattern.test( value.trim() ) ) &&
 			// Belt and braces: nothing that could load something.
-			! /(javascript|data|https?):|url\((?!#)/i.test( value );
+			! /(javascript|data|https?):|url\((?!#)/i.test( value ) &&
+			// The flip marker is ours; a file can't claim to be flipped.
+			! ( 'id' === local && FLIP_ID.test( value ) );
 
 		element.removeAttribute( name );
 
@@ -219,6 +230,23 @@ function viewBoxOf( root ) {
 		box[ 3 ] > 0
 		? box
 		: null;
+}
+
+/**
+ * The SVG as stored in mask-image: flipped as asked, and, for the Stretch
+ * size only, allowed to distort to fill the image.
+ *
+ * @param {string}  svg     Cleaned SVG.
+ * @param {string}  flip    '', 'x', 'y' or 'xy'.
+ * @param {boolean} stretch Distort to fill (Size: Stretch).
+ * @return {string} SVG.
+ */
+export function buildMaskSvg( svg, flip, stretch ) {
+	const flipped = flipSvg( svg, flip );
+
+	return stretch
+		? flipped.replace( /^<svg\b/, '<svg preserveAspectRatio="none"' )
+		: flipped;
 }
 
 /**
@@ -271,6 +299,11 @@ export function unflipSvg( svg ) {
 
 	const doc = new window.DOMParser().parseFromString( svg, 'image/svg+xml' );
 	const root = doc.documentElement;
+
+	if ( doc.querySelector( 'parsererror' ) || 'svg' !== root.localName ) {
+		return { svg: '', flip: '' };
+	}
+
 	const group = [ ...root.children ].find(
 		( child ) => 'g' === child.localName && FLIP_ID.test( child.id )
 	);

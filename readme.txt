@@ -20,9 +20,11 @@ Thingamablocks adds three blocks to the GenerateBlocks category in the block ins
 
 It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
 
+And it adds **image masks** to the GenerateBlocks Image block: cut an image to a wave, a curve or your own SVG shape.
+
 Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the boxes) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 = Toggle: starting layouts =
 
@@ -182,6 +184,30 @@ Built to be light and safe:
 * Keyboard users who tab into a block that hasn't animated in yet see it straight away.
 * For developers: `window.tmbAnimate.init( container )` for content added with AJAX, the `thingamablocks_animation_head_markup` filter, and the `.tmb-in` class (added when a block animates) and `html.tmb-animate-js` for CSS.
 
+= Image masks =
+
+Select a GenerateBlocks Image block and open the **Mask** panel. Click **Choose a shape**:
+
+* **Shape library** – the GenerateBlocks shape library: GB's built-in waves, angles, curves and triangles, plus any shapes added to the library. Shapes from GenerateBlocks Pro's Asset Library are expected to show here too, but this hasn't been tested with GB Pro yet.
+* **Upload or paste** – choose an .svg file or paste SVG code.
+
+The solid parts of the shape show the image; the empty parts are see-through. Then:
+
+* **Size** – Contain (whole shape fits), Cover (fills the image, may crop the shape), Stretch (fills exactly; the only option that distorts the shape), or a Custom width in %, px or rem. Shapes keep their proportions unless you choose Stretch, even library shapes made to stretch.
+* **Position** – a focal point picker.
+* **Flip** – horizontally and/or vertically.
+* **Repeat the shape** – off by default.
+* **Replace shape** and **Remove mask**.
+
+The panel follows the editor's preview device (Desktop / Tablet / Mobile), like the GenerateBlocks Styles panel. Desktop settings apply everywhere; on Tablet or Mobile only what you change is stored, so the rest is inherited. **Remove at this size** turns the mask off on that screen size and smaller, and **Reset to inherited settings** clears that size's own changes.
+
+How it works:
+
+* The mask is saved as `mask-image`, `mask-size`, `mask-position` and `mask-repeat` in the image's GenerateBlocks styles, so you can see and edit it in the Styles panel too. GenerateBlocks prints it with the block's CSS. Nothing extra loads on the front end, and the image's HTML doesn't change.
+* SVGs aren't added to the Media Library. They're cleaned in your browser down to plain shapes (scripts, event handlers, styles, embedded images and external links are removed), limited to 100 KB, and stored with the image as part of its CSS. Picking a library shape stores a copy too, so later changes to that library shape don't affect images already using it, and deleting it never breaks a page.
+* Purely visual: the image's alt text works as normal, and a linked image keeps its keyboard focus outline. Don't mask away parts of an image that carry information.
+* CSS masks work in all current browsers (Chrome and Edge 120+, Safari 15.4+, Firefox 53+). Older browsers show the image without the mask.
+
 = Requirements =
 
 * WordPress 6.6 or newer (tested up to 7.1)
@@ -199,7 +225,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 == Frequently Asked Questions ==
 
@@ -272,6 +298,16 @@ Yes. Page caching makes no difference: the settings are attributes in the HTML. 
 = Why doesn't my animation play in the editor? =
 
 On purpose: animations don't play on their own in the editor, so blocks never disappear while you're working on them. Choosing an animation plays it once, and the **Preview** button in the Entrance animation panel plays it again. It plays as the block scrolls into view on the front end.
+
+= Why aren't mask SVGs uploaded to the Media Library? =
+
+WordPress blocks SVG uploads by default, for good reason: an SVG file can contain scripts. So the Mask panel never uploads it. It reads the file (or the code you paste) in your browser, keeps only the plain shapes, and stores the result with the image, inside its CSS. You don't need an SVG-upload plugin, and a mask can't break because a file was deleted.
+
+The flip side: a mask is a copy. If you later change a shape in the GenerateBlocks shape library, images that already use it keep the old version until you pick the shape again.
+
+= Why won't my SVG work as a mask? =
+
+The picker tells you why. The SVG needs a `viewBox` (or a width and height) so it can be scaled, it needs real shapes (paths, rectangles, circles, ellipses, lines or polygons; text and embedded images don't count), and it must be under 100 KB after cleaning. For text or an icon font, convert it to outlines in your design tool first.
 
 == Changelog ==
 
