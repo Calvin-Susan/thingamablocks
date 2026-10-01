@@ -692,7 +692,7 @@ Select a GenerateBlocks Image block. The panel opens by itself on images that al
 - If a file can't be used, the picker says why: not a valid SVG, no `viewBox` (or width and height), no shapes found, or too detailed (over 100 KB).
 - **Stored with the image**, encoded inside its CSS. That's also true of library shapes: picking one stores a copy. So editing a shape in the library later doesn't change images that already use it (pick it again to update one), and deleting a library shape never breaks a page.
 
-**The shape library and GenerateBlocks Pro.** The Shape library tab lists every shape in GenerateBlocks' library, including any added to it. That's expected to include shapes from GenerateBlocks Pro's Asset Library, but it hasn't been confirmed with GB Pro yet (GB Pro can't be tested locally).
+**The shape library and GenerateBlocks Pro.** The Shape library tab lists every shape in GenerateBlocks' library, including any added to it, so your shapes from GenerateBlocks Pro's Asset Library show up there too (confirmed on a GB Pro site). Manage your mask shapes there; there's no separate library to maintain.
 
 **Accessibility.** A mask is purely visual: the image keeps its alt text and is read as normal. A linked image keeps its keyboard focus outline, because the outline is drawn on the link, which isn't masked. Tip: don't mask away parts of an image that carry information (text in the image, a face in a team photo, part of a chart).
 

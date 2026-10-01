@@ -188,7 +188,7 @@ Built to be light and safe:
 
 Select a GenerateBlocks Image block and open the **Mask** panel. Click **Choose a shape**:
 
-* **Shape library** – the GenerateBlocks shape library: GB's built-in waves, angles, curves and triangles, plus any shapes added to the library. Shapes from GenerateBlocks Pro's Asset Library are expected to show here too, but this hasn't been tested with GB Pro yet.
+* **Shape library** – the GenerateBlocks shape library: GB's built-in waves, angles, curves and triangles, plus any shapes added to the library, including your shapes from GenerateBlocks Pro's Asset Library.
 * **Upload or paste** – choose an .svg file or paste SVG code.
 
 The solid parts of the shape show the image; the empty parts are see-through. Then:
