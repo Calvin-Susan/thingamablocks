@@ -77,17 +77,22 @@ export function zoneOffset( utcMs, timeZone ) {
  */
 export function zonedToUtc( year, month, day, hour, minute, timeZone ) {
 	const guess = Date.UTC( year, month, day, hour, minute );
-	const offset = zoneOffset( guess, timeZone );
-	let utc = guess - offset;
+	const candidates = [
+		guess - zoneOffset( guess, timeZone ),
+		guess - zoneOffset( guess - zoneOffset( guess, timeZone ), timeZone ),
+	];
 
-	// Near a daylight-saving change the offset at the answer can differ.
-	const corrected = zoneOffset( utc, timeZone );
+	// Moments that really show this wall-clock time in the zone.
+	const valid = candidates.filter(
+		( utc ) => utc + zoneOffset( utc, timeZone ) === guess
+	);
 
-	if ( corrected !== offset ) {
-		utc = guess - corrected;
-	}
-
-	return utc;
+	/*
+	 * Clocks going back: the time happens twice; use the first, as PHP does.
+	 * Clocks going forward: the time doesn't exist (e.g. 02:30); move forward
+	 * by the gap, as PHP does (02:30 → 03:30).
+	 */
+	return valid.length ? Math.min( ...valid ) : Math.max( ...candidates );
 }
 
 /**

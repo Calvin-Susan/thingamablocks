@@ -14,8 +14,8 @@ import { useSelect } from '@wordpress/data';
 
 const PART_BLOCKS = [ 'generateblocks/element', 'generateblocks/text', 'generateblocks/shape' ];
 
-export function partOptions() {
-	return [
+export function partOptions( blockName ) {
+	const options = [
 		{ value: '', label: __( 'None (decoration or label)', 'toggle-for-generateblocks' ) },
 		{ value: 'part:days', label: __( 'Days number', 'toggle-for-generateblocks' ) },
 		{ value: 'part:hours', label: __( 'Hours number', 'toggle-for-generateblocks' ) },
@@ -29,6 +29,11 @@ export function partOptions() {
 		{ value: 'part:ended', label: __( 'Ended message (shown when it ends)', 'toggle-for-generateblocks' ) },
 		{ value: 'part:separator', label: __( 'Separator', 'toggle-for-generateblocks' ) },
 	];
+
+	// Numbers replace the block's text, so only Text blocks can be numbers.
+	return 'generateblocks/text' === blockName
+		? options
+		: options.filter( ( option ) => ! /^part:(days|hours|minutes|seconds)$/.test( option.value ) );
 }
 
 /**
@@ -116,7 +121,7 @@ const withCountdownPartControl = createHigherOrderComponent(
 							__nextHasNoMarginBottom
 							label={ __( 'This block is', 'toggle-for-generateblocks' ) }
 							value={ value }
-							options={ partOptions() }
+							options={ partOptions( name ) }
 							help={ helpText( value ) }
 							onChange={ onChange }
 						/>

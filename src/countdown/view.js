@@ -64,6 +64,35 @@ function show( element ) {
 	}
 }
 
+/**
+ * Write a number into a part without wiping anything else in it (e.g. a GB
+ * Text block's icon): replace its last non-empty text node.
+ *
+ * @param {Element} element Number part.
+ * @param {string}  text    Number.
+ */
+function setNumber( element, text ) {
+	if ( ! element.children.length ) {
+		if ( element.textContent !== text ) {
+			element.textContent = text;
+		}
+		return;
+	}
+
+	const walker = document.createTreeWalker( element, NodeFilter.SHOW_TEXT );
+	let target = null;
+
+	while ( walker.nextNode() ) {
+		if ( walker.currentNode.nodeValue.trim() ) {
+			target = walker.currentNode;
+		}
+	}
+
+	if ( target && target.nodeValue !== text ) {
+		target.nodeValue = text;
+	}
+}
+
 function pad( value, config ) {
 	return config.pad ? String( value ).padStart( 2, '0' ) : String( value );
 }
@@ -84,13 +113,16 @@ function endTime( countdown, now ) {
 
 	if ( 'evergreen' === config.mode ) {
 		const duration = Math.max( 1, config.evergreenMinutes ) * 60000;
-		let end = Number( readStorage( countdown.key ) );
+		// Fall back to this page view's deadline if the browser blocks storage.
+		let end = Number( readStorage( countdown.key ) ) || countdown.evergreenEnd;
 
 		// First visit, or a finished run that should start over.
 		if ( ! end || ( end <= now && config.evergreenRestart ) ) {
 			end = now + duration;
 			writeStorage( countdown.key, String( end ) );
 		}
+
+		countdown.evergreenEnd = end;
 
 		return end;
 	}
@@ -109,11 +141,7 @@ function paintNumbers( countdown, ms ) {
 		const value = values[ unit ];
 		const text = pad( value, config );
 
-		parts[ unit ].forEach( ( element ) => {
-			if ( element.textContent !== text ) {
-				element.textContent = text;
-			}
-		} );
+		parts[ unit ].forEach( ( element ) => setNumber( element, text ) );
 
 		if ( config.hideEmptyUnits ) {
 			const empty = leading && 0 === value && ! alwaysShown.includes( unit );
@@ -164,6 +192,10 @@ function setEnded( countdown, ended, initial ) {
 		return;
 	}
 
+	if ( ! initial ) {
+		announceEnd( countdown );
+	}
+
 	element.dispatchEvent(
 		new CustomEvent( 'ogal-countdown:end', {
 			bubbles: true,
@@ -172,12 +204,41 @@ function setEnded( countdown, ended, initial ) {
 	);
 
 	if ( config.redirectUrl ) {
-		const target = new URL( config.redirectUrl, window.location.href );
+		redirect( config.redirectUrl );
+	}
+}
 
-		// Never redirect to the page we're on, which would loop.
-		if ( target.href.split( '#' )[ 0 ] !== window.location.href.split( '#' )[ 0 ] ) {
+/**
+ * Go to the "when it ends" page, unless it's the page we're on: "/offer" and
+ * "/offer/" count as the same, since WordPress redirects one to the other.
+ *
+ * @param {string} url Redirect URL.
+ */
+function redirect( url ) {
+	try {
+		const target = new URL( url, window.location.href );
+		const path = ( location ) => location.origin + location.pathname.replace( /\/+$/, '' );
+
+		if ( path( target ) !== path( window.location ) ) {
 			window.location.assign( target.href );
 		}
+	} catch ( e ) {
+		// A malformed URL just means no redirect.
+	}
+}
+
+/**
+ * Tell screen reader users the countdown has ended. The countdown itself is a
+ * role="timer" region, which isn't read out as it changes (good for the
+ * ticking numbers), so the ended message is announced from a live region.
+ *
+ * @param {Object} countdown Countdown record.
+ */
+function announceEnd( countdown ) {
+	const message = countdown.parts.ended.map( ( part ) => part.textContent.trim() ).join( ' ' );
+
+	if ( message && countdown.live ) {
+		countdown.live.textContent = message;
 	}
 }
 
@@ -201,8 +262,13 @@ function update( countdown, initial = false ) {
 	}
 
 	if ( ! countdown.end ) {
+		// No date set: nothing to count. Keep "Also show" targets hidden and stop ticking.
+		setEnded( countdown, false, initial );
+		countdown.idle = true;
 		return;
 	}
+
+	countdown.idle = false;
 
 	const left = countdown.end - now;
 
@@ -211,9 +277,15 @@ function update( countdown, initial = false ) {
 }
 
 function tick() {
-	countdowns.forEach( ( countdown ) => update( countdown ) );
+	countdowns.forEach( ( countdown ) => {
+		try {
+			update( countdown );
+		} catch ( e ) {
+			// One broken countdown mustn't stop the others.
+		}
+	} );
 
-	const running = countdowns.some( ( countdown ) => ! countdown.ended );
+	const running = countdowns.some( ( countdown ) => ! countdown.ended && ! countdown.idle );
 
 	// Wake just after the next whole second, so seconds change on time.
 	timer = running ? window.setTimeout( tick, 1005 - ( Date.now() % 1000 ) ) : null;
@@ -262,7 +334,19 @@ function setup( element ) {
 		key: element.id ? `id:${ element.id }` : `path:${ window.location.pathname }#${ position }`,
 		end: null,
 		ended: undefined,
+		idle: false,
+		evergreenEnd: null,
+		live: null,
 	};
+
+	if ( parts.ended.length ) {
+		countdown.live = document.createElement( 'span' );
+		countdown.live.className = 'ogal-countdown-live';
+		countdown.live.setAttribute( 'aria-live', 'polite' );
+		countdown.live.style.cssText =
+			'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
+		element.after( countdown.live );
+	}
 
 	element.ogalCountdown = countdown;
 	countdowns.push( countdown );

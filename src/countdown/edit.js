@@ -269,7 +269,8 @@ function RecurringSettings( { attributes, setAttributes } ) {
 				type="time"
 				label={ __( 'Ends at', 'toggle-for-generateblocks' ) }
 				value={ recurringTime }
-				onChange={ ( value ) => setAttributes( { recurringTime: value } ) }
+				// An emptied field keeps the last time rather than saving nothing.
+				onChange={ ( value ) => value && setAttributes( { recurringTime: value } ) }
 			/>
 			<fieldset className="ogal-countdown-weekdays">
 				<legend>{ __( 'On', 'toggle-for-generateblocks' ) }</legend>

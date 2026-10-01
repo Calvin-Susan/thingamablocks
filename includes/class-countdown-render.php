@@ -58,7 +58,8 @@ class Ogal_Countdown_Render {
 		}
 
 		if ( $ended && 'hide' === $config['endAction'] ) {
-			$wrapper['style'] = 'display:none!important';
+			// Trailing ";" because WordPress before 7.0 joins block styles with a space.
+			$wrapper['style'] = 'display:none!important;';
 		}
 
 		// Elements to reveal when it ends start hidden, and vice versa.
@@ -208,7 +209,13 @@ class Ogal_Countdown_Render {
 	}
 
 	/**
-	 * Fill in the numbers and show/hide the timer and ended parts.
+	 * Marks parts a countdown has processed, so an outer countdown leaves the
+	 * parts of a countdown nested inside it alone.
+	 */
+	const OWNED = 'data-countdown-owned';
+
+	/**
+	 * Fill in the numbers and show/hide the timer, ended and empty-unit parts.
 	 *
 	 * @param string $content Inner HTML.
 	 * @param array  $config  Config.
@@ -217,19 +224,24 @@ class Ogal_Countdown_Render {
 	 * @return string
 	 */
 	private static function decorate_parts( $content, $config, $left, $ended ) {
-		if ( '' === trim( $content ) ) {
+		if ( '' === trim( $content ) || ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
 			return $content;
 		}
 
-		// Which units have a number part; the largest one absorbs the rest.
-		$present = array();
+		// Which units have a number part of this countdown's own.
+		$present   = array();
+		$processor = new WP_HTML_Tag_Processor( $content );
 
-		foreach ( array_keys( self::UNITS ) as $unit ) {
-			if ( false !== strpos( $content, 'data-countdown-part="' . $unit . '"' ) ) {
-				$present[] = $unit;
+		while ( $processor->next_tag() ) {
+			$part = $processor->get_attribute( 'data-countdown-part' );
+
+			if ( isset( self::UNITS[ $part ] ) && null === $processor->get_attribute( self::OWNED ) ) {
+				$present[ $part ] = true;
 			}
 		}
 
+		// Largest unit first; the largest one shown absorbs the rest.
+		$present   = array_values( array_intersect( array_keys( self::UNITS ), array_keys( $present ) ) );
 		$values    = array();
 		$remaining = $left;
 
@@ -238,38 +250,79 @@ class Ogal_Countdown_Render {
 			$remaining      -= $values[ $unit ] * self::UNITS[ $unit ];
 		}
 
+		// "Hide units that reach zero": leading zero units, keeping the last two.
+		$empty = array();
+
+		if ( $config['hideEmptyUnits'] ) {
+			$always_shown = array_slice( $present, -2 );
+
+			foreach ( $present as $unit ) {
+				if ( 0 !== $values[ $unit ] || in_array( $unit, $always_shown, true ) ) {
+					break;
+				}
+
+				$empty[] = $unit;
+			}
+		}
+
 		/*
 		 * Replace each number part's text. GenerateBlocks saves a Text block's
 		 * content directly inside its tag, e.g.
 		 * <span class="gb-text gb-text-1a2b" data-countdown-part="days">00</span>.
+		 * Parts already owned by a nested countdown are skipped.
 		 */
 		$content = preg_replace_callback(
-			'#(<([a-z][a-z0-9]*)\b[^>]*\bdata-countdown-part="(days|hours|minutes|seconds)"[^>]*>)[^<]*(</\2>)#i',
+			'#(<([a-z][a-z0-9]*)\b[^>]*\bdata-countdown-part="(days|hours|minutes|seconds)"[^>]*>)([^<]*)(</\2>)#i',
 			function ( $match ) use ( $values, $config ) {
+				if ( false !== strpos( $match[1], self::OWNED ) ) {
+					return $match[0];
+				}
+
 				$value = $values[ $match[3] ] ?? 0;
 				$text  = $config['pad'] ? str_pad( (string) $value, 2, '0', STR_PAD_LEFT ) : (string) $value;
 
-				return $match[1] . $text . $match[4];
+				return $match[1] . $text . $match[5];
 			},
 			$content
 		);
 
-		if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
-			return $content;
+		// Units hidden as empty: hide their box if they have one, else the number.
+		$units_with_box = array();
+		$processor      = new WP_HTML_Tag_Processor( $content );
+
+		while ( $processor->next_tag() ) {
+			$unit = $processor->get_attribute( 'data-countdown-unit' );
+
+			if ( is_string( $unit ) && null === $processor->get_attribute( self::OWNED ) ) {
+				$units_with_box[ $unit ] = true;
+			}
 		}
 
 		$processor = new WP_HTML_Tag_Processor( $content );
 
 		while ( $processor->next_tag() ) {
+			if ( null !== $processor->get_attribute( self::OWNED ) ) {
+				continue;
+			}
+
 			$part = $processor->get_attribute( 'data-countdown-part' );
+			$unit = $processor->get_attribute( 'data-countdown-unit' );
 
-			$hidden = ( 'ended' === $part && ! $ended )
-				|| ( 'timer' === $part && $ended && 'message' === $config['endAction'] );
+			if ( ! is_string( $part ) && ! is_string( $unit ) ) {
+				continue;
+			}
 
-			// Separators and other decoration shouldn't be read out every second.
+			$processor->set_attribute( self::OWNED, '' );
+
+			// Separators and other decoration shouldn't be read out.
 			if ( 'separator' === $part ) {
 				$processor->set_attribute( 'aria-hidden', 'true' );
 			}
+
+			$hidden = ( 'ended' === $part && ! $ended )
+				|| ( 'timer' === $part && $ended && 'message' === $config['endAction'] )
+				|| ( is_string( $unit ) && in_array( $unit, $empty, true ) )
+				|| ( isset( self::UNITS[ $part ] ) && in_array( $part, $empty, true ) && ! isset( $units_with_box[ $part ] ) );
 
 			if ( $hidden ) {
 				$style = (string) $processor->get_attribute( 'style' );

@@ -71,16 +71,18 @@ class Ogal_Blocks_Sanitize {
 	/**
 	 * Whether a selector is safe to print inside a <style> element.
 	 *
-	 * Only characters that plain selectors use are allowed: no "<" (which could
-	 * close the element), no "{", "}", ";" or "\\" (declarations, escapes) and
-	 * no "@" (at-rules such as @import). Brackets, parentheses and quotes must
+	 * Never "<" (which could close the element), "\\" escapes or control
+	 * characters. Outside quotes, only selector punctuation, letters, digits
+	 * and non-ASCII letters: so no "{", "}", ";" (declarations) or "@"
+	 * (at-rules such as @import). Brackets, parentheses and quotes must
 	 * balance, so an open "(" can't swallow the rule that follows it.
 	 *
 	 * @param string $selector Selector.
 	 * @return bool
 	 */
 	public static function is_safe_selector( $selector ) {
-		if ( ! preg_match( '/^[A-Za-z0-9_\-#.\[\]="\'~^$*|:(), >+]+$/D', $selector ) ) {
+		// No "<" anywhere (it could close the <style>), no escapes, no line breaks.
+		if ( preg_match( '/[<\\\\\x00-\x1f\x7f]/', $selector ) ) {
 			return false;
 		}
 
@@ -90,13 +92,24 @@ class Ogal_Blocks_Sanitize {
 			')' => '(',
 			']' => '[',
 		);
+		$chars = preg_split( '//u', $selector, -1, PREG_SPLIT_NO_EMPTY );
 
-		foreach ( str_split( $selector ) as $char ) {
+		if ( false === $chars ) {
+			return false; // Not valid UTF-8.
+		}
+
+		foreach ( $chars as $char ) {
+			// Inside quotes ([href="/pricing"]) anything else goes.
 			if ( $quote ) {
 				if ( $char === $quote ) {
 					$quote = '';
 				}
 				continue;
+			}
+
+			// Outside quotes: selector punctuation, letters, digits, and non-ASCII (IDs in other scripts).
+			if ( strlen( $char ) === 1 && ! preg_match( '/[A-Za-z0-9_\-#.\[\]="\'~^$*|:(), >+]/', $char ) ) {
+				return false;
 			}
 
 			if ( '"' === $char || "'" === $char ) {

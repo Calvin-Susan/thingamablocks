@@ -23,6 +23,8 @@ All notable changes to Toggle for GenerateBlocks are listed here.
 
 ### Changed
 
+- Countdown hardening: a malformed redirect URL no longer stops other countdowns; redirects compare paths ignoring trailing slashes; evergreen countdowns work when the browser blocks storage; countdowns with no date stop ticking; nested countdowns keep their own parts; the server hides empty units too; the ended message is announced to screen readers; "Disappears" works with block margins on WordPress before 7.0; numbers keep a Text block's icon; times skipped by a daylight-saving change resolve like PHP (moved forward).
+- Target selectors: anything inside quotes is allowed except `<`, `\` and line breaks (e.g. `a[href="/pricing"]`), and IDs may use non-ASCII letters.
 - Toggle targets: a bare word is always an element ID, except `html`, `body`, `main`, `header`, `footer`, `nav`, `aside`, `article`, `section`, which mean the tag unless an element has that ID. Every element with a duplicated ID is switched.
 - Target selectors are only kept if they use plain, balanced selector characters; the editor flags ones that will be ignored.
 - Remembered toggle choices use namespaced keys (`ogal-toggle:group:…`, `ogal-toggle:id:…`, `ogal-toggle:path:…`).

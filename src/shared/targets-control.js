@@ -34,14 +34,15 @@ export function usePageIds() {
 }
 
 /**
- * Mirrors Ogal_Toggle_Render::is_safe_selector(): plain selector characters
+ * Mirrors Ogal_Blocks_Sanitize::is_safe_selector(): plain selector characters
  * only, with balanced brackets and quotes. Anything else is dropped on save.
  *
  * @param {string} value Selector.
  * @return {boolean} Whether the server will keep it.
  */
 export function isSafeSelector( value ) {
-	if ( ! /^[A-Za-z0-9_\-#.[\]="'~^$*|:(), >+]+$/.test( value ) ) {
+	// eslint-disable-next-line no-control-regex
+	if ( /[<\\\x00-\x1f\x7f]/.test( value ) ) {
 		return false;
 	}
 
@@ -51,7 +52,14 @@ export function isSafeSelector( value ) {
 	for ( const char of value ) {
 		if ( quote ) {
 			quote = char === quote ? '' : quote;
-		} else if ( '"' === char || "'" === char ) {
+			continue;
+		}
+
+		if ( char.charCodeAt( 0 ) < 128 && ! /[A-Za-z0-9_\-#.[\]="'~^$*|:(), >+]/.test( char ) ) {
+			return false;
+		}
+
+		if ( '"' === char || "'" === char ) {
 			quote = char;
 		} else if ( '(' === char || '[' === char ) {
 			stack.push( char );
