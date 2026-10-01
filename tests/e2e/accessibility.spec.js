@@ -18,10 +18,6 @@ for ( const colorScheme of [ 'light', 'dark' ] ) {
 			page,
 		} ) => {
 			await page.goto( DEMO, { waitUntil: 'networkidle' } );
-			// The first visit to a fresh site can land on Playground's login redirect.
-			await expect(
-				page.locator( '.entry-content .tmb-marquee' ).first()
-			).toBeVisible();
 			// Let the countdowns tick and the marquees lay out.
 			await page.waitForTimeout( 1500 );
 			await page.addScriptTag( { content: AXE } );

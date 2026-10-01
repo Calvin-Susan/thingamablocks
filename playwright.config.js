@@ -17,6 +17,7 @@ const useSystemChrome = ! process.env.CI && existsSync( SYSTEM_CHROME );
 
 module.exports = defineConfig( {
 	testDir: './tests/e2e',
+	globalSetup: require.resolve( './tests/e2e/global-setup.js' ),
 	// One WordPress site is shared by every test, so run them one at a time.
 	workers: 1,
 	fullyParallel: false,
