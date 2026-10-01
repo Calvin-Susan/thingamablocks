@@ -1,13 +1,16 @@
 # Thingamablocks
 
-Add-on blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, by [OGAL Web Design](https://ogalweb.com) (Kyle Van Deusen).
+A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
+
+Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, by [OGAL Web Design](https://ogalweb.com) (Kyle Van Deusen).
 
 | Block | Name | What it does |
 | --- | --- | --- |
 | [**Toggle**](#toggle-block) | `thingamablocks/toggle` | A switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes. |
 | [**Countdown**](#countdown-block) | `thingamablocks/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
+| [**Marquee**](#marquee-block) | `thingamablocks/marquee` | A smooth, endless scrolling strip of logos, messages, headlines or cards, left/right or up/down. |
 
-Both blocks sit in the GenerateBlocks category of the inserter, and both work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text or Shape block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All three blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.5+, PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
 
@@ -24,6 +27,10 @@ Both blocks sit in the GenerateBlocks category of the inserter, and both work th
   - [Countdown quick start](#countdown-quick-start)
   - [How countdown parts and styling work](#how-countdown-parts-and-styling-work)
   - [Countdown settings](#countdown-settings)
+- [Marquee block](#marquee-block)
+  - [Marquee quick start](#marquee-quick-start)
+  - [How marquee parts and styling work](#how-marquee-parts-and-styling-work)
+  - [Marquee settings](#marquee-settings)
 - [Developer API](#developer-api)
 - [How it's built](#how-its-built)
 - [Development](#development)
@@ -36,7 +43,7 @@ Both blocks sit in the GenerateBlocks category of the inserter, and both work th
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle** and **Countdown** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles** and **Patterns → Countdowns**.
+3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**.
 
 ---
 
@@ -426,6 +433,130 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 
 ---
 
+## Marquee block
+
+A marquee is a strip that scrolls on its own, smoothly and forever. Use it for:
+
+- **Client or partner logos** – the classic "trusted by" strip.
+- **Short messages** – free shipping, returns, ratings, like an announcement bar.
+- **Big headlines** – large words drifting across a section.
+- **Testimonials, scrolling upwards** – cards moving up a fixed-height column.
+
+**Why not the GenerateBlocks carousel?** A carousel moves slide by slide: it stops, then jumps to the next. A marquee is a continuous loop at a constant speed with no seam – the end of the row runs straight into the start again. Different job.
+
+### Marquee quick start
+
+When you insert a Marquee you pick a starting layout:
+
+| Layout | What you get | Starts with |
+| --- | --- | --- |
+| **Logo strip** (default) | Six placeholder logo shapes in a row | Left, 40 px/s, faded edges, label "Our clients" |
+| **Message ticker** | An accent-coloured band of short messages separated by stars | Left, 60 px/s, no fade |
+| **Big scrolling headline** | Two phrases in very large type, separated by stars | Left, 45 px/s, 15% fade |
+| **Vertical quotes** | Four testimonial cards scrolling upwards | Up, 30 px/s, 22rem tall |
+
+Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. Like the other blocks' layouts, colours use the GeneratePress global colour variables with fallbacks.
+
+#### Fastest: the logo strip pattern
+
+The plugin registers **Logo strip: "Trusted by…"** in a **Marquees** pattern category (only while GenerateBlocks is active): a small centred "Trusted by teams at" heading above a Logo strip marquee with placeholder logos and a pause button. Insert it from **Patterns → Marquees**, then swap the placeholders for your logos as in the recipe below.
+
+> **The marquee stands still in the editor.** That's on purpose, so you can click into it and edit the content. Use the **Preview** button in the block toolbar to see the speed and direction (press **Stop** to edit again). The preview just slides the row by its own length; the seamless copies are only added on the front end.
+
+#### Recipe: Client logo strip with your own logos
+
+1. **Insert a Marquee** and choose **Logo strip** (or insert the pattern above).
+2. **Open List View** and expand the Marquee. Inside it there's an Element marked as the row that scrolls (its sidebar shows **Marquee part: The row that scrolls**) holding six Shape blocks – the placeholder logos.
+3. **Replace the placeholders.** Delete the Shape blocks and add a GenerateBlocks **Media** (image) block inside the row for each logo. Give each one alt text with the company name.
+4. **Keep logos the same height.** In each image's Styles set a height (e.g. `2rem` or `2.5rem`) and width `auto`, so wide and tall logos sit evenly. Using a global style for this saves repeating it.
+5. **Set the spacing on the row**, not on the logos: select the row and change its **gap** (the layout uses `4rem`). The marquee uses the same gap where the row repeats, so the spacing stays even all the way round.
+6. Check **Accessibility → Label** (e.g. "Our clients") and publish.
+
+Logos can link to the clients' sites; the repeated copies are skipped by screen readers and the keyboard (see [Accessibility behaviour](#accessibility-behaviour-2)).
+
+### How marquee parts and styling work
+
+#### Marquee parts
+
+Select any GenerateBlocks Element, Text, Shape or Media block inside a Marquee and you'll get a **Marquee part** panel with one setting, *This block is*:
+
+| Option | `data-marquee-part` value | What it does |
+| --- | --- | --- |
+| Part of the content | *(none)* | Nothing special – e.g. a logo or a card inside the row |
+| The row that scrolls | `items` | The block that moves. Put everything that scrolls inside it, and set the space between items with its gap. |
+| Pause button | `pause` | Pauses and restarts the scrolling |
+
+There should be one **row that scrolls**; anything else inside the Marquee (like the pause button) stays put. As with the other blocks, the value lives in GB's own HTML attributes.
+
+The sidebar warns you if nothing is marked as the row yet ("Nothing will scroll yet"), and the Accessibility panel warns you if there's no pause button.
+
+#### Styling
+
+Style everything in the GB Styles panel. For the paused state:
+
+| What | Selector | Set it on |
+| --- | --- | --- |
+| Pause button while paused | `&[aria-pressed="true"]` | the pause button – the layouts use it to swap the pause icon for the play icon |
+| Anything while the marquee is paused | `.tmb-marquee.is-paused …` | global CSS |
+
+`.is-paused` is on the wrapper whenever it's not moving: paused by the button, by hover or focus, or because it's off screen.
+
+The Marquee has no stylesheet of its own. Its clipping, edge fade and height are inline styles, so it looks right before the script starts. The fade applies to the scrolling row only, not to the pause button.
+
+### Marquee settings
+
+Select the Marquee block (the wrapper) to see these in the sidebar. In List View it's labelled **Marquee · Left**, **· Right**, **· Up** or **· Down**.
+
+#### Motion
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Speed | `speed` | `50` | Pixels per second, 5–300. The same pace whatever the length of the row. |
+| Direction | `direction` | `left` | `left`, `right`, `up`, `down`. |
+| Height | `height` | `20rem` | Up/down only: a vertical marquee needs a fixed height to scroll within. `rem`, `px` or `vh`. |
+| Pause on hover | `pauseOnHover` | `true` | Also pauses while a link or button inside it has keyboard focus. |
+
+#### Edges
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Fade the edges | `fadeEdges` | `true` | Items fade in and out at the ends instead of being cut off (a CSS mask). |
+| Fade width | `fadeWidth` | `10%` | How far the fade reaches in from each end. `%`, `rem` or `px`. |
+
+#### Accessibility
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Label | `ariaLabel` | `""` | Optional. Names the marquee for screen readers, e.g. "Our clients" (the wrapper becomes `role="region"` with this `aria-label`). |
+
+#### Toolbar
+
+- **Preview / Stop** – plays the motion in the editor. Only a preview; it doesn't change any setting.
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the wrapper's `id`; what `window.tmbMarquee.pause()` takes.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+#### How it moves
+
+- The script repeats the row **just enough times to fill the width** (or height) plus one, and slides the whole lot by exactly one row's length, then starts again. Because the copies are identical, you never see the loop restart.
+- The **gap between copies matches the row's own gap**, so the seam where the row repeats is spaced like everything else.
+- It uses the **Web Animations API** rather than CSS keyframes, so "remove unused CSS" optimisers can't break it.
+- It **re-measures on resize** (and when images finish loading) and keeps its place rather than jumping back to the start.
+- It **pauses while off screen**, so it doesn't use CPU when nobody can see it.
+- On **RTL sites**, left and right swap, so "left" means "towards the end of the line".
+
+#### Accessibility behaviour
+
+- **Copies are hidden from screen readers and the keyboard** (`aria-hidden="true"` and `inert`, links and buttons in them get `tabindex="-1"`, and IDs are removed). Only the original row is read out or tabbed to, so each logo or link exists once.
+- **A pause button.** WCAG 2.2.2 asks that anything moving for more than 5 seconds can be paused. Every layout has one; the sidebar warns you if it's removed. The server makes it work from the keyboard (`type="button"` on a `<button>`, otherwise `role="button"` and `tabindex="0"`), adds `aria-pressed`, and gives it `aria-label="Pause the scrolling"` unless it already has a label.
+- **Pause on hover** also covers keyboard focus, so someone tabbing through links in the row isn't chasing a moving target.
+- **Reduced motion:** visitors who prefer reduced motion get a still row. The copies are removed, the pause button is hidden, and the strip becomes scrollable so they can still see everything.
+
+---
+
 ## Developer API
 
 ### Toggle: the `tmb-toggle:change` event
@@ -497,6 +628,20 @@ window.tmbCountdown.reset();            // restart every evergreen countdown on 
 - `init( root )` sets up every countdown inside `root` (default `document`) that isn't set up yet; calling it more than once is safe.
 - `reset( id )` clears the visitor's saved deadline for the evergreen countdown with that HTML anchor and starts a fresh run. Handy when testing. Other modes are ignored.
 
+### Marquee: `window.tmbMarquee`
+
+```js
+window.tmbMarquee.init( container );          // set up marquees added later, e.g. by AJAX
+window.tmbMarquee.pause( 'client-logos' );        // toggle pause on the marquee with this HTML anchor
+window.tmbMarquee.pause( 'client-logos', true );  // pause
+window.tmbMarquee.pause( element, false );        // play (pass the .tmb-marquee element itself)
+```
+
+- `init( root )` sets up every marquee inside `root` (default `document`) that isn't set up yet; calling it more than once is safe.
+- `pause( elementOrAnchor, pause? )` takes the wrapper element or its HTML anchor. `true` pauses, `false` plays, leaving it out toggles. It works like pressing the pause button (and updates its `aria-pressed`). Hover, focus and off-screen pausing still apply on top.
+
+The Marquee fires no events.
+
 ### CSS hooks
 
 - `.tmb-toggle` – the Toggle wrapper, with `.is-on` or `.is-off`.
@@ -506,6 +651,9 @@ window.tmbCountdown.reset();            // restart every evergreen countdown on 
 - `.tmb-toggle-enter-fade`, `.tmb-toggle-enter-slide` – on an element while its reveal animation runs.
 - `.tmb-countdown` – the Countdown wrapper, with `.is-running` or `.is-ended`.
 - `[data-countdown-part="days|hours|minutes|seconds|timer|ended|separator"]`, `[data-countdown-unit="days|hours|minutes|seconds"]` – the countdown parts. Hidden parts and elements get an inline `display: none !important`.
+- `.tmb-marquee` – the Marquee wrapper, with `.is-paused` while it isn't moving.
+- `[data-marquee-part="items|pause"]` – the scrolling row and the pause button (with `aria-pressed`); `[data-marquee-owned]` once a marquee has claimed them.
+- `.tmb-marquee__viewport` > `.tmb-marquee__track` – added by the script: the viewport clips and carries the edge fade; the track holds the row and its copies, and is what moves.
 
 ### PHP
 
@@ -527,17 +675,17 @@ For Kyle, and anyone new to block plugins.
 
 ### Why a wrapper around GenerateBlocks blocks
 
-A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead both blocks follow the pattern GB Pro uses for Accordion and Tabs:
+A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-Both blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper `<div>` is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper `<div>` is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -552,6 +700,12 @@ Both blocks save only their inner blocks (`save` returns `<InnerBlocks.Content /
 - The end date is stored as site-local time and converted with `wp_timezone()`. Recurring countdowns get the site's time zone (`wp_timezone_string()`) in their config, and `src/countdown/time.js` does the maths in the browser, including daylight-saving changes and fixed offsets like `UTC+2`. The editor uses the same file, so the sidebar's "Ends in …" and "Next: …" match the front end.
 - **Also hide / Also show** targets that should start hidden get a `<style class="tmb-countdown-initial">`, as with the Toggle.
 - The front-end script (`src/countdown/view.js`, loaded only on pages with a Countdown) ticks once a second for all countdowns together, catches up straight away when a background tab becomes visible, stores evergreen deadlines, rolls recurring and restarting runs over, and runs the end actions. Because it recalculates from the clock on load, a cached page with stale numbers corrects itself immediately.
+
+**Marquee**
+
+- PHP (`includes/class-marquee-render.php`) renders the wrapper `<div class="tmb-marquee" data-tmb-marquee="{…config…}">` with its clipping, edge fade (a CSS mask) and, for up/down, height as inline styles. WordPress's style filter in `get_block_wrapper_attributes()` drops `mask-image`, so the fade is added to the rendered tag afterwards (built only from a validated length). It keeps the row on one line at its natural length (`width: max-content`, no wrapping), and gives the pause button its role, `aria-pressed` and label. So the strip looks right before the script runs, and stays a plain row without JavaScript.
+- The front-end script (`src/marquee/view.js`, loaded only on pages with a Marquee) moves the row into a track (`.tmb-marquee__track`) inside a clipping viewport (`.tmb-marquee__viewport`), and moves the edge fade from the wrapper onto the viewport so the pause button isn't faded. It clones the row enough times to fill the space, and animates the track with the Web Animations API by one row's length plus the gap. Duration is distance ÷ speed, so speed is in px/s. A `ResizeObserver` re-measures (adding or removing copies) and keeps the current position; an `IntersectionObserver` pauses it off screen.
+- In the editor (`src/marquee/edit.js`) the wrapper gets the same clipping and fade so you see the real edges, but nothing moves unless you press **Preview**.
 
 ### The dark mode head output
 
@@ -568,11 +722,11 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 ### Shared code
 
-Things both blocks use live in one place, so a new block can reuse them:
+Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters (no `<`, `{`, `}`, `;`, `\` or `@`) with balanced brackets and quotes, so nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker.
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all three blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews).
 
@@ -589,8 +743,8 @@ npm run playground   # local WordPress at http://127.0.0.1:9400
 npm run playground:reset  # same, starting from a fresh site
 ```
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/` and `src/countdown/` into `build/toggle/` and `build/countdown/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped.
-- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Toggle Test** page. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped.
+- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `includes/`, `patterns/`, `build/` (and `LICENSE` if present). It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
 ---
@@ -603,12 +757,14 @@ includes/
   class-sanitize.php            Thingamablocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
   class-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS
   class-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
+  class-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
-  patterns.php                  Registers the "Toggles" and "Countdowns" pattern categories and the patterns in patterns/
+  patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
 patterns/
   pricing-toggle.html           "Pricing table with monthly/annual toggle" pattern (plain block markup)
   sale-banner.html              "Sale banner with countdown" pattern
   launch-countdown.html         "Launch countdown" pattern
+  logo-marquee.html             "Logo strip: Trusted by…" pattern
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
@@ -628,6 +784,15 @@ src/countdown/
   templates.js                  The three starting layouts (Boxes, Inline text, Large numbers)
   time.js                       Time maths shared by editor and front end: time zones, recurring, splitting units
   view.js                       Front-end ticking, end actions, events, window.tmbCountdown
+  icon.js                       Block and layout icons
+  editor.scss                   Sidebar helper styles
+src/marquee/
+  block.json                    Block name, attributes, supports, asset files
+  index.js                      Registers the block, variations, List View label and inserter example
+  edit.js                       Editor UI: layout picker, sidebar settings, Preview button, warnings
+  parts.js                      "Marquee part" panel added to GB Element/Text/Shape/Media blocks
+  templates.js                  The four starting layouts (Logo strip, Message ticker, Big headline, Vertical quotes)
+  view.js                       Front-end copies, Web Animations loop, pausing, window.tmbMarquee
   icon.js                       Block and layout icons
   editor.scss                   Sidebar helper styles
 src/shared/

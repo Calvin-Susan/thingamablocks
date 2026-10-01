@@ -1,6 +1,6 @@
 === Thingamablocks ===
 Contributors: ogalweb
-Tags: generateblocks, toggle, countdown timer, dark mode, evergreen
+Tags: generateblocks, marquee, countdown timer, dark mode, toggle
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
@@ -8,16 +8,17 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-GenerateBlocks add-on blocks built from native GB blocks: a Toggle (show/hide, dark mode, classes) and a Countdown (date, evergreen, recurring).
+A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds two blocks to the GenerateBlocks category in the block inserter:
+Thingamablocks adds three blocks to the GenerateBlocks category in the block inserter:
 
 * **Toggle** – a switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes.
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
+* **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the labels, the numbers, the boxes) is an ordinary GenerateBlocks Element, Text or Shape block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the boxes) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
 = Toggle: starting layouts =
 
@@ -113,6 +114,39 @@ Under Patterns → **Countdowns**:
 
 The Countdown fires `tmb-countdown:end` (and `tmb-countdown:restart` for repeating ones) on its wrapper, and has `window.tmbCountdown.init()` and `window.tmbCountdown.reset()`. See the README for details.
 
+= Marquee: what it's for =
+
+Client logos, short messages, big headlines, or testimonials scrolling upwards. Unlike a carousel, which moves slide by slide, a marquee is a continuous loop at a constant speed with no visible seam.
+
+= Marquee: starting layouts =
+
+* **Logo strip** – placeholder logo shapes to swap for your own images.
+* **Message ticker** – a coloured band of short messages, like an announcement bar.
+* **Big scrolling headline** – large words drifting across the page.
+* **Vertical quotes** – testimonial cards scrolling upwards.
+
+Each has a small pause button in the corner.
+
+= Marquee: ready-made pattern =
+
+Under Patterns → **Marquees**, **Logo strip: "Trusted by…"** is a small "Trusted by teams at" heading above a scrolling row of placeholder logos. Swap in your clients' logos (GenerateBlocks Media blocks inside the scrolling row, all the same height) and publish.
+
+= Marquee: parts and settings =
+
+Select a GenerateBlocks block inside a Marquee and use the **Marquee part** panel to mark it as **The row that scrolls** (put everything that moves inside it, and set the spacing with its gap) or the **Pause button**. Style the paused button with `&[aria-pressed="true"]`, or anything else with `.tmb-marquee.is-paused`.
+
+* **Motion** – speed in pixels per second, direction (left, right, up, down), a height for up/down, and pause on hover (also while a link inside has keyboard focus).
+* **Edges** – fade the ends instead of cutting items off, with a fade width.
+* **Accessibility** – a label for screen readers, e.g. "Our clients".
+
+It repeats the row just enough to fill the space, matches the gap where it repeats, re-measures when the page is resized, pauses when off screen and runs the right way on RTL sites.
+
+= Marquee: accessibility =
+
+* The repeated copies are hidden from screen readers and keyboard users, so each logo or link is only read once.
+* A pause button, as WCAG 2.2.2 asks for moving content. The sidebar warns you if you remove it.
+* Visitors who prefer reduced motion get a still row they can scroll.
+
 = Requirements =
 
 * WordPress 6.5 or newer
@@ -126,7 +160,7 @@ Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle** and **Countdown** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles and Patterns → Countdowns.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees.
 
 == Frequently Asked Questions ==
 
@@ -180,9 +214,19 @@ Tip: give an evergreen countdown an HTML anchor (Advanced panel). Its deadline i
 
 The `00` is placeholder text; the editor doesn't run the clock. The sidebar tells you when it ends ("Ends in 4 days, 6 hours"), and the real numbers are filled in on the front end. Use the **Running / Ended** button in the block toolbar to preview the ended message.
 
+= Why does the marquee stand still in the editor? =
+
+So you can click into it and edit the content. Use the **Preview** button in the Marquee's block toolbar to see the speed and direction, then **Stop** to carry on editing. It scrolls on the front end.
+
+= Can I put links or buttons in a marquee? =
+
+Yes. Only the original row can be reached with the keyboard and screen readers; the copies made for the loop are skipped. With **Pause on hover** on (the default), the marquee also stops while a link inside it has keyboard focus, so it isn't a moving target. Keep in mind that moving links are harder to click, so don't put anything essential only in a marquee.
+
 == Changelog ==
 
 = Unreleased =
+* New Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges and reduced-motion support.
+* New pattern: "Logo strip: Trusted by…", in a new Marquees category.
 * New Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time; end actions (message, stay at zero, disappear, hide/show elements, redirect).
 * New patterns: "Sale banner with countdown" and "Launch countdown", in a new Countdowns category.
 * Toggle: stricter target sanitising, namespaced storage keys, duplicate IDs all switch, and only administrators change the site-wide dark colours.

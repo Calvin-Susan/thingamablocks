@@ -19,7 +19,15 @@ All notable changes to Thingamablocks are listed here.
 - **Editor**: Running/Ended preview toolbar button, warnings for no number parts or no ended message, "Ends in …" / "Next: …" hints, List View label ("Countdown · Date / Evergreen / Recurring").
 - **Developer API**: `tmb-countdown:end` and `tmb-countdown:restart` events, `window.tmbCountdown.init()` and `.reset()`.
 - **Patterns**: "Sale banner with countdown" (the banner, ID `sale-banner`, hides itself when the sale ends) and "Launch countdown", in a new "Countdowns" pattern category.
-- **Shared code** for both blocks: `Thingamablocks_Sanitize` (`includes/class-sanitize.php`) and `src/shared/` (target picker, layout picker, editor canvas styles, GenerateBlocks helpers).
+- **Marquee block** (`thingamablocks/marquee`) in the GenerateBlocks inserter category. A settings-only wrapper like the others: the scrolling row, its contents and the pause button are GenerateBlocks Element, Text, Shape and Media blocks.
+  - **Starting layouts**: Logo strip, Message ticker, Big scrolling headline, Vertical quotes, each with a pause button.
+  - **Marquee part** panel: "The row that scrolls" (`data-marquee-part="items"`) and "Pause button" (`data-marquee-part="pause"`), stored in the block's HTML attributes.
+  - **Settings**: speed in px/s, direction (left/right/up/down), height for up/down, pause on hover (and on keyboard focus), faded edges with a fade width, an accessible label (`role="region"`). Editor **Preview** toolbar button; List View label "Marquee · Left/Right/Up/Down".
+  - **Front end**: copies the row just enough to fill the space and loops it with the Web Animations API, gap matched at the seam, re-measured on resize without jumping, paused off screen, RTL aware. Clipping, fade and height are server-rendered inline styles.
+  - **Accessibility**: copies are `aria-hidden`, `inert` and taken out of the tab order; the pause button gets its role, `aria-pressed` and a default label on the server, with a sidebar warning if it's missing (WCAG 2.2.2); reduced motion gives a still, scrollable row.
+  - **Developer API**: `window.tmbMarquee.init()` and `.pause( elementOrAnchor, pause? )`; `.tmb-marquee.is-paused` for styling.
+  - **Pattern**: "Logo strip: Trusted by…" (a small heading above a logo marquee), in a new "Marquees" pattern category. Also on the Playground demo page.
+- **Shared code** for all blocks: `Thingamablocks_Sanitize` (`includes/class-sanitize.php`) and `src/shared/` (target picker, layout picker, editor canvas styles, GenerateBlocks helpers).
 
 ### Changed
 
