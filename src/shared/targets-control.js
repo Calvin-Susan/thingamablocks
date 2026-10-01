@@ -34,7 +34,7 @@ export function usePageIds() {
 }
 
 /**
- * Mirrors Ogal_Blocks_Sanitize::is_safe_selector(): plain selector characters
+ * Mirrors Thingamablocks_Sanitize::is_safe_selector(): plain selector characters
  * only, with balanced brackets and quotes. Anything else is dropped on save.
  *
  * @param {string} value Selector.
@@ -83,7 +83,7 @@ export default function TargetsControl( { label, help, value = [], onChange } ) 
 	);
 
 	return (
-		<div className="ogal-toggle-targets">
+		<div className="tmb-toggle-targets">
 			<FormTokenField
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
@@ -105,24 +105,24 @@ export default function TargetsControl( { label, help, value = [], onChange } ) 
 				help={ help || '' }
 			/>
 			{ unsafe.length > 0 && (
-				<p className="ogal-toggle-targets__missing">
+				<p className="tmb-toggle-targets__missing">
 					{ sprintf(
 						/* translators: %s: comma-separated list of selectors. */
 						__(
 							'These will be ignored because they contain characters a selector can’t use here (such as @ ; { } or unbalanced brackets): %s',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						),
 						unsafe.join( ', ' )
 					) }
 				</p>
 			) }
 			{ missing.length > 0 && (
-				<p className="ogal-toggle-targets__missing">
+				<p className="tmb-toggle-targets__missing">
 					{ sprintf(
 						/* translators: %s: comma-separated list of element IDs. */
 						__(
 							'Not found on this page: %s. That’s fine if it lives in a header, footer or other template part.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						),
 						missing.join( ', ' )
 					) }

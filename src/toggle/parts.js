@@ -63,7 +63,7 @@ const withTogglePartControl = createHigherOrderComponent(
 
 				const parents = select( blockEditorStore ).getBlockParentsByBlockName(
 					clientId,
-					'ogal/toggle',
+					'thingamablocks/toggle',
 					true
 				);
 
@@ -98,30 +98,30 @@ const withTogglePartControl = createHigherOrderComponent(
 				<BlockEdit { ...props } />
 				<InspectorControls>
 					<PanelBody
-						title={ __( 'Toggle part', 'toggle-for-generateblocks' ) }
-						className="ogal-toggle-part-panel"
+						title={ __( 'Toggle part', 'thingamablocks' ) }
+						className="tmb-toggle-part-panel"
 					>
 						<SelectControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
-							label={ __( 'Clicking this block', 'toggle-for-generateblocks' ) }
+							label={ __( 'Clicking this block', 'thingamablocks' ) }
 							value={ value }
 							options={ [
 								{
 									value: '',
-									label: __( 'Does nothing (decoration)', 'toggle-for-generateblocks' ),
+									label: __( 'Does nothing (decoration)', 'thingamablocks' ),
 								},
 								{
 									value: 'switch',
-									label: __( 'Flips the toggle (switch)', 'toggle-for-generateblocks' ),
+									label: __( 'Flips the toggle (switch)', 'thingamablocks' ),
 								},
 								{
 									value: 'off',
-									label: __( 'Turns it off', 'toggle-for-generateblocks' ),
+									label: __( 'Turns it off', 'thingamablocks' ),
 								},
 								{
 									value: 'on',
-									label: __( 'Turns it on', 'toggle-for-generateblocks' ),
+									label: __( 'Turns it on', 'thingamablocks' ),
 								},
 							] }
 							help={ helpText( value ) }
@@ -140,24 +140,24 @@ function helpText( value ) {
 		case 'switch':
 			return __(
 				'Gets role="switch" and aria-checked. Style the on state with the nested selector &[aria-checked="true"], and the knob with &[aria-checked="true"] > *.',
-				'toggle-for-generateblocks'
+				'thingamablocks'
 			);
 		case 'on':
 		case 'off':
 			return __(
 				'Gets data-active="true" while its state is current. If it’s a button, or the toggle has no switch, it also works as a button for keyboard and screen readers (aria-pressed). Style the current state with the nested selector &[data-active="true"].',
-				'toggle-for-generateblocks'
+				'thingamablocks'
 			);
 		default:
 			return __(
 				'Choose what happens when a visitor clicks this block.',
-				'toggle-for-generateblocks'
+				'thingamablocks'
 			);
 	}
 }
 
 addFilter(
 	'editor.BlockEdit',
-	'ogal-toggle/toggle-part-control',
+	'thingamablocks/toggle-part-control',
 	withTogglePartControl
 );

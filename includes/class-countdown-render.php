@@ -8,7 +8,7 @@
  * right before any JavaScript runs (and stays sensible without it). The
  * script then keeps it ticking and corrects anything a page cache froze.
  *
- * @package ToggleForGenerateBlocks
+ * @package Thingamablocks
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Renders the Countdown block.
  */
-class Ogal_Countdown_Render {
+class Thingamablocks_Countdown_Render {
 	/**
 	 * Units, largest first, with their length in seconds.
 	 */
@@ -48,9 +48,9 @@ class Ogal_Countdown_Render {
 		$content = self::decorate_parts( $content, $config, max( 0, $left ), $ended );
 
 		$wrapper = array(
-			'class'               => 'ogal-countdown ' . ( $ended ? 'is-ended' : 'is-running' ),
+			'class'               => 'tmb-countdown ' . ( $ended ? 'is-ended' : 'is-running' ),
 			'role'                => 'timer',
-			'data-ogal-countdown' => wp_json_encode( $config ),
+			'data-tmb-countdown' => wp_json_encode( $config ),
 		);
 
 		if ( ! empty( $attributes['anchor'] ) ) {
@@ -67,7 +67,7 @@ class Ogal_Countdown_Render {
 
 		return sprintf(
 			'%1$s<div %2$s>%3$s</div>',
-			Ogal_Blocks_Sanitize::hide_style( $initial_hidden, 'ogal-countdown-initial' ),
+			Thingamablocks_Sanitize::hide_style( $initial_hidden, 'tmb-countdown-initial' ),
 			get_block_wrapper_attributes( $wrapper ),
 			$content
 		);
@@ -93,8 +93,8 @@ class Ogal_Countdown_Render {
 			'pad'            => ! isset( $attributes['padNumbers'] ) || ! empty( $attributes['padNumbers'] ),
 			'hideEmptyUnits' => ! empty( $attributes['hideEmptyUnits'] ),
 			'endAction'      => in_array( $end_action, array( 'message', 'zeros', 'hide' ), true ) ? $end_action : 'message',
-			'showOnEnd'      => Ogal_Blocks_Sanitize::selectors( $attributes['showOnEnd'] ?? array() ),
-			'hideOnEnd'      => Ogal_Blocks_Sanitize::selectors( $attributes['hideOnEnd'] ?? array() ),
+			'showOnEnd'      => Thingamablocks_Sanitize::selectors( $attributes['showOnEnd'] ?? array() ),
+			'hideOnEnd'      => Thingamablocks_Sanitize::selectors( $attributes['hideOnEnd'] ?? array() ),
 			'redirectUrl'    => esc_url_raw( $attributes['redirectUrl'] ?? '' ),
 		);
 

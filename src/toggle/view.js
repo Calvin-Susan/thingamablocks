@@ -1,19 +1,19 @@
 /**
  * Front-end behaviour for the Toggle block.
  *
- * Each toggle is a `.ogal-toggle` wrapper with a JSON config in
- * `data-ogal-toggle`. Its parts are ordinary GenerateBlocks blocks marked with
+ * Each toggle is a `.tmb-toggle` wrapper with a JSON config in
+ * `data-tmb-toggle`. Its parts are ordinary GenerateBlocks blocks marked with
  * `data-toggle-part`:
  *   - "switch": flips the state (role="switch", aria-checked)
  *   - "off" / "on": sets that state (data-active always; aria-pressed when the
  *     part is a button, or when it is the toggle's only kind of control)
  *
- * State changes fire `ogal-toggle:change` on the wrapper (it bubbles), so
- * custom code can react: `document.addEventListener( 'ogal-toggle:change', … )`.
+ * State changes fire `tmb-toggle:change` on the wrapper (it bubbles), so
+ * custom code can react: `document.addEventListener( 'tmb-toggle:change', … )`.
  */
 
-const STORAGE_PREFIX = 'ogal-toggle:';
-const HIDDEN_CLASS = 'ogal-toggle-hidden';
+const STORAGE_PREFIX = 'tmb-toggle:';
+const HIDDEN_CLASS = 'tmb-toggle-hidden';
 const PART = 'data-toggle-part';
 const toggles = [];
 
@@ -99,7 +99,7 @@ function showElement( element, animation, initial ) {
 		return;
 	}
 
-	const enterClass = `ogal-toggle-enter-${ animation }`;
+	const enterClass = `tmb-toggle-enter-${ animation }`;
 	const keyframes =
 		'slide' === animation
 			? [
@@ -232,7 +232,7 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 	}
 
 	toggle.element.dispatchEvent(
-		new CustomEvent( 'ogal-toggle:change', {
+		new CustomEvent( 'tmb-toggle:change', {
 			bubbles: true,
 			detail: {
 				state: isOn ? 'on' : 'off',
@@ -317,7 +317,7 @@ function ensureAccessibleName( toggle ) {
 function ownPart( event, element ) {
 	const part = event.target.closest( `[${ PART }]` );
 
-	return part && part.closest( '.ogal-toggle' ) === element ? part : null;
+	return part && part.closest( '.tmb-toggle' ) === element ? part : null;
 }
 
 function activate( toggle, part ) {
@@ -363,22 +363,22 @@ function storageKeyFor( config, element, position ) {
 }
 
 function setup( element ) {
-	if ( element.ogalToggle ) {
+	if ( element.tmbToggle ) {
 		return null;
 	}
 
 	let config;
 
 	try {
-		config = JSON.parse( element.dataset.ogalToggle || '{}' );
+		config = JSON.parse( element.dataset.tmbToggle || '{}' );
 	} catch ( e ) {
 		return null;
 	}
 
 	const position = [
-		...document.querySelectorAll( '.ogal-toggle[data-ogal-toggle]' ),
+		...document.querySelectorAll( '.tmb-toggle[data-tmb-toggle]' ),
 	].indexOf( element );
-	const id = element.id || `ogal-toggle-${ position + 1 }`;
+	const id = element.id || `tmb-toggle-${ position + 1 }`;
 
 	const toggle = {
 		element,
@@ -391,11 +391,11 @@ function setup( element ) {
 		// Only this toggle's own parts, not those of a toggle nested inside it.
 		parts: ( type ) =>
 			[ ...element.querySelectorAll( `[${ PART }="${ type }"]` ) ].filter(
-				( part ) => part.closest( '.ogal-toggle' ) === element
+				( part ) => part.closest( '.tmb-toggle' ) === element
 			),
 	};
 
-	element.ogalToggle = toggle;
+	element.tmbToggle = toggle;
 	toggles.push( toggle );
 
 	element.addEventListener( 'click', ( event ) => {
@@ -433,12 +433,12 @@ function setup( element ) {
 
 /**
  * Set up every toggle inside `root` that isn't set up yet. Runs on page load;
- * call it again after adding toggles with AJAX: `window.ogalToggle.init()`.
+ * call it again after adding toggles with AJAX: `window.tmbToggle.init()`.
  *
  * @param {ParentNode} root Where to look.
  */
 function init( root = document ) {
-	const added = [ ...root.querySelectorAll( '.ogal-toggle[data-ogal-toggle]' ) ]
+	const added = [ ...root.querySelectorAll( '.tmb-toggle[data-tmb-toggle]' ) ]
 		.map( setup )
 		.filter( Boolean );
 
@@ -467,7 +467,7 @@ function init( root = document ) {
 
 	// The script has taken over visibility; drop the no-flash rules.
 	document
-		.querySelectorAll( 'style.ogal-toggle-initial' )
+		.querySelectorAll( 'style.tmb-toggle-initial' )
 		.forEach( ( style ) => style.remove() );
 }
 
@@ -497,8 +497,8 @@ window
 		}
 	} );
 
-// Small public API, e.g. window.ogalToggle.set( 'billing', true ).
-window.ogalToggle = {
+// Small public API, e.g. window.tmbToggle.set( 'billing', true ).
+window.tmbToggle = {
 	init,
 	get: ( key ) => find( key )?.isOn,
 	set: ( key, isOn ) => {

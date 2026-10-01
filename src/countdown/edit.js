@@ -40,13 +40,13 @@ import { UNITS, nextRecurring, zonedToUtc } from './time';
 import { partOf } from './parts';
 
 const WEEKDAYS = () => [
-	[ 1, __( 'Mon', 'toggle-for-generateblocks' ) ],
-	[ 2, __( 'Tue', 'toggle-for-generateblocks' ) ],
-	[ 3, __( 'Wed', 'toggle-for-generateblocks' ) ],
-	[ 4, __( 'Thu', 'toggle-for-generateblocks' ) ],
-	[ 5, __( 'Fri', 'toggle-for-generateblocks' ) ],
-	[ 6, __( 'Sat', 'toggle-for-generateblocks' ) ],
-	[ 0, __( 'Sun', 'toggle-for-generateblocks' ) ],
+	[ 1, __( 'Mon', 'thingamablocks' ) ],
+	[ 2, __( 'Tue', 'thingamablocks' ) ],
+	[ 3, __( 'Wed', 'thingamablocks' ) ],
+	[ 4, __( 'Thu', 'thingamablocks' ) ],
+	[ 5, __( 'Fri', 'thingamablocks' ) ],
+	[ 6, __( 'Sat', 'thingamablocks' ) ],
+	[ 0, __( 'Sun', 'thingamablocks' ) ],
 ];
 
 /**
@@ -110,24 +110,24 @@ function relative( ms ) {
 
 	if ( days ) {
 		/* translators: %d: number of days. */
-		parts.push( sprintf( _n( '%d day', '%d days', days, 'toggle-for-generateblocks' ), days ) );
+		parts.push( sprintf( _n( '%d day', '%d days', days, 'thingamablocks' ), days ) );
 	}
 
 	if ( hours || days ) {
 		/* translators: %d: number of hours. */
-		parts.push( sprintf( _n( '%d hour', '%d hours', hours, 'toggle-for-generateblocks' ), hours ) );
+		parts.push( sprintf( _n( '%d hour', '%d hours', hours, 'thingamablocks' ), hours ) );
 	}
 
 	if ( ! days ) {
 		/* translators: %d: number of minutes. */
-		parts.push( sprintf( _n( '%d minute', '%d minutes', minutes, 'toggle-for-generateblocks' ), minutes ) );
+		parts.push( sprintf( _n( '%d minute', '%d minutes', minutes, 'thingamablocks' ), minutes ) );
 	}
 
 	const span = parts.join( ', ' );
 
 	return ms >= 0
-		? /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( 'in %s', 'toggle-for-generateblocks' ), span )
-		: /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( '%s ago', 'toggle-for-generateblocks' ), span );
+		? /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( 'in %s', 'thingamablocks' ), span )
+		: /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( '%s ago', 'thingamablocks' ), span );
 }
 
 function formatMoment( ms ) {
@@ -152,13 +152,13 @@ function DateSettings( { endDate, setAttributes } ) {
 						onClick={ onToggle }
 						aria-expanded={ isOpen }
 						__next40pxDefaultSize
-						className="ogal-countdown-date-button"
+						className="tmb-countdown-date-button"
 					>
-						{ end ? formatMoment( end ) : __( 'Pick a date', 'toggle-for-generateblocks' ) }
+						{ end ? formatMoment( end ) : __( 'Pick a date', 'thingamablocks' ) }
 					</Button>
 				) }
 				renderContent={ () => (
-					<div className="ogal-countdown-date-picker">
+					<div className="tmb-countdown-date-picker">
 						<DateTimePicker
 							currentDate={ endDate || undefined }
 							is12Hour={ is12Hour }
@@ -170,10 +170,10 @@ function DateSettings( { endDate, setAttributes } ) {
 				) }
 			/>
 			{ end && (
-				<p className="ogal-countdown-help">
+				<p className="tmb-countdown-help">
 					{ end > Date.now()
-						? /* translators: %s: e.g. "in 2 days, 4 hours". */ sprintf( __( 'Ends %s.', 'toggle-for-generateblocks' ), relative( end - Date.now() ) )
-						: /* translators: %s: e.g. "3 hours ago". */ sprintf( __( 'Ended %s.', 'toggle-for-generateblocks' ), relative( end - Date.now() ) ) }
+						? /* translators: %s: e.g. "in 2 days, 4 hours". */ sprintf( __( 'Ends %s.', 'thingamablocks' ), relative( end - Date.now() ) )
+						: /* translators: %s: e.g. "3 hours ago". */ sprintf( __( 'Ended %s.', 'thingamablocks' ), relative( end - Date.now() ) ) }
 				</p>
 			) }
 		</>
@@ -202,7 +202,7 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 				<FlexItem>
 					<NumberControl
 						__next40pxDefaultSize
-						label={ __( 'Days', 'toggle-for-generateblocks' ) }
+						label={ __( 'Days', 'thingamablocks' ) }
 						min={ 0 }
 						value={ days }
 						onChange={ ( value ) => set( { days: value } ) }
@@ -211,7 +211,7 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 				<FlexItem>
 					<NumberControl
 						__next40pxDefaultSize
-						label={ __( 'Hours', 'toggle-for-generateblocks' ) }
+						label={ __( 'Hours', 'thingamablocks' ) }
 						min={ 0 }
 						max={ 23 }
 						value={ hours }
@@ -221,7 +221,7 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 				<FlexItem>
 					<NumberControl
 						__next40pxDefaultSize
-						label={ __( 'Minutes', 'toggle-for-generateblocks' ) }
+						label={ __( 'Minutes', 'thingamablocks' ) }
 						min={ 0 }
 						max={ 59 }
 						value={ minutes }
@@ -229,15 +229,15 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 					/>
 				</FlexItem>
 			</Flex>
-			<p className="ogal-countdown-help">
+			<p className="tmb-countdown-help">
 				{ __(
 					'Each visitor gets their own deadline, counted from their first visit and remembered in their browser.',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 			</p>
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Start again when it ends', 'toggle-for-generateblocks' ) }
+				label={ __( 'Start again when it ends', 'thingamablocks' ) }
 				checked={ attributes.evergreenRestart }
 				onChange={ ( value ) => setAttributes( { evergreenRestart: value } ) }
 			/>
@@ -267,13 +267,13 @@ function RecurringSettings( { attributes, setAttributes } ) {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				type="time"
-				label={ __( 'Ends at', 'toggle-for-generateblocks' ) }
+				label={ __( 'Ends at', 'thingamablocks' ) }
 				value={ recurringTime }
 				// An emptied field keeps the last time rather than saving nothing.
 				onChange={ ( value ) => value && setAttributes( { recurringTime: value } ) }
 			/>
-			<fieldset className="ogal-countdown-weekdays">
-				<legend>{ __( 'On', 'toggle-for-generateblocks' ) }</legend>
+			<fieldset className="tmb-countdown-weekdays">
+				<legend>{ __( 'On', 'thingamablocks' ) }</legend>
 				{ WEEKDAYS().map( ( [ day, label ] ) => (
 					<CheckboxControl
 						key={ day }
@@ -293,14 +293,14 @@ function RecurringSettings( { attributes, setAttributes } ) {
 					/>
 				) ) }
 			</fieldset>
-			<p className="ogal-countdown-help">
+			<p className="tmb-countdown-help">
 				{ next
 					? sprintf(
 							/* translators: %s: date and time. */
-							__( 'Next: %s. Then it starts over for the next one.', 'toggle-for-generateblocks' ),
+							__( 'Next: %s. Then it starts over for the next one.', 'thingamablocks' ),
 							formatMoment( next )
 					  )
-					: __( 'Pick at least one day.', 'toggle-for-generateblocks' ) }
+					: __( 'Pick at least one day.', 'thingamablocks' ) }
 			</p>
 		</>
 	);
@@ -314,20 +314,20 @@ function TimingSettings( { attributes, setAttributes } ) {
 		timezone?.string || ( '+00:00' === offsetName ? 'UTC' : `UTC${ offsetName }` );
 
 	return (
-		<PanelBody title={ __( 'Countdown', 'toggle-for-generateblocks' ) }>
+		<PanelBody title={ __( 'Countdown', 'thingamablocks' ) }>
 			<SelectControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'Count down to', 'toggle-for-generateblocks' ) }
+				label={ __( 'Count down to', 'thingamablocks' ) }
 				value={ mode }
 				options={ [
-					{ value: 'date', label: __( 'A date and time', 'toggle-for-generateblocks' ) },
-					{ value: 'evergreen', label: __( 'A deadline per visitor (evergreen)', 'toggle-for-generateblocks' ) },
-					{ value: 'recurring', label: __( 'A time that repeats', 'toggle-for-generateblocks' ) },
+					{ value: 'date', label: __( 'A date and time', 'thingamablocks' ) },
+					{ value: 'evergreen', label: __( 'A deadline per visitor (evergreen)', 'thingamablocks' ) },
+					{ value: 'recurring', label: __( 'A time that repeats', 'thingamablocks' ) },
 				] }
 				onChange={ ( value ) => setAttributes( { mode: value } ) }
 			/>
-			<div className="ogal-countdown-mode">
+			<div className="tmb-countdown-mode">
 				{ 'date' === mode && (
 					<DateSettings endDate={ attributes.endDate } setAttributes={ setAttributes } />
 				) }
@@ -339,10 +339,10 @@ function TimingSettings( { attributes, setAttributes } ) {
 				) }
 			</div>
 			{ 'evergreen' !== mode && (
-				<p className="ogal-countdown-help">
+				<p className="tmb-countdown-help">
 					{ sprintf(
 						/* translators: %s: time zone name. */
-						__( 'Times are in the site’s time zone (%s), set in Settings → General.', 'toggle-for-generateblocks' ),
+						__( 'Times are in the site’s time zone (%s), set in Settings → General.', 'thingamablocks' ),
 						zoneName
 					) }
 				</p>
@@ -353,28 +353,28 @@ function TimingSettings( { attributes, setAttributes } ) {
 
 function DisplaySettings( { attributes, setAttributes } ) {
 	return (
-		<PanelBody title={ __( 'Display', 'toggle-for-generateblocks' ) } initialOpen={ false }>
+		<PanelBody title={ __( 'Display', 'thingamablocks' ) } initialOpen={ false }>
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Two-digit numbers', 'toggle-for-generateblocks' ) }
-				help={ __( 'Show 05 rather than 5.', 'toggle-for-generateblocks' ) }
+				label={ __( 'Two-digit numbers', 'thingamablocks' ) }
+				help={ __( 'Show 05 rather than 5.', 'thingamablocks' ) }
 				checked={ attributes.padNumbers }
 				onChange={ ( value ) => setAttributes( { padNumbers: value } ) }
 			/>
 			<ToggleControl
 				__nextHasNoMarginBottom
-				label={ __( 'Hide units that reach zero', 'toggle-for-generateblocks' ) }
+				label={ __( 'Hide units that reach zero', 'thingamablocks' ) }
 				help={ __(
 					'Drop leading units once they’re zero, e.g. hide Days on the last day. The last two units always show.',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 				checked={ attributes.hideEmptyUnits }
 				onChange={ ( value ) => setAttributes( { hideEmptyUnits: value } ) }
 			/>
-			<p className="ogal-countdown-help">
+			<p className="tmb-countdown-help">
 				{ __(
 					'To drop a unit altogether, delete its box: the next unit keeps counting past its usual limit (e.g. 48 hours instead of 2 days).',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 			</p>
 		</PanelBody>
@@ -387,45 +387,45 @@ function EndSettings( { attributes, setAttributes } ) {
 		( 'evergreen' === attributes.mode && attributes.evergreenRestart );
 
 	return (
-		<PanelBody title={ __( 'When it ends', 'toggle-for-generateblocks' ) } initialOpen={ false }>
+		<PanelBody title={ __( 'When it ends', 'thingamablocks' ) } initialOpen={ false }>
 			{ neverEnds && (
 				<Notice status="info" isDismissible={ false }>
 					{ __(
 						'This countdown starts its next run as soon as one ends, so these settings don’t come into play.',
-						'toggle-for-generateblocks'
+						'thingamablocks'
 					) }
 				</Notice>
 			) }
 			<SelectControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'The countdown', 'toggle-for-generateblocks' ) }
+				label={ __( 'The countdown', 'thingamablocks' ) }
 				value={ attributes.endAction }
 				options={ [
-					{ value: 'message', label: __( 'Shows its “ended” message', 'toggle-for-generateblocks' ) },
-					{ value: 'zeros', label: __( 'Stays at zero', 'toggle-for-generateblocks' ) },
-					{ value: 'hide', label: __( 'Disappears', 'toggle-for-generateblocks' ) },
+					{ value: 'message', label: __( 'Shows its “ended” message', 'thingamablocks' ) },
+					{ value: 'zeros', label: __( 'Stays at zero', 'thingamablocks' ) },
+					{ value: 'hide', label: __( 'Disappears', 'thingamablocks' ) },
 				] }
 				onChange={ ( value ) => setAttributes( { endAction: value } ) }
 			/>
 			<TargetsControl
-				label={ __( 'Also hide', 'toggle-for-generateblocks' ) }
+				label={ __( 'Also hide', 'thingamablocks' ) }
 				value={ attributes.hideOnEnd }
 				onChange={ ( value ) => setAttributes( { hideOnEnd: value } ) }
-				help={ __( 'Element IDs or CSS selectors, e.g. a sale banner or a “Buy now” button.', 'toggle-for-generateblocks' ) }
+				help={ __( 'Element IDs or CSS selectors, e.g. a sale banner or a “Buy now” button.', 'thingamablocks' ) }
 			/>
 			<TargetsControl
-				label={ __( 'Also show', 'toggle-for-generateblocks' ) }
+				label={ __( 'Also show', 'thingamablocks' ) }
 				value={ attributes.showOnEnd }
 				onChange={ ( value ) => setAttributes( { showOnEnd: value } ) }
-				help={ __( 'Hidden until it ends, e.g. a “Sold out” notice.', 'toggle-for-generateblocks' ) }
+				help={ __( 'Hidden until it ends, e.g. a “Sold out” notice.', 'thingamablocks' ) }
 			/>
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				type="url"
-				label={ __( 'Then go to (optional)', 'toggle-for-generateblocks' ) }
-				help={ __( 'Send visitors to another page when it ends.', 'toggle-for-generateblocks' ) }
+				label={ __( 'Then go to (optional)', 'thingamablocks' ) }
+				help={ __( 'Send visitors to another page when it ends.', 'thingamablocks' ) }
 				value={ attributes.redirectUrl }
 				onChange={ ( value ) => setAttributes( { redirectUrl: value } ) }
 			/>
@@ -442,7 +442,7 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 			const found = new Set();
 			const walk = ( blocks ) =>
 				blocks.forEach( ( block ) => {
-					if ( 'ogal/countdown' === block.name ) {
+					if ( 'thingamablocks/countdown' === block.name ) {
 						return;
 					}
 
@@ -475,7 +475,7 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 
 	const blockProps = useBlockProps( {
 		ref: canvasRef,
-		className: `ogal-countdown ${ previewEnded ? 'is-ended' : 'is-running' }`,
+		className: `tmb-countdown ${ previewEnded ? 'is-ended' : 'is-running' }`,
 	} );
 	const innerBlocksProps = useInnerBlocksProps( blockProps );
 
@@ -500,25 +500,25 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 						isPressed={ previewEnded }
 						label={
 							previewEnded
-								? __( 'Previewing the ended state. Click to preview it running.', 'toggle-for-generateblocks' )
-								: __( 'Previewing it running. Click to preview the ended state.', 'toggle-for-generateblocks' )
+								? __( 'Previewing the ended state. Click to preview it running.', 'thingamablocks' )
+								: __( 'Previewing it running. Click to preview the ended state.', 'thingamablocks' )
 						}
 						onClick={ () => setPreviewEnded( ! previewEnded ) }
 					>
 						{ previewEnded
-							? __( 'Ended', 'toggle-for-generateblocks' )
-							: __( 'Running', 'toggle-for-generateblocks' ) }
+							? __( 'Ended', 'thingamablocks' )
+							: __( 'Running', 'thingamablocks' ) }
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
 
 			<InspectorControls>
 				{ ! hasNumbers && (
-					<div className="ogal-countdown-notice">
+					<div className="tmb-countdown-notice">
 						<Notice status="warning" isDismissible={ false }>
 							{ __(
 								'No numbers yet. Select a GenerateBlocks Text block inside the countdown and set its “Countdown part” to a number.',
-								'toggle-for-generateblocks'
+								'thingamablocks'
 							) }
 						</Notice>
 					</div>
@@ -527,11 +527,11 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 				<DisplaySettings attributes={ attributes } setAttributes={ setAttributes } />
 				<EndSettings attributes={ attributes } setAttributes={ setAttributes } />
 				{ 'message' === attributes.endAction && ! hasEnded && (
-					<div className="ogal-countdown-notice">
+					<div className="tmb-countdown-notice">
 						<Notice status="info" isDismissible={ false }>
 							{ __(
 								'There’s no “ended” message. Add a GenerateBlocks block inside the countdown and set its “Countdown part” to “Ended message”.',
-								'toggle-for-generateblocks'
+								'thingamablocks'
 							) }
 						</Notice>
 					</div>
@@ -555,12 +555,12 @@ export default function Edit( props ) {
 	) : (
 		<VariationPlaceholder
 			{ ...props }
-			blockName="ogal/countdown"
+			blockName="thingamablocks/countdown"
 			icon={ countdownIcon }
-			label={ __( 'Countdown', 'toggle-for-generateblocks' ) }
+			label={ __( 'Countdown', 'thingamablocks' ) }
 			instructions={ __(
 				'Choose a starting layout. Every part is a GenerateBlocks block, so you can restyle it afterwards.',
-				'toggle-for-generateblocks'
+				'thingamablocks'
 			) }
 		/>
 	);

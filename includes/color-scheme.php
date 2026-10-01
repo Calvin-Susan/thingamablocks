@@ -12,7 +12,7 @@
  * are tracked separately, so removing the toggle or trashing the post turns
  * them off again.
  *
- * @package ToggleForGenerateBlocks
+ * @package Thingamablocks
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,16 +23,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Option storing colour-scheme settings per post:
  * array( post_id => array( 'followSystem', 'htmlClass', 'palette', 'modified' ) ).
  */
-const OGAL_TOGGLE_COLOR_SCHEME_OPTION = 'ogal_toggle_color_scheme';
+const THINGAMABLOCKS_COLOR_SCHEME_OPTION = 'thingamablocks_color_scheme';
 
-add_action( 'save_post', 'ogal_toggle_track_color_scheme_toggle', 10, 2 );
+add_action( 'save_post', 'thingamablocks_track_color_scheme_toggle', 10, 2 );
 /**
  * Record (or forget) a post's colour-scheme toggle settings when it's saved.
  *
  * @param int     $post_id Post ID.
  * @param WP_Post $post    Post object.
  */
-function ogal_toggle_track_color_scheme_toggle( $post_id, $post ) {
+function thingamablocks_track_color_scheme_toggle( $post_id, $post ) {
 	if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
 		return;
 	}
@@ -49,22 +49,22 @@ function ogal_toggle_track_color_scheme_toggle( $post_id, $post ) {
 
 	$settings = null;
 
-	if ( 'publish' === $post->post_status && false !== strpos( $post->post_content, 'wp:ogal/toggle' ) ) {
-		$settings = ogal_toggle_find_color_scheme_settings( parse_blocks( $post->post_content ) );
+	if ( 'publish' === $post->post_status && false !== strpos( $post->post_content, 'wp:thingamablocks/toggle' ) ) {
+		$settings = thingamablocks_find_color_scheme_settings( parse_blocks( $post->post_content ) );
 	}
 
-	ogal_toggle_set_color_scheme_entry( $post_id, $settings );
+	thingamablocks_set_color_scheme_entry( $post_id, $settings );
 }
 
-add_action( 'deleted_post', 'ogal_toggle_forget_color_scheme_toggle' );
-add_action( 'trashed_post', 'ogal_toggle_forget_color_scheme_toggle' );
+add_action( 'deleted_post', 'thingamablocks_forget_color_scheme_toggle' );
+add_action( 'trashed_post', 'thingamablocks_forget_color_scheme_toggle' );
 /**
  * Forget a post's colour-scheme toggle when it's trashed or deleted.
  *
  * @param int $post_id Post ID.
  */
-function ogal_toggle_forget_color_scheme_toggle( $post_id ) {
-	ogal_toggle_set_color_scheme_entry( $post_id, null );
+function thingamablocks_forget_color_scheme_toggle( $post_id ) {
+	thingamablocks_set_color_scheme_entry( $post_id, null );
 }
 
 /**
@@ -73,8 +73,8 @@ function ogal_toggle_forget_color_scheme_toggle( $post_id ) {
  * @param int        $post_id  Post ID.
  * @param array|null $settings Settings, or null to remove.
  */
-function ogal_toggle_set_color_scheme_entry( $post_id, $settings ) {
-	$entries = get_option( OGAL_TOGGLE_COLOR_SCHEME_OPTION, array() );
+function thingamablocks_set_color_scheme_entry( $post_id, $settings ) {
+	$entries = get_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION, array() );
 
 	// Older format (a single settings array) from 0.1 development builds.
 	if ( ! is_array( $entries ) || isset( $entries['followSystem'] ) ) {
@@ -93,9 +93,9 @@ function ogal_toggle_set_color_scheme_entry( $post_id, $settings ) {
 	}
 
 	if ( empty( $entries ) ) {
-		delete_option( OGAL_TOGGLE_COLOR_SCHEME_OPTION );
+		delete_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION );
 	} else {
-		update_option( OGAL_TOGGLE_COLOR_SCHEME_OPTION, $entries, true );
+		update_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION, $entries, true );
 	}
 }
 
@@ -104,8 +104,8 @@ function ogal_toggle_set_color_scheme_entry( $post_id, $settings ) {
  *
  * @return array|null
  */
-function ogal_toggle_get_color_scheme_settings() {
-	$entries = get_option( OGAL_TOGGLE_COLOR_SCHEME_OPTION, array() );
+function thingamablocks_get_color_scheme_settings() {
+	$entries = get_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION, array() );
 
 	if ( ! is_array( $entries ) || empty( $entries ) || isset( $entries['followSystem'] ) ) {
 		return null;
@@ -127,20 +127,20 @@ function ogal_toggle_get_color_scheme_settings() {
  * @param array $blocks Parsed blocks.
  * @return array|null
  */
-function ogal_toggle_find_color_scheme_settings( $blocks ) {
+function thingamablocks_find_color_scheme_settings( $blocks ) {
 	foreach ( $blocks as $block ) {
-		if ( 'ogal/toggle' === $block['blockName'] && 'colorScheme' === ( $block['attrs']['action'] ?? '' ) ) {
-			$config = Ogal_Toggle_Render::config( $block['attrs'] );
+		if ( 'thingamablocks/toggle' === $block['blockName'] && 'colorScheme' === ( $block['attrs']['action'] ?? '' ) ) {
+			$config = Thingamablocks_Toggle_Render::config( $block['attrs'] );
 
 			return array(
 				'followSystem' => $config['followSystem'],
 				'htmlClass'    => $config['htmlClass'],
-				'palette'      => ogal_toggle_clean_palette( $block['attrs']['darkPalette'] ?? array() ),
+				'palette'      => thingamablocks_clean_palette( $block['attrs']['darkPalette'] ?? array() ),
 			);
 		}
 
 		if ( ! empty( $block['innerBlocks'] ) ) {
-			$found = ogal_toggle_find_color_scheme_settings( $block['innerBlocks'] );
+			$found = thingamablocks_find_color_scheme_settings( $block['innerBlocks'] );
 
 			if ( null !== $found ) {
 				return $found;
@@ -157,7 +157,7 @@ function ogal_toggle_find_color_scheme_settings( $blocks ) {
  * @param mixed $palette Map of custom property => colour.
  * @return array
  */
-function ogal_toggle_clean_palette( $palette ) {
+function thingamablocks_clean_palette( $palette ) {
 	if ( ! is_array( $palette ) ) {
 		return array();
 	}
@@ -180,19 +180,19 @@ function ogal_toggle_clean_palette( $palette ) {
 	return $clean;
 }
 
-add_action( 'wp_head', 'ogal_toggle_print_color_scheme_head', 1 );
+add_action( 'wp_head', 'thingamablocks_print_color_scheme_head', 1 );
 /**
  * Apply the saved (or system) colour scheme before the page paints, and print
  * the dark mode colours.
  */
-function ogal_toggle_print_color_scheme_head() {
-	$settings = ogal_toggle_get_color_scheme_settings();
+function thingamablocks_print_color_scheme_head() {
+	$settings = thingamablocks_get_color_scheme_settings();
 
-	if ( ! $settings || ! apply_filters( 'ogal_toggle_print_color_scheme_script', true ) ) {
+	if ( ! $settings || ! apply_filters( 'thingamablocks_print_color_scheme_script', true ) ) {
 		return;
 	}
 
-	$palette = ogal_toggle_clean_palette( $settings['palette'] ?? array() );
+	$palette = thingamablocks_clean_palette( $settings['palette'] ?? array() );
 
 	if ( $palette ) {
 		$declarations = '';
@@ -203,17 +203,17 @@ function ogal_toggle_print_color_scheme_head() {
 
 		// Both values are pattern-matched above, so they can't break out of the rule.
 		printf(
-			'<style id="ogal-toggle-dark-palette">:root[data-color-scheme="dark"]{%s}</style>' . "\n",
+			'<style id="tmb-toggle-dark-palette">:root[data-color-scheme="dark"]{%s}</style>' . "\n",
 			$declarations // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		);
 	}
 
 	$follow_system = ! empty( $settings['followSystem'] );
-	$html_class    = Ogal_Toggle_Render::clean_class_names( $settings['htmlClass'] ?? '' );
+	$html_class    = Thingamablocks_Toggle_Render::clean_class_names( $settings['htmlClass'] ?? '' );
 
 	// Kept dependency-free and tiny: it runs on every page.
 	$script = sprintf(
-		'(function(d,s,f,c){try{s=localStorage.getItem("ogal-toggle:color-scheme")}catch(e){}' .
+		'(function(d,s,f,c){try{s=localStorage.getItem("tmb-toggle:color-scheme")}catch(e){}' .
 		'if(s!=="on"&&s!=="off"){if(!f)return;s=matchMedia("(prefers-color-scheme: dark)").matches?"on":"off"}' .
 		'var k=s==="on"?"dark":"light";d.setAttribute("data-color-scheme",k);d.style.colorScheme=k;' .
 		'if(c)c.split(" ").forEach(function(n){d.classList.toggle(n,s==="on")})})(document.documentElement,null,%s,%s);',
@@ -221,5 +221,5 @@ function ogal_toggle_print_color_scheme_head() {
 		wp_json_encode( $html_class )
 	);
 
-	wp_print_inline_script_tag( $script, array( 'id' => 'ogal-toggle-color-scheme' ) );
+	wp_print_inline_script_tag( $script, array( 'id' => 'tmb-toggle-color-scheme' ) );
 }

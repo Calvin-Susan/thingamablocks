@@ -1,11 +1,11 @@
-# Toggle for GenerateBlocks
+# Thingamablocks
 
 Add-on blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, by [OGAL Web Design](https://ogalweb.com) (Kyle Van Deusen).
 
 | Block | Name | What it does |
 | --- | --- | --- |
-| [**Toggle**](#toggle-block) | `ogal/toggle` | A switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes. |
-| [**Countdown**](#countdown-block) | `ogal/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
+| [**Toggle**](#toggle-block) | `thingamablocks/toggle` | A switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes. |
+| [**Countdown**](#countdown-block) | `thingamablocks/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
 
 Both blocks sit in the GenerateBlocks category of the inserter, and both work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text or Shape block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
@@ -34,7 +34,7 @@ Both blocks sit in the GenerateBlocks category of the inserter, and both work th
 ## Install
 
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
-2. Upload `toggle-for-generateblocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
+2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
 3. In the block editor, open the inserter. **Toggle** and **Countdown** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles** and **Patterns → Countdowns**.
 
@@ -186,7 +186,7 @@ Style parts with GenerateBlocks **nested selectors** on the part itself (in the 
 | Switch in the on state | `&[aria-checked="true"]` | the switch |
 | Knob inside the switch | `&[aria-checked="true"] > *` | the switch – the layouts set `margin-inline-start: 1.5rem`, which slides the right way on RTL sites too |
 | Active on/off label or button | `&[data-active="true"]` | the label or button |
-| Anything, based on the whole toggle | `.ogal-toggle.is-on …` | global CSS (the wrapper has `is-on` or `is-off`) |
+| Anything, based on the whole toggle | `.tmb-toggle.is-on …` | global CSS (the wrapper has `is-on` or `is-off`) |
 
 The starting layouts already use these – open the switch block's Styles to see a working example. The dark mode switch also swaps its sun/moon icons with `&[aria-checked="true"] .gb-shape:first-child` / `:last-child` on the switch.
 
@@ -248,7 +248,7 @@ How the starting state is picked on the front end, first match wins:
 2. For dark mode: the scheme the `<head>` script already applied, or the system setting.
 3. **Starts as**.
 
-A toggle added to the page later (see `window.ogalToggle.init`) follows its group if the group is already running.
+A toggle added to the page later (see `window.tmbToggle.init`) follows its group if the group is already running.
 
 #### Accessibility
 
@@ -258,7 +258,7 @@ A toggle added to the page later (see `window.ogalToggle.init`) follows its grou
 
 #### Also supported
 
-- **Advanced → HTML anchor** – printed as the wrapper's `id`. Useful for `window.ogalToggle`, and it gives "Remember" a stable key.
+- **Advanced → HTML anchor** – printed as the wrapper's `id`. Useful for `window.tmbToggle`, and it gives "Remember" a stable key.
 - **Advanced → Additional CSS class(es)**.
 - **Margin** (block spacing support).
 
@@ -333,7 +333,7 @@ Once Friday 5 pm has passed, the page is rendered in its ended state straight fr
 3. **Advanced → HTML anchor**: give it a name like `offer-48h`. The visitor's deadline is stored under this name, so it stays the same if you later add or move other countdowns on the page. (Without an anchor it's keyed by the page path and the countdown's position on the page.) Use the same anchor on another page and both share one deadline.
 4. Optional: to show "48 hours" rather than "2 days", delete the Days box in the canvas. The hours then count past 24 (see [Display settings](#display)).
 5. **When it ends**: set the ended message and **Also hide** your order button's ID, as in the recipe above.
-6. Publish. To see the countdown start over while you test, open the browser console on the page and run `window.ogalCountdown.reset( 'offer-48h' )`, or use a private window.
+6. Publish. To see the countdown start over while you test, open the browser console on the page and run `window.tmbCountdown.reset( 'offer-48h' )`, or use a private window.
 
 Keep in mind: the deadline lives in the visitor's browser (`localStorage`). A different browser or device, a private window, or clearing site data gives a fresh 48 hours. That's normal for evergreen timers; don't rely on it for anything that must be enforced.
 
@@ -360,7 +360,7 @@ The sidebar warns you if the countdown has **no number parts**, and (when it's s
 
 #### Styling
 
-Style the parts in the GB Styles panel like any other block. The layouts give numbers `font-variant-numeric: tabular-nums`, so they don't jiggle as digits change. For state-based styles use global CSS: the wrapper is `.ogal-countdown` with `.is-running` or `.is-ended`.
+Style the parts in the GB Styles panel like any other block. The layouts give numbers `font-variant-numeric: tabular-nums`, so they don't jiggle as digits change. For state-based styles use global CSS: the wrapper is `.tmb-countdown` with `.is-running` or `.is-ended`.
 
 The Countdown has no front-end CSS of its own.
 
@@ -414,7 +414,7 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 
 #### Also supported
 
-- **Advanced → HTML anchor** – printed as the wrapper's `id`. Gives an evergreen countdown a stable storage key, and is what `window.ogalCountdown.reset()` takes.
+- **Advanced → HTML anchor** – printed as the wrapper's `id`. Gives an evergreen countdown a stable storage key, and is what `window.tmbCountdown.reset()` takes.
 - **Advanced → Additional CSS class(es)**.
 - **Margin** (block spacing support).
 
@@ -428,12 +428,12 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 
 ## Developer API
 
-### Toggle: the `ogal-toggle:change` event
+### Toggle: the `tmb-toggle:change` event
 
-Fired on the toggle's wrapper (`.ogal-toggle`) whenever its state is set, including once on page load. It bubbles, so you can listen on `document`:
+Fired on the toggle's wrapper (`.tmb-toggle`) whenever its state is set, including once on page load. It bubbles, so you can listen on `document`:
 
 ```js
-document.addEventListener( 'ogal-toggle:change', ( event ) => {
+document.addEventListener( 'tmb-toggle:change', ( event ) => {
 	const { state, isOn, group, action, initial, toggle } = event.detail;
 
 	if ( 'billing' === group && ! initial ) {
@@ -449,28 +449,28 @@ document.addEventListener( 'ogal-toggle:change', ( event ) => {
 | `group` | string | Sync group (`'color-scheme'` for dark mode toggles; `''` if none) |
 | `action` | string | `showHide`, `colorScheme`, `toggleClass` or `none` |
 | `initial` | boolean | `true` for the first run on page load |
-| `toggle` | Element | The `.ogal-toggle` wrapper that changed |
+| `toggle` | Element | The `.tmb-toggle` wrapper that changed |
 
 For a sync group the event fires once, on the toggle that was used; the other toggles in the group are updated (and run their actions) but don't fire their own event.
 
-### Toggle: `window.ogalToggle`
+### Toggle: `window.tmbToggle`
 
 ```js
-window.ogalToggle.get( 'billing' );             // true, false, or undefined if not found
-window.ogalToggle.set( 'billing', true );       // turn on
-window.ogalToggle.set( 'color-scheme', false ); // light mode
-window.ogalToggle.init( container );            // set up toggles added later, e.g. by AJAX
+window.tmbToggle.get( 'billing' );             // true, false, or undefined if not found
+window.tmbToggle.set( 'billing', true );       // turn on
+window.tmbToggle.set( 'color-scheme', false ); // light mode
+window.tmbToggle.init( container );            // set up toggles added later, e.g. by AJAX
 ```
 
-- `get` / `set` take a toggle's **Sync group** name or its wrapper `id`. The `id` is the HTML anchor if you set one; otherwise it's `ogal-toggle-1`, `ogal-toggle-2`… in page order, which changes if you add toggles, so use a group or an anchor for anything you rely on. `set()` counts as a visitor's choice: it's remembered if "Remember" is on.
+- `get` / `set` take a toggle's **Sync group** name or its wrapper `id`. The `id` is the HTML anchor if you set one; otherwise it's `tmb-toggle-1`, `tmb-toggle-2`… in page order, which changes if you add toggles, so use a group or an anchor for anything you rely on. `set()` counts as a visitor's choice: it's remembered if "Remember" is on.
 - `init( root )` sets up every toggle inside `root` (default `document`) that isn't set up yet. Toggles already set up are skipped, so calling it more than once is safe.
 
 ### Countdown: events
 
-Both bubble from the countdown's wrapper (`.ogal-countdown`), so you can listen on `document`.
+Both bubble from the countdown's wrapper (`.tmb-countdown`), so you can listen on `document`.
 
 ```js
-document.addEventListener( 'ogal-countdown:end', ( event ) => {
+document.addEventListener( 'tmb-countdown:end', ( event ) => {
 	const { countdown, mode, initial } = event.detail;
 
 	if ( 'offer-48h' === countdown.id && ! initial ) {
@@ -481,17 +481,17 @@ document.addEventListener( 'ogal-countdown:end', ( event ) => {
 
 | Event | `event.detail` | When |
 | --- | --- | --- |
-| `ogal-countdown:end` | `countdown` (the wrapper element), `mode` (`date` or `evergreen`), `initial` (`true` if it had already ended when the page loaded) | A date countdown, or an evergreen one without "Start again", reaches zero. Fired before any redirect. |
-| `ogal-countdown:restart` | `countdown` (the wrapper element), `end` (the new end time, ms since the epoch) | A recurring countdown, or an evergreen one with "Start again", rolls over to its next run. Not fired on page load. |
+| `tmb-countdown:end` | `countdown` (the wrapper element), `mode` (`date` or `evergreen`), `initial` (`true` if it had already ended when the page loaded) | A date countdown, or an evergreen one without "Start again", reaches zero. Fired before any redirect. |
+| `tmb-countdown:restart` | `countdown` (the wrapper element), `end` (the new end time, ms since the epoch) | A recurring countdown, or an evergreen one with "Start again", rolls over to its next run. Not fired on page load. |
 
-Recurring and restarting evergreen countdowns never fire `ogal-countdown:end`.
+Recurring and restarting evergreen countdowns never fire `tmb-countdown:end`.
 
-### Countdown: `window.ogalCountdown`
+### Countdown: `window.tmbCountdown`
 
 ```js
-window.ogalCountdown.init( container );  // set up countdowns added later, e.g. by AJAX
-window.ogalCountdown.reset( 'offer-48h' ); // restart an evergreen countdown for this visitor
-window.ogalCountdown.reset();            // restart every evergreen countdown on the page
+window.tmbCountdown.init( container );  // set up countdowns added later, e.g. by AJAX
+window.tmbCountdown.reset( 'offer-48h' ); // restart an evergreen countdown for this visitor
+window.tmbCountdown.reset();            // restart every evergreen countdown on the page
 ```
 
 - `init( root )` sets up every countdown inside `root` (default `document`) that isn't set up yet; calling it more than once is safe.
@@ -499,25 +499,25 @@ window.ogalCountdown.reset();            // restart every evergreen countdown on
 
 ### CSS hooks
 
-- `.ogal-toggle` – the Toggle wrapper, with `.is-on` or `.is-off`.
+- `.tmb-toggle` – the Toggle wrapper, with `.is-on` or `.is-off`.
 - `[data-toggle-part="switch|on|off"]` – the parts, with `aria-checked` / `data-active` / `aria-pressed` as described above; `[data-toggle-owned]` once a toggle has claimed them.
 - `html[data-color-scheme="dark|light"]` – set by dark mode toggles.
-- `.ogal-toggle-hidden` – on elements hidden by a show/hide toggle (together with an inline `display: none !important`).
-- `.ogal-toggle-enter-fade`, `.ogal-toggle-enter-slide` – on an element while its reveal animation runs.
-- `.ogal-countdown` – the Countdown wrapper, with `.is-running` or `.is-ended`.
+- `.tmb-toggle-hidden` – on elements hidden by a show/hide toggle (together with an inline `display: none !important`).
+- `.tmb-toggle-enter-fade`, `.tmb-toggle-enter-slide` – on an element while its reveal animation runs.
+- `.tmb-countdown` – the Countdown wrapper, with `.is-running` or `.is-ended`.
 - `[data-countdown-part="days|hours|minutes|seconds|timer|ended|separator"]`, `[data-countdown-unit="days|hours|minutes|seconds"]` – the countdown parts. Hidden parts and elements get an inline `display: none !important`.
 
 ### PHP
 
-- Filter `ogal_toggle_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
-- Option `ogal_toggle_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
+- Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
+- Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
 
 ### Storage keys
 
 All in `localStorage`:
 
-- **Toggle:** `ogal-toggle:` then `group:<sync group>`, else `id:<HTML anchor>`, else `path:<page path>#<position>` (e.g. `ogal-toggle:path:/pricing/#0`). Dark mode always uses `ogal-toggle:color-scheme`, which the `<head>` script reads.
-- **Countdown** (evergreen only): `ogal-countdown:id:<HTML anchor>`, else `ogal-countdown:path:<page path>#<position>`, where position counts the countdowns on the page from 0. The value is the visitor's end time in ms since the epoch.
+- **Toggle:** `tmb-toggle:` then `group:<sync group>`, else `id:<HTML anchor>`, else `path:<page path>#<position>` (e.g. `tmb-toggle:path:/pricing/#0`). Dark mode always uses `tmb-toggle:color-scheme`, which the `<head>` script reads.
+- **Countdown** (evergreen only): `tmb-countdown:id:<HTML anchor>`, else `tmb-countdown:path:<page path>#<position>`, where position counts the countdowns on the page from 0. The value is the visitor's end time in ms since the epoch.
 
 ---
 
@@ -529,7 +529,7 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead both blocks follow the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`ogal/toggle`, `ogal/countdown`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
 - A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
@@ -541,16 +541,16 @@ Both blocks save only their inner blocks (`save` returns `<InnerBlocks.Content /
 
 **Toggle**
 
-- On the front end, PHP (`includes/class-render.php`) renders the wrapper `<div class="ogal-toggle is-off" data-ogal-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts.
-- For show/hide, PHP also prints a tiny `<style class="ogal-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
-- The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.ogalToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
+- On the front end, PHP (`includes/class-toggle-render.php`) renders the wrapper `<div class="tmb-toggle is-off" data-tmb-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts.
+- For show/hide, PHP also prints a tiny `<style class="tmb-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
+- The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.tmbToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
 - In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; previews the dark colours when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
 
 **Countdown**
 
 - PHP (`includes/class-countdown-render.php`) works out the time left when the page is rendered, writes the real numbers into the number parts, and hides the timer or the ended message as appropriate (inline `display:none!important`). So a visitor sees correct numbers – or the ended state – before any JavaScript runs. An evergreen countdown is rendered at its full duration, since the server can't know each visitor's deadline.
 - The end date is stored as site-local time and converted with `wp_timezone()`. Recurring countdowns get the site's time zone (`wp_timezone_string()`) in their config, and `src/countdown/time.js` does the maths in the browser, including daylight-saving changes and fixed offsets like `UTC+2`. The editor uses the same file, so the sidebar's "Ends in …" and "Next: …" match the front end.
-- **Also hide / Also show** targets that should start hidden get a `<style class="ogal-countdown-initial">`, as with the Toggle.
+- **Also hide / Also show** targets that should start hidden get a `<style class="tmb-countdown-initial">`, as with the Toggle.
 - The front-end script (`src/countdown/view.js`, loaded only on pages with a Countdown) ticks once a second for all countdowns together, catches up straight away when a background tab becomes visible, stores evergreen deadlines, rolls recurring and restarting runs over, and runs the end actions. Because it recalculates from the clock on load, a cached page with stale numbers corrects itself immediately.
 
 ### The dark mode head output
@@ -559,7 +559,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 - When a post (including GeneratePress Elements and template parts) is saved, the plugin records whether it's **published** and contains a dark mode toggle, and if so that toggle's settings and dark colours. Each post is tracked separately.
 - While at least one such post exists, every front-end page gets, at the top of `<head>`:
-  - `<style id="ogal-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
+  - `<style id="tmb-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
   - a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
 - If several posts have a dark mode toggle, the most recently saved one's settings are used.
 - Only users who can change the site's appearance (`edit_theme_options`, i.e. administrators) update these site-wide settings when they save. A dark mode toggle saved by an Editor or Author still works on its page, but doesn't change the site's dark colours.
@@ -570,7 +570,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 Things both blocks use live in one place, so a new block can reuse them:
 
-- `includes/class-sanitize.php` – `Ogal_Blocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters (no `<`, `{`, `}`, `;`, `\` or `@`) with balanced brackets and quotes, so nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Ogal_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
+- `includes/class-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters (no `<`, `{`, `}`, `;`, `\` or `@`) with balanced brackets and quotes, so nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
 - `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker.
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
@@ -584,24 +584,24 @@ Things both blocks use live in one place, so a new block can reuse them:
 npm install          # once
 npm start            # watch src/ and rebuild into build/ while you work
 npm run build        # production build into build/
-npm run zip          # build, then create dist/toggle-for-generateblocks.zip
+npm run zip          # build, then create dist/thingamablocks.zip
 npm run playground   # local WordPress at http://127.0.0.1:9400
 npm run playground:reset  # same, starting from a fresh site
 ```
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/` and `src/countdown/` into `build/toggle/` and `build/countdown/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Toggle Test** page. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
-- `npm run zip` produces `dist/toggle-for-generateblocks.zip` with a single `toggle-for-generateblocks/` folder containing only the runtime files: `toggle-for-generateblocks.php`, `readme.txt`, `includes/`, `patterns/`, `build/` (and `LICENSE` if present). It uses the system `zip` command and fails with a clear message if `build/` is missing.
+- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `includes/`, `patterns/`, `build/` (and `LICENSE` if present). It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
 ---
 
 ## File map
 
 ```
-toggle-for-generateblocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
+thingamablocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
 includes/
-  class-sanitize.php            Ogal_Blocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
-  class-render.php              Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS
+  class-sanitize.php            Thingamablocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
+  class-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS
   class-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles" and "Countdowns" pattern categories and the patterns in patterns/
@@ -616,7 +616,7 @@ src/toggle/
   dark-palette.js               "Dark mode colours" panel and the colour suggestions
   parts.js                      "Toggle part" panel added to GB Element/Text/Shape/Media blocks
   templates.js                  The four starting layouts (block variations) built from GB blocks
-  view.js                       Front-end behaviour, ogal-toggle:change event, window.ogalToggle
+  view.js                       Front-end behaviour, tmb-toggle:change event, window.tmbToggle
   icon.js                       Block icon
   style.scss                    Minimal front-end + editor CSS (cursor, hidden class, reduced motion)
   editor.scss                   Sidebar helper styles
@@ -627,7 +627,7 @@ src/countdown/
   parts.js                      "Countdown part" panel added to GB Element/Text/Shape blocks
   templates.js                  The three starting layouts (Boxes, Inline text, Large numbers)
   time.js                       Time maths shared by editor and front end: time zones, recurring, splitting units
-  view.js                       Front-end ticking, end actions, events, window.ogalCountdown
+  view.js                       Front-end ticking, end actions, events, window.tmbCountdown
   icon.js                       Block and layout icons
   editor.scss                   Sidebar helper styles
 src/shared/
@@ -637,7 +637,7 @@ src/shared/
   gb.js                         GenerateBlocks helpers (icon class, style shorthands, inserter previews)
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
-scripts/zip.mjs                 Packages dist/toggle-for-generateblocks.zip
+scripts/zip.mjs                 Packages dist/thingamablocks.zip
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```

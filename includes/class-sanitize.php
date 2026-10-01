@@ -2,7 +2,7 @@
 /**
  * Sanitising helpers shared by the blocks.
  *
- * @package ToggleForGenerateBlocks
+ * @package Thingamablocks
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * settings. Contributors can save block attributes, so everything that ends
  * up in markup or a <style> element goes through here.
  */
-class Ogal_Blocks_Sanitize {
+class Thingamablocks_Sanitize {
 	/**
 	 * Bare words treated as tag names rather than IDs when used as a target.
 	 */

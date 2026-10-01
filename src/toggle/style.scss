@@ -2,7 +2,7 @@
 // lives in the GenerateBlocks styles of its inner blocks, not here.
 
 // Front end only: in the editor the parts must stay selectable and editable.
-body:not(.editor-styles-wrapper) .ogal-toggle {
+body:not(.editor-styles-wrapper) .tmb-toggle {
 	[data-toggle-part] {
 		cursor: pointer;
 		user-select: none;
@@ -17,13 +17,13 @@ body:not(.editor-styles-wrapper) .ogal-toggle {
 
 // Elements hidden by a show/hide toggle. The script also sets an inline
 // display:none, so this still works if an optimisation plugin strips the rule.
-.ogal-toggle-hidden {
+.tmb-toggle-hidden {
 	display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.ogal-toggle,
-	.ogal-toggle * {
+	.tmb-toggle,
+	.tmb-toggle * {
 		transition-duration: 0.01ms !important;
 		animation-duration: 0.01ms !important;
 	}

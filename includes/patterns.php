@@ -5,62 +5,62 @@
  * Pattern markup lives in /patterns as plain block HTML, exported from the
  * editor, so it stays exactly what GenerateBlocks saves.
  *
- * @package ToggleForGenerateBlocks
+ * @package Thingamablocks
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-add_action( 'init', 'ogal_toggle_register_patterns' );
+add_action( 'init', 'thingamablocks_register_patterns' );
 /**
  * Register the pattern category and patterns.
  */
-function ogal_toggle_register_patterns() {
+function thingamablocks_register_patterns() {
 	if ( ! function_exists( 'register_block_pattern' ) || ! defined( 'GENERATEBLOCKS_VERSION' ) ) {
 		return;
 	}
 
 	register_block_pattern_category(
-		'ogal-toggle',
-		array( 'label' => __( 'Toggles', 'toggle-for-generateblocks' ) )
+		'thingamablocks-toggles',
+		array( 'label' => __( 'Toggles', 'thingamablocks' ) )
 	);
 
 	register_block_pattern_category(
-		'ogal-countdown',
-		array( 'label' => __( 'Countdowns', 'toggle-for-generateblocks' ) )
+		'thingamablocks-countdowns',
+		array( 'label' => __( 'Countdowns', 'thingamablocks' ) )
 	);
 
 	$patterns = array(
 		'pricing-toggle'   => array(
-			'title'       => __( 'Pricing table with monthly/annual toggle', 'toggle-for-generateblocks' ),
-			'description' => __( 'Three plans with a segmented toggle that switches between monthly and annual prices.', 'toggle-for-generateblocks' ),
+			'title'       => __( 'Pricing table with monthly/annual toggle', 'thingamablocks' ),
+			'description' => __( 'Three plans with a segmented toggle that switches between monthly and annual prices.', 'thingamablocks' ),
 			'keywords'    => array( 'pricing', 'plans', 'monthly', 'annual', 'toggle' ),
-			'categories'  => array( 'ogal-toggle' ),
+			'categories'  => array( 'thingamablocks-toggles' ),
 		),
 		'sale-banner'      => array(
-			'title'       => __( 'Sale banner with countdown', 'toggle-for-generateblocks' ),
-			'description' => __( 'A slim banner with an inline countdown. The whole banner disappears when the sale ends.', 'toggle-for-generateblocks' ),
+			'title'       => __( 'Sale banner with countdown', 'thingamablocks' ),
+			'description' => __( 'A slim banner with an inline countdown. The whole banner disappears when the sale ends.', 'thingamablocks' ),
 			'keywords'    => array( 'sale', 'banner', 'countdown', 'offer', 'promo' ),
-			'categories'  => array( 'ogal-countdown' ),
+			'categories'  => array( 'thingamablocks-countdowns' ),
 		),
 		'launch-countdown' => array(
-			'title'       => __( 'Launch countdown', 'toggle-for-generateblocks' ),
-			'description' => __( 'A “coming soon” section with large countdown numbers and a message for when it’s live.', 'toggle-for-generateblocks' ),
+			'title'       => __( 'Launch countdown', 'thingamablocks' ),
+			'description' => __( 'A “coming soon” section with large countdown numbers and a message for when it’s live.', 'thingamablocks' ),
 			'keywords'    => array( 'launch', 'coming soon', 'countdown', 'timer' ),
-			'categories'  => array( 'ogal-countdown' ),
+			'categories'  => array( 'thingamablocks-countdowns' ),
 		),
 	);
 
 	foreach ( $patterns as $slug => $pattern ) {
-		$file = OGAL_TOGGLE_DIR . 'patterns/' . $slug . '.html';
+		$file = THINGAMABLOCKS_DIR . 'patterns/' . $slug . '.html';
 
 		if ( ! is_readable( $file ) ) {
 			continue;
 		}
 
 		register_block_pattern(
-			'ogal-toggle/' . $slug,
+			'thingamablocks/' . $slug,
 			array_merge(
 				$pattern,
 				array(

@@ -16,18 +16,18 @@ const PART_BLOCKS = [ 'generateblocks/element', 'generateblocks/text', 'generate
 
 export function partOptions( blockName ) {
 	const options = [
-		{ value: '', label: __( 'None (decoration or label)', 'toggle-for-generateblocks' ) },
-		{ value: 'part:days', label: __( 'Days number', 'toggle-for-generateblocks' ) },
-		{ value: 'part:hours', label: __( 'Hours number', 'toggle-for-generateblocks' ) },
-		{ value: 'part:minutes', label: __( 'Minutes number', 'toggle-for-generateblocks' ) },
-		{ value: 'part:seconds', label: __( 'Seconds number', 'toggle-for-generateblocks' ) },
-		{ value: 'unit:days', label: __( 'Days box', 'toggle-for-generateblocks' ) },
-		{ value: 'unit:hours', label: __( 'Hours box', 'toggle-for-generateblocks' ) },
-		{ value: 'unit:minutes', label: __( 'Minutes box', 'toggle-for-generateblocks' ) },
-		{ value: 'unit:seconds', label: __( 'Seconds box', 'toggle-for-generateblocks' ) },
-		{ value: 'part:timer', label: __( 'Timer (hidden when it ends)', 'toggle-for-generateblocks' ) },
-		{ value: 'part:ended', label: __( 'Ended message (shown when it ends)', 'toggle-for-generateblocks' ) },
-		{ value: 'part:separator', label: __( 'Separator', 'toggle-for-generateblocks' ) },
+		{ value: '', label: __( 'None (decoration or label)', 'thingamablocks' ) },
+		{ value: 'part:days', label: __( 'Days number', 'thingamablocks' ) },
+		{ value: 'part:hours', label: __( 'Hours number', 'thingamablocks' ) },
+		{ value: 'part:minutes', label: __( 'Minutes number', 'thingamablocks' ) },
+		{ value: 'part:seconds', label: __( 'Seconds number', 'thingamablocks' ) },
+		{ value: 'unit:days', label: __( 'Days box', 'thingamablocks' ) },
+		{ value: 'unit:hours', label: __( 'Hours box', 'thingamablocks' ) },
+		{ value: 'unit:minutes', label: __( 'Minutes box', 'thingamablocks' ) },
+		{ value: 'unit:seconds', label: __( 'Seconds box', 'thingamablocks' ) },
+		{ value: 'part:timer', label: __( 'Timer (hidden when it ends)', 'thingamablocks' ) },
+		{ value: 'part:ended', label: __( 'Ended message (shown when it ends)', 'thingamablocks' ) },
+		{ value: 'part:separator', label: __( 'Separator', 'thingamablocks' ) },
 	];
 
 	// Numbers replace the block's text, so only Text blocks can be numbers.
@@ -58,22 +58,22 @@ function helpText( value ) {
 	if ( /^part:(days|hours|minutes|seconds)$/.test( value ) ) {
 		return __(
 			'This block’s text is replaced with the number. Leave a placeholder like 00 in it.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		);
 	}
 
 	if ( value.startsWith( 'unit:' ) ) {
 		return __(
 			'The box around a number and its label. It’s hidden with the number when “Hide units that reach zero” is on.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		);
 	}
 
 	if ( 'part:separator' === value ) {
-		return __( 'Hidden from screen readers, e.g. a colon between numbers.', 'toggle-for-generateblocks' );
+		return __( 'Hidden from screen readers, e.g. a colon between numbers.', 'thingamablocks' );
 	}
 
-	return __( 'What this block is in the countdown.', 'toggle-for-generateblocks' );
+	return __( 'What this block is in the countdown.', 'thingamablocks' );
 }
 
 const withCountdownPartControl = createHigherOrderComponent(
@@ -85,7 +85,7 @@ const withCountdownPartControl = createHigherOrderComponent(
 			( select ) =>
 				isPartBlock &&
 				isSelected &&
-				select( blockEditorStore ).getBlockParentsByBlockName( clientId, 'ogal/countdown' )
+				select( blockEditorStore ).getBlockParentsByBlockName( clientId, 'thingamablocks/countdown' )
 					.length > 0,
 			[ clientId, isPartBlock, isSelected ]
 		);
@@ -115,11 +115,11 @@ const withCountdownPartControl = createHigherOrderComponent(
 			<>
 				<BlockEdit { ...props } />
 				<InspectorControls>
-					<PanelBody title={ __( 'Countdown part', 'toggle-for-generateblocks' ) }>
+					<PanelBody title={ __( 'Countdown part', 'thingamablocks' ) }>
 						<SelectControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
-							label={ __( 'This block is', 'toggle-for-generateblocks' ) }
+							label={ __( 'This block is', 'thingamablocks' ) }
 							value={ value }
 							options={ partOptions( name ) }
 							help={ helpText( value ) }
@@ -133,4 +133,4 @@ const withCountdownPartControl = createHigherOrderComponent(
 	'withCountdownPartControl'
 );
 
-addFilter( 'editor.BlockEdit', 'ogal-countdown/countdown-part-control', withCountdownPartControl );
+addFilter( 'editor.BlockEdit', 'thingamablocks/countdown-part-control', withCountdownPartControl );

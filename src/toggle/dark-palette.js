@@ -49,7 +49,7 @@ function readVariable( name ) {
 	const target = doc.body || doc.documentElement;
 
 	// Read the light value: switch off the editor's dark mode preview meanwhile.
-	const previews = [ ...doc.querySelectorAll( 'style[data-ogal-dark-preview]' ) ];
+	const previews = [ ...doc.querySelectorAll( 'style[data-tmb-dark-preview]' ) ];
 	previews.forEach( ( style ) => ( style.disabled = true ) );
 	const value = getComputedStyle( target ).getPropertyValue( name ).trim();
 	previews.forEach( ( style ) => ( style.disabled = false ) );
@@ -235,7 +235,7 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 
 	return (
 		<PanelColorSettings
-			title={ __( 'Dark mode colours', 'toggle-for-generateblocks' ) }
+			title={ __( 'Dark mode colours', 'thingamablocks' ) }
 			initialOpen={ false }
 			colorSettings={ palette.map( ( color ) => {
 				const name = paletteVariable( color );
@@ -243,7 +243,7 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 				return {
 					label: sprintf(
 						/* translators: %s: colour name, e.g. "Base 3". */
-						__( '%s in dark mode', 'toggle-for-generateblocks' ),
+						__( '%s in dark mode', 'thingamablocks' ),
 						color.name
 					),
 					value: darkPalette[ name ],
@@ -251,15 +251,15 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 				};
 			} ) }
 		>
-			<p className="ogal-toggle-help">
+			<p className="tmb-toggle-help">
 				{ __(
 					'Each theme colour can have a dark version. The site uses them whenever dark mode is on. Leave a colour empty to keep it the same.',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 			</p>
 			<Flex justify="flex-start" gap={ 2 }>
 				<Button variant="secondary" size="compact" onClick={ suggestAll }>
-					{ __( 'Suggest dark colours', 'toggle-for-generateblocks' ) }
+					{ __( 'Suggest dark colours', 'thingamablocks' ) }
 				</Button>
 				{ Object.keys( darkPalette ).length > 0 && (
 					<Button
@@ -268,7 +268,7 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 						isDestructive
 						onClick={ () => setAttributes( { darkPalette: {} } ) }
 					>
-						{ __( 'Clear', 'toggle-for-generateblocks' ) }
+						{ __( 'Clear', 'thingamablocks' ) }
 					</Button>
 				) }
 			</Flex>

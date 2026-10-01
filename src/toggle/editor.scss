@@ -1,24 +1,24 @@
 // Sidebar helpers. Canvas styling is left to GenerateBlocks.
 
-.ogal-toggle-help,
-.ogal-toggle-targets__help {
+.tmb-toggle-help,
+.tmb-toggle-targets__help {
 	margin: 8px 0 16px;
 	color: #757575;
 	font-size: 12px;
 	line-height: 1.5;
 }
 
-.ogal-toggle-targets {
+.tmb-toggle-targets {
 	margin-bottom: 16px;
 }
 
-.ogal-toggle-targets__missing {
+.tmb-toggle-targets__missing {
 	margin: -8px 0 16px;
 	color: #b26200;
 	font-size: 12px;
 }
 
-.ogal-toggle-parts {
+.tmb-toggle-parts {
 	margin: 0 0 8px;
 	padding: 0;
 	list-style: none;
@@ -28,7 +28,7 @@
 	}
 }
 
-.ogal-toggle-notice {
+.tmb-toggle-notice {
 	padding: 16px;
 	border-bottom: 1px solid #e0e0e0;
 

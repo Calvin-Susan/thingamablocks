@@ -26,12 +26,12 @@ registerBlockType( metadata.name, {
 		}
 
 		const labels = {
-			date: __( 'Date', 'toggle-for-generateblocks' ),
-			evergreen: __( 'Evergreen', 'toggle-for-generateblocks' ),
-			recurring: __( 'Recurring', 'toggle-for-generateblocks' ),
+			date: __( 'Date', 'thingamablocks' ),
+			evergreen: __( 'Evergreen', 'thingamablocks' ),
+			recurring: __( 'Recurring', 'thingamablocks' ),
 		};
 
-		return `${ __( 'Countdown', 'toggle-for-generateblocks' ) } · ${ labels[ attributes.mode ] || labels.date }`;
+		return `${ __( 'Countdown', 'thingamablocks' ) } · ${ labels[ attributes.mode ] || labels.date }`;
 	},
 	example: {
 		innerBlocks: toBlockObjects( variations[ 0 ].innerBlocks ),

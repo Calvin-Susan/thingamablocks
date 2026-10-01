@@ -7,7 +7,7 @@
  * on the server, so the markup is correct before any JavaScript runs and an
  * editor can't accidentally remove role="switch" or aria-checked.
  *
- * @package ToggleForGenerateBlocks
+ * @package Thingamablocks
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Renders the Toggle block.
  */
-class Ogal_Toggle_Render {
+class Thingamablocks_Toggle_Render {
 	/**
 	 * Actions the block understands. Anything else falls back to "none".
 	 */
@@ -48,8 +48,8 @@ class Ogal_Toggle_Render {
 		$content = self::decorate_parts( $content, $config, $is_on );
 
 		$wrapper = array(
-			'class'            => 'ogal-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
-			'data-ogal-toggle' => wp_json_encode( $config ),
+			'class'            => 'tmb-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
+			'data-tmb-toggle' => wp_json_encode( $config ),
 		);
 
 		// The block is dynamic, so the HTML anchor has to be printed here.
@@ -242,7 +242,7 @@ class Ogal_Toggle_Render {
 		$ids = array();
 
 		foreach ( $selectors as $selector ) {
-			if ( in_array( $selector, Ogal_Blocks_Sanitize::TAG_TARGETS, true ) ) {
+			if ( in_array( $selector, Thingamablocks_Sanitize::TAG_TARGETS, true ) ) {
 				continue;
 			}
 
@@ -290,7 +290,7 @@ class Ogal_Toggle_Render {
 
 		foreach ( $hidden as $selector ) {
 			// "header" could be id="header" or every <header>; only the script can tell, so leave it to the script.
-			if ( in_array( $selector, Ogal_Blocks_Sanitize::TAG_TARGETS, true ) ) {
+			if ( in_array( $selector, Thingamablocks_Sanitize::TAG_TARGETS, true ) ) {
 				continue;
 			}
 
@@ -301,37 +301,37 @@ class Ogal_Toggle_Render {
 			return '';
 		}
 
-		return '<style class="ogal-toggle-initial">' . $rules . '</style>';
+		return '<style class="tmb-toggle-initial">' . $rules . '</style>';
 	}
 
 	/**
-	 * Kept for code calling these on the Toggle class; see Ogal_Blocks_Sanitize.
+	 * Kept for code calling these on the Toggle class; see Thingamablocks_Sanitize.
 	 *
 	 * @param string $selector ID or selector.
 	 * @return string
 	 */
 	public static function to_css_selector( $selector ) {
-		return Ogal_Blocks_Sanitize::to_css_selector( $selector );
+		return Thingamablocks_Sanitize::to_css_selector( $selector );
 	}
 
 	/**
-	 * See Ogal_Blocks_Sanitize::selectors().
+	 * See Thingamablocks_Sanitize::selectors().
 	 *
 	 * @param mixed $selectors Selectors.
 	 * @return array
 	 */
 	public static function clean_selectors( $selectors ) {
-		return Ogal_Blocks_Sanitize::selectors( $selectors );
+		return Thingamablocks_Sanitize::selectors( $selectors );
 	}
 
 	/**
-	 * See Ogal_Blocks_Sanitize::class_names().
+	 * See Thingamablocks_Sanitize::class_names().
 	 *
 	 * @param string $class_names Class names.
 	 * @return string
 	 */
 	public static function clean_class_names( $class_names ) {
-		return Ogal_Blocks_Sanitize::class_names( $class_names );
+		return Thingamablocks_Sanitize::class_names( $class_names );
 	}
 
 	/**

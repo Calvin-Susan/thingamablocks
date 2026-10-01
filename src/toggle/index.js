@@ -27,13 +27,13 @@ registerBlockType( metadata.name, {
 		}
 
 		const labels = {
-			showHide: __( 'Show / hide', 'toggle-for-generateblocks' ),
-			colorScheme: __( 'Light / dark mode', 'toggle-for-generateblocks' ),
-			toggleClass: __( 'Class', 'toggle-for-generateblocks' ),
-			none: __( 'Custom', 'toggle-for-generateblocks' ),
+			showHide: __( 'Show / hide', 'thingamablocks' ),
+			colorScheme: __( 'Light / dark mode', 'thingamablocks' ),
+			toggleClass: __( 'Class', 'thingamablocks' ),
+			none: __( 'Custom', 'thingamablocks' ),
 		};
 
-		return `${ __( 'Toggle', 'toggle-for-generateblocks' ) } · ${
+		return `${ __( 'Toggle', 'thingamablocks' ) } · ${
 			labels[ attributes.action ] || labels.none
 		}`;
 	},

@@ -251,18 +251,18 @@ export const variations = [
 	{
 		name: 'switch-labels',
 		icon: variationIcons[ 'switch-labels' ],
-		title: __( 'Switch with labels', 'toggle-for-generateblocks' ),
+		title: __( 'Switch with labels', 'thingamablocks' ),
 		description: __(
 			'Two labels either side of a switch, e.g. Monthly / Annual.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		),
 		isDefault: true,
 		attributes: { action: 'showHide' },
 		innerBlocks: [
 			row( [
-				label( __( 'Monthly', 'toggle-for-generateblocks' ), 'off' ),
+				label( __( 'Monthly', 'thingamablocks' ), 'off' ),
 				switchTrack(),
-				label( __( 'Annual', 'toggle-for-generateblocks' ), 'on' ),
+				label( __( 'Annual', 'thingamablocks' ), 'on' ),
 			] ),
 		],
 		scope: [ 'block' ],
@@ -270,16 +270,16 @@ export const variations = [
 	{
 		name: 'segmented',
 		icon: variationIcons[ 'segmented' ],
-		title: __( 'Segmented buttons', 'toggle-for-generateblocks' ),
+		title: __( 'Segmented buttons', 'thingamablocks' ),
 		description: __(
 			'Two buttons side by side; the active one is highlighted.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		),
 		attributes: { action: 'showHide' },
 		innerBlocks: [
 			segmented(
-				__( 'Monthly', 'toggle-for-generateblocks' ),
-				__( 'Annual', 'toggle-for-generateblocks' )
+				__( 'Monthly', 'thingamablocks' ),
+				__( 'Annual', 'thingamablocks' )
 			),
 		],
 		scope: [ 'block' ],
@@ -287,10 +287,10 @@ export const variations = [
 	{
 		name: 'switch',
 		icon: variationIcons[ 'switch' ],
-		title: __( 'Switch', 'toggle-for-generateblocks' ),
+		title: __( 'Switch', 'thingamablocks' ),
 		description: __(
 			'Just the switch. Give it an accessible label in the settings.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		),
 		attributes: { action: 'showHide' },
 		innerBlocks: [ switchTrack() ],
@@ -299,14 +299,14 @@ export const variations = [
 	{
 		name: 'dark-mode',
 		icon: variationIcons[ 'dark-mode' ],
-		title: __( 'Dark mode switch', 'toggle-for-generateblocks' ),
+		title: __( 'Dark mode switch', 'thingamablocks' ),
 		description: __(
 			'A sun/moon switch that changes the page between light and dark.',
-			'toggle-for-generateblocks'
+			'thingamablocks'
 		),
 		attributes: {
 			action: 'colorScheme',
-			ariaLabel: __( 'Dark mode', 'toggle-for-generateblocks' ),
+			ariaLabel: __( 'Dark mode', 'thingamablocks' ),
 		},
 		innerBlocks: [ darkModeSwitch() ],
 		scope: [ 'block', 'inserter' ],

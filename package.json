@@ -1,5 +1,5 @@
 {
-  "name": "toggle-for-generateblocks",
+  "name": "thingamablocks",
   "version": "0.1.0",
   "private": true,
   "description": "A Toggle block for GenerateBlocks: a switch built from native GB blocks that shows/hides elements, flips light/dark mode, or toggles classes.",
@@ -7,7 +7,7 @@
     "build": "wp-scripts build --webpack-copy-php",
     "start": "wp-scripts start --webpack-copy-php",
     "zip": "npm run build && node scripts/zip.mjs",
-    "playground": "wp-playground-cli start --no-auto-mount --mount=./:/wordpress/wp-content/plugins/toggle-for-generateblocks --blueprint=playground/blueprint.json --port=9400",
+    "playground": "wp-playground-cli start --no-auto-mount --mount=./:/wordpress/wp-content/plugins/thingamablocks --blueprint=playground/blueprint.json --port=9400",
     "playground:reset": "npm run playground -- --reset"
   },
   "devDependencies": {

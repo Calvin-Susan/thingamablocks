@@ -1,7 +1,7 @@
 /**
- * Package the plugin for upload: dist/toggle-for-generateblocks.zip
+ * Package the plugin for upload: dist/thingamablocks.zip
  *
- * The zip contains a single top-level folder, toggle-for-generateblocks/, with
+ * The zip contains a single top-level folder, thingamablocks/, with
  * only what WordPress needs at runtime: the main plugin file, readme.txt,
  * includes/, patterns/, build/ (and LICENSE if there is one). Source files, node_modules
  * and dev tooling stay out.
@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SLUG = 'toggle-for-generateblocks';
+const SLUG = 'thingamablocks';
 const root = resolve( dirname( fileURLToPath( import.meta.url ) ), '..' );
 const distDir = join( root, 'dist' );
 const zipPath = join( distDir, `${ SLUG }.zip` );

@@ -1,4 +1,4 @@
-=== Toggle for GenerateBlocks ===
+=== Thingamablocks ===
 Contributors: ogalweb
 Tags: generateblocks, toggle, countdown timer, dark mode, evergreen
 Requires at least: 6.5
@@ -12,7 +12,7 @@ GenerateBlocks add-on blocks built from native GB blocks: a Toggle (show/hide, d
 
 == Description ==
 
-Toggle for GenerateBlocks adds two blocks to the GenerateBlocks category in the block inserter:
+Thingamablocks adds two blocks to the GenerateBlocks category in the block inserter:
 
 * **Toggle** – a switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes.
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
@@ -39,7 +39,7 @@ In the inserter's Patterns tab, the **Toggles** category has a **Pricing table w
 * **Show / hide elements** – list element IDs, tag names (like `body`) or CSS selectors to show when the toggle is off and when it's on. The classic example is monthly and annual pricing. Optional fade or fade-and-slide reveal. In the editor, the elements hidden in the current preview state are dimmed with a dashed outline while the toggle is selected.
 * **Light / dark mode** – pick a dark version of each theme colour (GeneratePress global colours, or a block theme's palette) in the **Dark mode colours** panel, or let **Suggest dark colours** fill them in. The toggle sets `data-color-scheme="dark"` or `"light"` (and the CSS `color-scheme` property) on `<html>`, optionally adds a class too, can follow the visitor's system setting, and remembers their choice. The dark colours and a small script are printed in `<head>`, so there's no flash of the wrong colours. Set the toggle to start "On" to preview dark mode in the editor.
 * **Add / remove a class** – add (or remove) one or more classes on any elements when the toggle is on.
-* **Nothing (custom code)** – the toggle only changes its own state. Your code listens for the `ogal-toggle:change` event or uses `window.ogalToggle`.
+* **Nothing (custom code)** – the toggle only changes its own state. Your code listens for the `tmb-toggle:change` event or uses `window.tmbToggle`.
 
 = Toggle: parts =
 
@@ -59,7 +59,7 @@ Use GenerateBlocks nested selectors on the part itself:
 * A switch: `&[aria-checked="true"]`
 * The knob inside a switch (set on the switch): `&[aria-checked="true"] > *` – the layouts move it with `margin-inline-start`, so it slides the right way on RTL sites
 * An on/off label or button: `&[data-active="true"]`
-* The whole toggle: `.ogal-toggle.is-on`
+* The whole toggle: `.tmb-toggle.is-on`
 
 The editor shows the toggle in its starting state. Use the On/Off button in the block toolbar to switch the preview and style the other state.
 
@@ -111,7 +111,7 @@ Under Patterns → **Countdowns**:
 
 = Countdown: for developers =
 
-The Countdown fires `ogal-countdown:end` (and `ogal-countdown:restart` for repeating ones) on its wrapper, and has `window.ogalCountdown.init()` and `window.ogalCountdown.reset()`. See the README for details.
+The Countdown fires `tmb-countdown:end` (and `tmb-countdown:restart` for repeating ones) on its wrapper, and has `window.tmbCountdown.init()` and `window.tmbCountdown.reset()`. See the README for details.
 
 = Requirements =
 
@@ -124,8 +124,8 @@ Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 == Installation ==
 
 1. Install and activate GenerateBlocks 2.0 or newer.
-2. Upload the `toggle-for-generateblocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
-3. Activate **Toggle for GenerateBlocks**.
+2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
+3. Activate **Thingamablocks**.
 4. In the block editor, open the inserter and find **Toggle** and **Countdown** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles and Patterns → Countdowns.
 
 == Frequently Asked Questions ==
@@ -156,11 +156,11 @@ Yes. Give both the same **Sync group** name (under State), for example `billing`
 
 Yes. The page HTML is the same for every visitor; each visitor's choice is stored in their own browser (localStorage) and applied by JavaScript. For dark mode, the inline `<head>` script reads that choice before the page paints, so cached pages don't flash light before switching to dark.
 
-It also holds up with "remove unused CSS" optimisations: hidden elements get an inline `display: none !important` and reveal animations use the Web Animations API, so neither relies on CSS rules an optimiser might strip. If you use a plugin that delays JavaScript, exclude the `ogal-toggle-color-scheme` inline script from delaying.
+It also holds up with "remove unused CSS" optimisations: hidden elements get an inline `display: none !important` and reveal animations use the Web Animations API, so neither relies on CSS rules an optimiser might strip. If you use a plugin that delays JavaScript, exclude the `tmb-toggle-color-scheme` inline script from delaying.
 
 = Can I control a toggle from my own code? =
 
-Yes. Listen for the `ogal-toggle:change` event on `document`, or call `window.ogalToggle.get( 'billing' )` and `window.ogalToggle.set( 'billing', true )` with a toggle's sync group name or HTML anchor. If you add toggles to the page later (e.g. with AJAX), call `window.ogalToggle.init()` to set them up.
+Yes. Listen for the `tmb-toggle:change` event on `document`, or call `window.tmbToggle.get( 'billing' )` and `window.tmbToggle.set( 'billing', true )` with a toggle's sync group name or HTML anchor. If you add toggles to the page later (e.g. with AJAX), call `window.tmbToggle.init()` to set them up.
 
 = Does the countdown use the visitor's time zone? =
 
@@ -172,7 +172,7 @@ Yes. The server writes the numbers into the page, so a cached copy holds the num
 
 = How do I test an evergreen countdown again? =
 
-The visitor's deadline is saved in their browser, so reloading won't restart it. Open the page in a private window, or open the browser console and run `window.ogalCountdown.reset()` (or `window.ogalCountdown.reset( 'your-anchor' )` for one countdown with that HTML anchor). Clearing the site's data in the browser also works.
+The visitor's deadline is saved in their browser, so reloading won't restart it. Open the page in a private window, or open the browser console and run `window.tmbCountdown.reset()` (or `window.tmbCountdown.reset( 'your-anchor' )` for one countdown with that HTML anchor). Clearing the site's data in the browser also works.
 
 Tip: give an evergreen countdown an HTML anchor (Advanced panel). Its deadline is then saved under that name, so it doesn't change if you add or move other countdowns on the page.
 

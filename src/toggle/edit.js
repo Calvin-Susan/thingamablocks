@@ -41,19 +41,19 @@ import { stateAttributes, STATE_ATTRIBUTES } from './parts';
 const ACTION_OPTIONS = [
 	{
 		value: 'showHide',
-		label: __( 'Show / hide elements', 'toggle-for-generateblocks' ),
+		label: __( 'Show / hide elements', 'thingamablocks' ),
 	},
 	{
 		value: 'colorScheme',
-		label: __( 'Light / dark mode', 'toggle-for-generateblocks' ),
+		label: __( 'Light / dark mode', 'thingamablocks' ),
 	},
 	{
 		value: 'toggleClass',
-		label: __( 'Add / remove a class', 'toggle-for-generateblocks' ),
+		label: __( 'Add / remove a class', 'thingamablocks' ),
 	},
 	{
 		value: 'none',
-		label: __( 'Nothing (custom code)', 'toggle-for-generateblocks' ),
+		label: __( 'Nothing (custom code)', 'thingamablocks' ),
 	},
 ];
 
@@ -71,7 +71,7 @@ function collectParts( select, clientId ) {
 
 	const walk = ( blocks ) =>
 		blocks.forEach( ( block ) => {
-			if ( 'ogal/toggle' === block.name ) {
+			if ( 'thingamablocks/toggle' === block.name ) {
 				return;
 			}
 
@@ -110,11 +110,11 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 	} = attributes;
 
 	return (
-		<PanelBody title={ __( 'Toggle behaviour', 'toggle-for-generateblocks' ) }>
+		<PanelBody title={ __( 'Toggle behaviour', 'thingamablocks' ) }>
 			<SelectControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'When toggled', 'toggle-for-generateblocks' ) }
+				label={ __( 'When toggled', 'thingamablocks' ) }
 				value={ action }
 				options={ ACTION_OPTIONS }
 				onChange={ ( value ) => setAttributes( { action: value } ) }
@@ -123,42 +123,42 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 			{ 'showHide' === action && (
 				<>
 					<TargetsControl
-						label={ __( 'Show when off', 'toggle-for-generateblocks' ) }
+						label={ __( 'Show when off', 'thingamablocks' ) }
 						value={ showWhenOff }
 						onChange={ ( value ) => setAttributes( { showWhenOff: value } ) }
 						help={ __(
 							'Element IDs (e.g. monthly-prices) or CSS selectors. Hidden when the toggle is on.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 					/>
 					<TargetsControl
-						label={ __( 'Show when on', 'toggle-for-generateblocks' ) }
+						label={ __( 'Show when on', 'thingamablocks' ) }
 						value={ showWhenOn }
 						onChange={ ( value ) => setAttributes( { showWhenOn: value } ) }
 						help={ __(
 							'Hidden when the toggle is off.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 					/>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Reveal animation', 'toggle-for-generateblocks' ) }
+						label={ __( 'Reveal animation', 'thingamablocks' ) }
 						value={ animation }
 						options={ [
-							{ value: 'none', label: __( 'None', 'toggle-for-generateblocks' ) },
-							{ value: 'fade', label: __( 'Fade', 'toggle-for-generateblocks' ) },
+							{ value: 'none', label: __( 'None', 'thingamablocks' ) },
+							{ value: 'fade', label: __( 'Fade', 'thingamablocks' ) },
 							{
 								value: 'slide',
-								label: __( 'Fade and slide up', 'toggle-for-generateblocks' ),
+								label: __( 'Fade and slide up', 'thingamablocks' ),
 							},
 						] }
 						onChange={ ( value ) => setAttributes( { animation: value } ) }
 					/>
-					<p className="ogal-toggle-help">
+					<p className="tmb-toggle-help">
 						{ __(
 							'Give an element an ID in its Settings → HTML Attributes (GenerateBlocks) or Advanced → HTML anchor.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 					</p>
 				</>
@@ -168,10 +168,10 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 				<>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Match the visitor’s system setting', 'toggle-for-generateblocks' ) }
+						label={ __( 'Match the visitor’s system setting', 'thingamablocks' ) }
 						help={ __(
 							'Until they use the toggle, start in dark mode if their device is set to dark.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 						checked={ followSystem }
 						onChange={ ( value ) => setAttributes( { followSystem: value } ) }
@@ -179,18 +179,18 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Also add a class to <html>', 'toggle-for-generateblocks' ) }
+						label={ __( 'Also add a class to <html>', 'thingamablocks' ) }
 						help={ __(
 							'Optional, e.g. is-dark. The toggle always sets data-color-scheme="dark" or "light" on <html>.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 						value={ htmlClass }
 						onChange={ ( value ) => setAttributes( { htmlClass: value } ) }
 					/>
-					<p className="ogal-toggle-help">
+					<p className="tmb-toggle-help">
 						{ __(
 							'Pick the dark version of each theme colour in “Dark mode colours” below. The visitor’s choice is remembered, and every dark mode toggle on the site stays in sync. For anything else, style [data-color-scheme="dark"] in your CSS.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 					</p>
 				</>
@@ -199,35 +199,35 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 			{ 'toggleClass' === action && (
 				<>
 					<TargetsControl
-						label={ __( 'Elements', 'toggle-for-generateblocks' ) }
+						label={ __( 'Elements', 'thingamablocks' ) }
 						value={ classTargets }
 						onChange={ ( value ) => setAttributes( { classTargets: value } ) }
 						help={ __(
 							'Element IDs or CSS selectors, e.g. my-banner, body, .card',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 					/>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Class names', 'toggle-for-generateblocks' ) }
-						help={ __( 'Separate several with spaces.', 'toggle-for-generateblocks' ) }
+						label={ __( 'Class names', 'thingamablocks' ) }
+						help={ __( 'Separate several with spaces.', 'thingamablocks' ) }
 						value={ classNames }
 						onChange={ ( value ) => setAttributes( { classNames: value } ) }
 					/>
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'The class is', 'toggle-for-generateblocks' ) }
+						label={ __( 'The class is', 'thingamablocks' ) }
 						value={ classMode }
 						options={ [
 							{
 								value: 'addWhenOn',
-								label: __( 'Added when on', 'toggle-for-generateblocks' ),
+								label: __( 'Added when on', 'thingamablocks' ),
 							},
 							{
 								value: 'removeWhenOn',
-								label: __( 'Removed when on', 'toggle-for-generateblocks' ),
+								label: __( 'Removed when on', 'thingamablocks' ),
 							},
 						] }
 						onChange={ ( value ) => setAttributes( { classMode: value } ) }
@@ -236,10 +236,10 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 			) }
 
 			{ 'none' === action && (
-				<p className="ogal-toggle-help">
+				<p className="tmb-toggle-help">
 					{ __(
-						'The toggle only changes its own state. Listen for the ogal-toggle:change event to run your own code, or style the "on" state with the .is-on class on the toggle.',
-						'toggle-for-generateblocks'
+						'The toggle only changes its own state. Listen for the tmb-toggle:change event to run your own code, or style the "on" state with the .is-on class on the toggle.',
+						'thingamablocks'
 					) }
 				</p>
 			) }
@@ -252,21 +252,21 @@ function StateSettings( { attributes, setAttributes } ) {
 	const isColorScheme = 'colorScheme' === action;
 
 	return (
-		<PanelBody title={ __( 'State', 'toggle-for-generateblocks' ) }>
+		<PanelBody title={ __( 'State', 'thingamablocks' ) }>
 			<ToggleGroupControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				isBlock
-				label={ __( 'Starts as', 'toggle-for-generateblocks' ) }
+				label={ __( 'Starts as', 'thingamablocks' ) }
 				help={
 					isColorScheme
 						? __(
 								'Used when there’s no saved choice and the system setting isn’t followed.',
-								'toggle-for-generateblocks'
+								'thingamablocks'
 						  )
 						: __(
 								'The editor shows this state, so switch it to style the “on” look.',
-								'toggle-for-generateblocks'
+								'thingamablocks'
 						  )
 				}
 				value={ defaultState }
@@ -274,11 +274,11 @@ function StateSettings( { attributes, setAttributes } ) {
 			>
 				<ToggleGroupControlOption
 					value="off"
-					label={ __( 'Off', 'toggle-for-generateblocks' ) }
+					label={ __( 'Off', 'thingamablocks' ) }
 				/>
 				<ToggleGroupControlOption
 					value="on"
-					label={ __( 'On', 'toggle-for-generateblocks' ) }
+					label={ __( 'On', 'thingamablocks' ) }
 				/>
 			</ToggleGroupControl>
 
@@ -286,10 +286,10 @@ function StateSettings( { attributes, setAttributes } ) {
 				<>
 					<CheckboxControl
 						__nextHasNoMarginBottom
-						label={ __( 'Remember the visitor’s choice', 'toggle-for-generateblocks' ) }
+						label={ __( 'Remember the visitor’s choice', 'thingamablocks' ) }
 						help={ __(
 							'Saved in their browser and restored on their next visit.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 						checked={ persist }
 						onChange={ ( value ) => setAttributes( { persist: value } ) }
@@ -297,10 +297,10 @@ function StateSettings( { attributes, setAttributes } ) {
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Sync group', 'toggle-for-generateblocks' ) }
+						label={ __( 'Sync group', 'thingamablocks' ) }
 						help={ __(
 							'Toggles with the same group name stay in sync, e.g. a billing toggle at the top and bottom of a pricing page.',
-							'toggle-for-generateblocks'
+							'thingamablocks'
 						) }
 						value={ group }
 						onChange={ ( value ) =>
@@ -323,16 +323,16 @@ function AccessibilitySettings( { attributes, setAttributes, parts } ) {
 
 	return (
 		<PanelBody
-			title={ __( 'Accessibility', 'toggle-for-generateblocks' ) }
+			title={ __( 'Accessibility', 'thingamablocks' ) }
 			initialOpen={ needsLabel }
 		>
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
-				label={ __( 'Switch label', 'toggle-for-generateblocks' ) }
+				label={ __( 'Switch label', 'thingamablocks' ) }
 				help={ __(
 					'What screen readers announce for the switch, e.g. “Annual billing” or “Dark mode”. Leave empty to use the “on” label’s text.',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 				value={ attributes.ariaLabel }
 				onChange={ ( value ) => setAttributes( { ariaLabel: value } ) }
@@ -341,7 +341,7 @@ function AccessibilitySettings( { attributes, setAttributes, parts } ) {
 				<Notice status="warning" isDismissible={ false }>
 					{ __(
 						'This switch has no visible “on” label, so give it a label here.',
-						'toggle-for-generateblocks'
+						'thingamablocks'
 					) }
 				</Notice>
 			) }
@@ -355,36 +355,36 @@ function PartsSummary( { parts } ) {
 	if ( parts.length ) {
 		return (
 			<PanelBody
-				title={ __( 'Toggle parts', 'toggle-for-generateblocks' ) }
+				title={ __( 'Toggle parts', 'thingamablocks' ) }
 				initialOpen={ false }
 			>
-				<ul className="ogal-toggle-parts">
+				<ul className="tmb-toggle-parts">
 					<li>
 						{ sprintf(
 							/* translators: %d: number of blocks. */
-							__( 'Switch (flips on/off): %d', 'toggle-for-generateblocks' ),
+							__( 'Switch (flips on/off): %d', 'thingamablocks' ),
 							count( 'switch' )
 						) }
 					</li>
 					<li>
 						{ sprintf(
 							/* translators: %d: number of blocks. */
-							__( 'Turns off: %d', 'toggle-for-generateblocks' ),
+							__( 'Turns off: %d', 'thingamablocks' ),
 							count( 'off' )
 						) }
 					</li>
 					<li>
 						{ sprintf(
 							/* translators: %d: number of blocks. */
-							__( 'Turns on: %d', 'toggle-for-generateblocks' ),
+							__( 'Turns on: %d', 'thingamablocks' ),
 							count( 'on' )
 						) }
 					</li>
 				</ul>
-				<p className="ogal-toggle-help">
+				<p className="tmb-toggle-help">
 					{ __(
 						'Any GenerateBlocks block inside the toggle can become a part: select it and use its “Toggle part” panel. Style the on state with &[aria-checked="true"] on a switch or &[data-active="true"] on a label or button.',
-						'toggle-for-generateblocks'
+						'thingamablocks'
 					) }
 				</p>
 			</PanelBody>
@@ -392,11 +392,11 @@ function PartsSummary( { parts } ) {
 	}
 
 	return (
-		<div className="ogal-toggle-notice">
+		<div className="tmb-toggle-notice">
 			<Notice status="warning" isDismissible={ false }>
 				{ __(
 					'Nothing inside this toggle is clickable yet. Select a GenerateBlocks block inside it and choose a “Toggle part”.',
-					'toggle-for-generateblocks'
+					'thingamablocks'
 				) }
 			</Notice>
 		</div>
@@ -533,7 +533,7 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 
 	const blockProps = useBlockProps( {
 		ref: canvasRef,
-		className: `ogal-toggle ${ isOn ? 'is-on' : 'is-off' }`,
+		className: `tmb-toggle ${ isOn ? 'is-on' : 'is-off' }`,
 	} );
 	const innerBlocksProps = useInnerBlocksProps( blockProps );
 
@@ -546,16 +546,16 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 						isPressed={ isOn }
 						label={
 							isOn
-								? __( 'Showing the “on” state. Click to show “off”.', 'toggle-for-generateblocks' )
-								: __( 'Showing the “off” state. Click to show “on”.', 'toggle-for-generateblocks' )
+								? __( 'Showing the “on” state. Click to show “off”.', 'thingamablocks' )
+								: __( 'Showing the “off” state. Click to show “on”.', 'thingamablocks' )
 						}
 						onClick={ () =>
 							setAttributes( { defaultState: isOn ? 'off' : 'on' } )
 						}
 					>
 						{ isOn
-							? __( 'On', 'toggle-for-generateblocks' )
-							: __( 'Off', 'toggle-for-generateblocks' ) }
+							? __( 'On', 'thingamablocks' )
+							: __( 'Off', 'thingamablocks' ) }
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
@@ -583,24 +583,24 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 				/>
 				{ parts.length > 0 && <PartsSummary parts={ parts } /> }
 				<PanelBody
-					title={ __( 'Help', 'toggle-for-generateblocks' ) }
+					title={ __( 'Help', 'thingamablocks' ) }
 					initialOpen={ false }
 				>
-					<p className="ogal-toggle-help">
+					<p className="tmb-toggle-help">
 						{ __(
-							'The toggle fires an ogal-toggle:change event and exposes window.ogalToggle.get( group ) and .set( group, true ) for custom code.',
-							'toggle-for-generateblocks'
+							'The toggle fires an tmb-toggle:change event and exposes window.tmbToggle.get( group ) and .set( group, true ) for custom code.',
+							'thingamablocks'
 						) }
 					</p>
 					<ExternalLink href="https://ogalweb.com/">
-						{ __( 'Toggle for GenerateBlocks', 'toggle-for-generateblocks' ) }
+						{ __( 'Thingamablocks', 'thingamablocks' ) }
 					</ExternalLink>
 				</PanelBody>
 			</InspectorControls>
 
 			{ 'colorScheme' === attributes.action && isOn && (
 				// Preview dark mode in the editor while the toggle shows its "on" state.
-				<CanvasStyle data-ogal-dark-preview="">
+				<CanvasStyle data-tmb-dark-preview="">
 					{ darkPaletteCss( attributes.darkPalette, ':root:root' ) }
 				</CanvasStyle>
 			) }
@@ -626,12 +626,12 @@ export default function Edit( props ) {
 	) : (
 		<VariationPlaceholder
 			{ ...props }
-			blockName="ogal/toggle"
+			blockName="thingamablocks/toggle"
 			icon={ toggleIcon }
-			label={ __( 'Toggle', 'toggle-for-generateblocks' ) }
+			label={ __( 'Toggle', 'thingamablocks' ) }
 			instructions={ __(
 				'Choose a starting layout. Every part is a GenerateBlocks block, so you can restyle it afterwards.',
-				'toggle-for-generateblocks'
+				'thingamablocks'
 			) }
 		/>
 	);

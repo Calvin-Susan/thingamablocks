@@ -1,18 +1,18 @@
 /**
  * Front-end behaviour for the Countdown block.
  *
- * Each countdown is a `.ogal-countdown` wrapper with a JSON config in
- * `data-ogal-countdown`. Its parts are ordinary GenerateBlocks blocks:
+ * Each countdown is a `.tmb-countdown` wrapper with a JSON config in
+ * `data-tmb-countdown`. Its parts are ordinary GenerateBlocks blocks:
  *   - data-countdown-part="days|hours|minutes|seconds": numbers, rewritten each tick
  *   - data-countdown-unit="days|…": a unit's box (number + label), hidden with it
  *   - data-countdown-part="timer": hidden when it ends (if set to show a message)
  *   - data-countdown-part="ended": shown when it ends
  *
- * When a countdown ends it fires `ogal-countdown:end` on the wrapper (it bubbles).
+ * When a countdown ends it fires `tmb-countdown:end` on the wrapper (it bubbles).
  */
 import { UNITS, nextRecurring, splitRemaining } from './time';
 
-const STORAGE_PREFIX = 'ogal-countdown:';
+const STORAGE_PREFIX = 'tmb-countdown:';
 const countdowns = [];
 let timer = null;
 
@@ -30,7 +30,7 @@ function writeStorage( key, value ) {
 	} catch ( e ) {}
 }
 
-// Bare words that may also mean a tag, mirroring Ogal_Blocks_Sanitize::TAG_TARGETS.
+// Bare words that may also mean a tag, mirroring Thingamablocks_Sanitize::TAG_TARGETS.
 const TAG_TARGETS = [ 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' ];
 
 function resolve( value ) {
@@ -197,7 +197,7 @@ function setEnded( countdown, ended, initial ) {
 	}
 
 	element.dispatchEvent(
-		new CustomEvent( 'ogal-countdown:end', {
+		new CustomEvent( 'tmb-countdown:end', {
 			bubbles: true,
 			detail: { countdown: element, mode: config.mode, initial },
 		} )
@@ -251,7 +251,7 @@ function update( countdown, initial = false ) {
 
 		if ( next && next !== countdown.end && countdown.end && ! initial ) {
 			countdown.element.dispatchEvent(
-				new CustomEvent( 'ogal-countdown:restart', {
+				new CustomEvent( 'tmb-countdown:restart', {
 					bubbles: true,
 					detail: { countdown: countdown.element, end: next },
 				} )
@@ -292,21 +292,21 @@ function tick() {
 }
 
 function setup( element ) {
-	if ( element.ogalCountdown ) {
+	if ( element.tmbCountdown ) {
 		return null;
 	}
 
 	let config;
 
 	try {
-		config = JSON.parse( element.dataset.ogalCountdown || '{}' );
+		config = JSON.parse( element.dataset.tmbCountdown || '{}' );
 	} catch ( e ) {
 		return null;
 	}
 
 	const own = ( selector ) =>
 		[ ...element.querySelectorAll( selector ) ].filter(
-			( part ) => part.closest( '.ogal-countdown' ) === element
+			( part ) => part.closest( '.tmb-countdown' ) === element
 		);
 
 	const parts = {
@@ -321,7 +321,7 @@ function setup( element ) {
 	} );
 
 	const position = [
-		...document.querySelectorAll( '.ogal-countdown[data-ogal-countdown]' ),
+		...document.querySelectorAll( '.tmb-countdown[data-tmb-countdown]' ),
 	].indexOf( element );
 
 	const countdown = {
@@ -341,14 +341,14 @@ function setup( element ) {
 
 	if ( parts.ended.length ) {
 		countdown.live = document.createElement( 'span' );
-		countdown.live.className = 'ogal-countdown-live';
+		countdown.live.className = 'tmb-countdown-live';
 		countdown.live.setAttribute( 'aria-live', 'polite' );
 		countdown.live.style.cssText =
 			'position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0';
 		element.after( countdown.live );
 	}
 
-	element.ogalCountdown = countdown;
+	element.tmbCountdown = countdown;
 	countdowns.push( countdown );
 
 	return countdown;
@@ -361,14 +361,14 @@ function setup( element ) {
  * @param {ParentNode} root Where to look.
  */
 function init( root = document ) {
-	const added = [ ...root.querySelectorAll( '.ogal-countdown[data-ogal-countdown]' ) ]
+	const added = [ ...root.querySelectorAll( '.tmb-countdown[data-tmb-countdown]' ) ]
 		.map( setup )
 		.filter( Boolean );
 
 	added.forEach( ( countdown ) => update( countdown, true ) );
 
 	document
-		.querySelectorAll( 'style.ogal-countdown-initial' )
+		.querySelectorAll( 'style.tmb-countdown-initial' )
 		.forEach( ( style ) => style.remove() );
 
 	if ( ! timer ) {
@@ -390,7 +390,7 @@ document.addEventListener( 'visibilitychange', () => {
 	}
 } );
 
-window.ogalCountdown = {
+window.tmbCountdown = {
 	init,
 	/**
 	 * Restart an evergreen countdown for this visitor (handy when testing).

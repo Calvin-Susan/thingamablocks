@@ -17,17 +17,17 @@ import { border, color, padding, radius } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const UNIT_LABELS = () => ( {
-	days: __( 'Days', 'toggle-for-generateblocks' ),
-	hours: __( 'Hours', 'toggle-for-generateblocks' ),
-	minutes: __( 'Minutes', 'toggle-for-generateblocks' ),
-	seconds: __( 'Seconds', 'toggle-for-generateblocks' ),
+	days: __( 'Days', 'thingamablocks' ),
+	hours: __( 'Hours', 'thingamablocks' ),
+	minutes: __( 'Minutes', 'thingamablocks' ),
+	seconds: __( 'Seconds', 'thingamablocks' ),
 } );
 
 const SHORT_LABELS = () => ( {
-	days: __( 'd', 'toggle-for-generateblocks' ),
-	hours: __( 'h', 'toggle-for-generateblocks' ),
-	minutes: __( 'm', 'toggle-for-generateblocks' ),
-	seconds: __( 's', 'toggle-for-generateblocks' ),
+	days: __( 'd', 'thingamablocks' ),
+	hours: __( 'h', 'thingamablocks' ),
+	minutes: __( 'm', 'thingamablocks' ),
+	seconds: __( 's', 'thingamablocks' ),
 } );
 
 const UNITS = [ 'days', 'hours', 'minutes', 'seconds' ];
@@ -114,7 +114,7 @@ const boxes = () => {
 				],
 			] )
 		),
-		ended( __( 'This offer has ended.', 'toggle-for-generateblocks' ) ),
+		ended( __( 'This offer has ended.', 'thingamablocks' ) ),
 	];
 };
 
@@ -131,7 +131,7 @@ const inline = () => {
 				color: color.text,
 			},
 			[
-				text( __( 'Ends in', 'toggle-for-generateblocks' ), { color: color.muted } ),
+				text( __( 'Ends in', 'thingamablocks' ), { color: color.muted } ),
 				...UNITS.map( ( unit ) => [
 					'generateblocks/element',
 					{
@@ -147,7 +147,7 @@ const inline = () => {
 				] ),
 			]
 		),
-		ended( __( 'This offer has ended.', 'toggle-for-generateblocks' ) ),
+		ended( __( 'This offer has ended.', 'thingamablocks' ) ),
 	];
 };
 
@@ -214,15 +214,15 @@ const colons = () => {
 			},
 			children
 		),
-		ended( __( 'We’re live!', 'toggle-for-generateblocks' ) ),
+		ended( __( 'We’re live!', 'thingamablocks' ) ),
 	];
 };
 
 export const variations = [
 	{
 		name: 'boxes',
-		title: __( 'Boxes', 'toggle-for-generateblocks' ),
-		description: __( 'Each unit in its own box.', 'toggle-for-generateblocks' ),
+		title: __( 'Boxes', 'thingamablocks' ),
+		description: __( 'Each unit in its own box.', 'thingamablocks' ),
 		icon: variationIcons.boxes,
 		isDefault: true,
 		innerBlocks: boxes(),
@@ -230,8 +230,8 @@ export const variations = [
 	},
 	{
 		name: 'inline',
-		title: __( 'Inline text', 'toggle-for-generateblocks' ),
-		description: __( '“Ends in 2d 5h 12m 9s”, for banners and buttons.', 'toggle-for-generateblocks' ),
+		title: __( 'Inline text', 'thingamablocks' ),
+		description: __( '“Ends in 2d 5h 12m 9s”, for banners and buttons.', 'thingamablocks' ),
 		icon: variationIcons.inline,
 		// Reads like a sentence: "Ends in 5h 2m 9s", not "Ends in 00d 05h 02m 09s".
 		attributes: { padNumbers: false, hideEmptyUnits: true },
@@ -240,8 +240,8 @@ export const variations = [
 	},
 	{
 		name: 'colons',
-		title: __( 'Large numbers', 'toggle-for-generateblocks' ),
-		description: __( 'Big numbers with colons, for launches.', 'toggle-for-generateblocks' ),
+		title: __( 'Large numbers', 'thingamablocks' ),
+		description: __( 'Big numbers with colons, for launches.', 'thingamablocks' ),
 		icon: variationIcons.colons,
 		innerBlocks: colons(),
 		scope: [ 'block' ],
