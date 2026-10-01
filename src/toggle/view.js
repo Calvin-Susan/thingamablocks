@@ -31,7 +31,7 @@ function writeStorage( key, value ) {
 	} catch ( e ) {}
 }
 
-// Bare words that may also mean a tag, mirroring TAG_TARGETS in class-render.php.
+// Bare words that may also mean a tag, mirroring TAG_TARGETS in class-thingamablocks-toggle-render.php.
 const TAG_TARGETS = [
 	'html',
 	'body',

@@ -772,7 +772,7 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 
 **Toggle**
 
-- On the front end, PHP (`includes/class-toggle-render.php`) renders the wrapper `<div class="tmb-toggle is-off" data-tmb-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts.
+- On the front end, PHP (`includes/class-thingamablocks-toggle-render.php`) renders the wrapper `<div class="tmb-toggle is-off" data-tmb-toggle="{…config…}">` (plus the anchor as `id`), and walks the inner HTML with WordPress's `WP_HTML_Tag_Processor` to add the roles and state attributes to the parts.
 - For show/hide, PHP also prints a tiny `<style class="tmb-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
 - For a toggle that remembers the visitor's choice and has a storage key the server can work out (a sync group or HTML anchor, or any dark mode toggle), PHP prints a tiny inline script right after the wrapper. It runs as the page is parsed, reads the saved choice, and flips the wrapper's classes, the parts' ARIA state and the no-flash `<style>` before the first paint. The main script then takes over as usual.
 - The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.tmbToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
@@ -780,14 +780,14 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 
 **Countdown**
 
-- PHP (`includes/class-countdown-render.php`) works out the time left when the page is rendered, writes the real numbers into the number parts, and hides the timer or the ended message as appropriate (inline `display:none!important`). So a visitor sees correct numbers – or the ended state – before any JavaScript runs. An evergreen countdown is rendered at its full duration, since the server can't know each visitor's deadline.
+- PHP (`includes/class-thingamablocks-countdown-render.php`) works out the time left when the page is rendered, writes the real numbers into the number parts, and hides the timer or the ended message as appropriate (inline `display:none!important`). So a visitor sees correct numbers – or the ended state – before any JavaScript runs. An evergreen countdown is rendered at its full duration, since the server can't know each visitor's deadline.
 - The end date is stored as site-local time and converted with `wp_timezone()`. Recurring countdowns get the site's time zone (`wp_timezone_string()`) in their config, and `src/countdown/time.js` does the maths in the browser, including daylight-saving changes and fixed offsets like `UTC+2`. The editor uses the same file, so the sidebar's "Ends in …" and "Next: …" match the front end.
 - **Also hide / Also show** targets that should start hidden get a `<style class="tmb-countdown-initial">`, as with the Toggle.
 - The front-end script (`src/countdown/view.js`, loaded only on pages with a Countdown) ticks once a second for all countdowns together, catches up straight away when a background tab becomes visible, stores evergreen deadlines, rolls recurring and restarting runs over, and runs the end actions. Because it recalculates from the clock on load, a cached page with stale numbers corrects itself immediately.
 
 **Marquee**
 
-- PHP (`includes/class-marquee-render.php`) renders the wrapper `<div class="tmb-marquee" data-tmb-marquee="{…config…}">` with its clipping, edge fade (a CSS mask) and, for up/down, height as inline styles. WordPress's style filter in `get_block_wrapper_attributes()` drops `mask-image`, so the fade is added to the rendered tag afterwards (built only from a validated length). It keeps the row on one line at its natural length (`width: max-content`, no wrapping), and gives the pause button its role, `aria-pressed` and label. So the strip looks right before the script runs, and stays a plain row without JavaScript.
+- PHP (`includes/class-thingamablocks-marquee-render.php`) renders the wrapper `<div class="tmb-marquee" data-tmb-marquee="{…config…}">` with its clipping, edge fade (a CSS mask) and, for up/down, height as inline styles. WordPress's style filter in `get_block_wrapper_attributes()` drops `mask-image`, so the fade is added to the rendered tag afterwards (built only from a validated length). It keeps the row on one line at its natural length (`width: max-content`, no wrapping), and gives the pause button its role, `aria-pressed` and label. So the strip looks right before the script runs, and stays a plain row without JavaScript.
 - The front-end script (`src/marquee/view.js`, loaded only on pages with a Marquee) moves the row into a track (`.tmb-marquee__track`) inside a clipping viewport (`.tmb-marquee__viewport`), and moves the edge fade from the wrapper onto the viewport so the pause button isn't faded. It clones the row enough times to fill the space, and animates the track with the Web Animations API by one row's length plus the gap. Duration is distance ÷ speed, so speed is in px/s. A `ResizeObserver` re-measures (adding or removing copies) and keeps the current position; an `IntersectionObserver` pauses it off screen.
 - In the editor (`src/marquee/edit.js`) the wrapper gets the same clipping and fade so you see the real edges, but nothing moves unless you press **Preview**.
 
@@ -819,7 +819,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 Things the blocks share live in one place, so a new block can reuse them:
 
-- `includes/class-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
+- `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
 - `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all three blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
@@ -864,11 +864,11 @@ thingamablocks.php   Plugin header, block registration, GB category fallback, "n
 uninstall.php        Removes the plugin's options when it's deleted
 LICENSE              GPL v2
 includes/
-  class-sanitize.php            Thingamablocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
+  class-thingamablocks-sanitize.php            Thingamablocks_Sanitize: shared target/selector, class name and no-flash <style> cleaning
   kses.php                      Lets aria-checked / aria-pressed through WordPress's content filter for Authors and Contributors
-  class-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS, remembered-choice script
-  class-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
-  class-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
+  class-thingamablocks-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS, remembered-choice script
+  class-thingamablocks-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
+  class-thingamablocks-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one

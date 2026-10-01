@@ -48,8 +48,8 @@ class Thingamablocks_Countdown_Render {
 		$content = self::decorate_parts( $content, $config, max( 0, $left ), $ended );
 
 		$wrapper = array(
-			'class'               => 'tmb-countdown ' . ( $ended ? 'is-ended' : 'is-running' ),
-			'role'                => 'timer',
+			'class'              => 'tmb-countdown ' . ( $ended ? 'is-ended' : 'is-running' ),
+			'role'               => 'timer',
 			'data-tmb-countdown' => wp_json_encode( $config ),
 		);
 
@@ -283,15 +283,15 @@ class Thingamablocks_Countdown_Render {
 		 */
 		$content = preg_replace_callback(
 			'#(<([a-z][a-z0-9]*)\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*?\sdata-countdown-part="(days|hours|minutes|seconds)"(?:[^>"\']|"[^"]*"|\'[^\']*\')*>)([^<]*)(</\2>)#i',
-			function ( $match ) use ( $values, $config ) {
-				if ( false !== strpos( $match[1], self::OWNED ) ) {
-					return $match[0];
+			function ( $matches ) use ( $values, $config ) {
+				if ( false !== strpos( $matches[1], self::OWNED ) ) {
+					return $matches[0];
 				}
 
-				$value = $values[ $match[3] ] ?? 0;
+				$value = $values[ $matches[3] ] ?? 0;
 				$text  = $config['pad'] ? str_pad( (string) $value, 2, '0', STR_PAD_LEFT ) : (string) $value;
 
-				return $match[1] . $text . $match[5];
+				return $matches[1] . $text . $matches[5];
 			},
 			$content
 		);

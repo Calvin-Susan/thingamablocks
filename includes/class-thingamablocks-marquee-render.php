@@ -50,10 +50,10 @@ class Thingamablocks_Marquee_Render {
 		}
 
 		$wrapper = array(
-			'class'           => 'tmb-marquee',
+			'class'            => 'tmb-marquee',
 			'data-tmb-marquee' => wp_json_encode( $config ),
 			// Trailing ";" because WordPress before 7.0 joins block styles with a space.
-			'style'           => implode( ';', $styles ) . ';',
+			'style'            => implode( ';', $styles ) . ';',
 		);
 
 		if ( ! empty( $attributes['anchor'] ) ) {

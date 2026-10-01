@@ -22,11 +22,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'THINGAMABLOCKS_VERSION', '0.1.0' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
-require_once THINGAMABLOCKS_DIR . 'includes/class-sanitize.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-sanitize.php';
 require_once THINGAMABLOCKS_DIR . 'includes/kses.php';
-require_once THINGAMABLOCKS_DIR . 'includes/class-toggle-render.php';
-require_once THINGAMABLOCKS_DIR . 'includes/class-countdown-render.php';
-require_once THINGAMABLOCKS_DIR . 'includes/class-marquee-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-toggle-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-countdown-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-marquee-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';

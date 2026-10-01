@@ -48,7 +48,7 @@ class Thingamablocks_Toggle_Render {
 		$content = self::decorate_parts( $content, $config, $is_on );
 
 		$wrapper = array(
-			'class'            => 'tmb-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
+			'class'           => 'tmb-toggle ' . ( $is_on ? 'is-on' : 'is-off' ),
 			'data-tmb-toggle' => wp_json_encode( $config ),
 		);
 

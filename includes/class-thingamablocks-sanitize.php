@@ -72,8 +72,8 @@ class Thingamablocks_Sanitize {
 	 * Whether a selector is safe to print inside a <style> element.
 	 *
 	 * Never "<" (which could close the element), "\\" escapes, control
-	 * characters, "{", "}", ";" (declarations), "@" (at-rules such as
-	 * @import), comments or url(): not even inside quotes, because a browser
+	 * characters, "{", "}", ";" (declarations), "@" (at-rules like an
+	 * import), comments or url(): not even inside quotes, because a browser
 	 * and this check could disagree about where a quoted string ends (an
 	 * unquoted url( treats quotes differently). Outside quotes, only selector
 	 * punctuation, letters, digits and non-ASCII letters. Brackets,

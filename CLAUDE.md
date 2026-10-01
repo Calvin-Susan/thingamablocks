@@ -16,7 +16,7 @@ the essentials:
   are stored the same way (`data-tmb-animate` etc.). Don't rebuild GB's Styles
   Builder: `window.gb.*` exists but is undocumented.
 - **Rendering**: blocks are dynamic. `save()` returns `InnerBlocks.Content`; PHP
-  (`includes/class-*-render.php`) renders the wrapper and adds roles/state to
+  (`includes/class-thingamablocks-*-render.php`) renders the wrapper and adds roles/state to
   parts with `WP_HTML_Tag_Processor`, so markup is right before JS runs. Front
   ends are small vanilla scripts (`src/*/view.js`) using Web Animations, not CSS
   keyframes (survives "remove unused CSS" optimisers).
@@ -25,7 +25,7 @@ the essentials:
   `window.tmbToggle` / `tmbCountdown` / `tmbMarquee` / `tmbAnimate`. Text domain
   `thingamablocks`.
 - **Security**: contributors can save block attributes. Anything reaching a
-  `<style>` goes through `Thingamablocks_Sanitize` (`includes/class-sanitize.php`):
+  `<style>` goes through `Thingamablocks_Sanitize` (`includes/class-thingamablocks-sanitize.php`):
   selectors must be balanced, no `<`, `\`, `@`, `{};` outside quotes. Site-wide
   dark-mode colours only change for `edit_theme_options` users.
   `get_block_wrapper_attributes()` strips CSS like `mask-image`; add such styles
