@@ -79,6 +79,7 @@ test.describe( 'Editor', () => {
 		);
 
 		expect( names ).toEqual( [
+			'thingamablocks/breadcrumbs',
 			'thingamablocks/countdown',
 			'thingamablocks/dropdown',
 			'thingamablocks/marquee',

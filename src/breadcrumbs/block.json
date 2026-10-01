@@ -1,0 +1,77 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thingamablocks/breadcrumbs",
+	"version": "0.1.0",
+	"title": "Breadcrumbs",
+	"category": "generateblocks",
+	"description": "The path to the current page (Home › Blog › Category › Post), built automatically and styled with GenerateBlocks.",
+	"keywords": [
+		"breadcrumbs",
+		"breadcrumb",
+		"trail",
+		"navigation",
+		"path",
+		"seo"
+	],
+	"textdomain": "thingamablocks",
+	"attributes": {
+		"home": {
+			"type": "string",
+			"default": "text",
+			"enum": [ "text", "icon", "both" ]
+		},
+		"homeLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"showCurrent": {
+			"type": "boolean",
+			"default": true
+		},
+		"showOnHome": {
+			"type": "boolean",
+			"default": false
+		},
+		"showBlogPage": {
+			"type": "boolean",
+			"default": true
+		},
+		"showCategory": {
+			"type": "boolean",
+			"default": true
+		},
+		"collapse": {
+			"type": "boolean",
+			"default": true
+		},
+		"useSeoPlugin": {
+			"type": "boolean",
+			"default": true
+		},
+		"schema": {
+			"type": "string",
+			"default": "auto",
+			"enum": [ "auto", "always", "never" ]
+		},
+		"ariaLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js",
+	"viewStyle": "file:./style-index.css"
+}

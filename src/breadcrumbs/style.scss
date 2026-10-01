@@ -1,0 +1,46 @@
+// Front end only (block.json "viewStyle": loaded only on pages with
+// Breadcrumbs). The look comes from the GenerateBlocks parts; this only lays
+// the steps out in a row.
+
+// Class selectors, so they beat a theme's list margins (GeneratePress gives
+// <ol> a left margin).
+.tmb-breadcrumbs__list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tmb-breadcrumbs__step {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5em;
+	margin: 0;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+// The "…" button that shows a collapsed trail in full.
+.tmb-breadcrumbs__more {
+	// An easy target to hit (WCAG 2.5.8).
+	min-width: 24px;
+	min-height: 24px;
+	margin: 0;
+	padding: 0 0.25em;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	cursor: pointer;
+
+	&:focus-visible {
+		outline: 2px solid currentcolor;
+		outline-offset: 2px;
+	}
+}

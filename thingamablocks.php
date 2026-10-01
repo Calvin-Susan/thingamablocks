@@ -28,6 +28,8 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-toggle-render.p
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-countdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-marquee-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-dropdown-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-trail.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
@@ -39,10 +41,11 @@ add_action( 'init', 'thingamablocks_register_blocks' );
  */
 function thingamablocks_register_blocks() {
 	$blocks = array(
-		'toggle'    => array( 'Thingamablocks_Toggle_Render', 'render' ),
-		'countdown' => array( 'Thingamablocks_Countdown_Render', 'render' ),
-		'marquee'   => array( 'Thingamablocks_Marquee_Render', 'render' ),
-		'dropdown'  => array( 'Thingamablocks_Dropdown_Render', 'render' ),
+		'toggle'      => array( 'Thingamablocks_Toggle_Render', 'render' ),
+		'countdown'   => array( 'Thingamablocks_Countdown_Render', 'render' ),
+		'marquee'     => array( 'Thingamablocks_Marquee_Render', 'render' ),
+		'dropdown'    => array( 'Thingamablocks_Dropdown_Render', 'render' ),
+		'breadcrumbs' => array( 'Thingamablocks_Breadcrumbs_Render', 'render' ),
 	);
 
 	foreach ( $blocks as $folder => $render ) {
@@ -55,6 +58,18 @@ function thingamablocks_register_blocks() {
 			array( 'render_callback' => $render )
 		);
 	}
+}
+
+add_action( 'enqueue_block_editor_assets', 'thingamablocks_breadcrumbs_editor_data' );
+/**
+ * Tell the Breadcrumbs block's settings which SEO plugin is active.
+ */
+function thingamablocks_breadcrumbs_editor_data() {
+	wp_add_inline_script(
+		generate_block_asset_handle( 'thingamablocks/breadcrumbs', 'editorScript' ),
+		'window.tmbBreadcrumbs = ' . wp_json_encode( array( 'plugin' => Thingamablocks_Breadcrumbs_Trail::seo_plugin() ) ) . ';',
+		'before'
+	);
 }
 
 add_filter( 'block_categories_all', 'thingamablocks_block_category', 20 );
