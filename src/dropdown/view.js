@@ -55,9 +55,17 @@ function position( dropdown ) {
 	// A margin on the drawer (a theme's list margin, say) shifts it; allow for it.
 	let left = -( parseFloat( getComputedStyle( drawer ).marginLeft ) || 0 );
 
-	if ( 'end' === config.align ) {
+	// Start and end follow the text direction: on a right-to-left site the
+	// start is the right-hand edge.
+	const rtl = 'rtl' === getComputedStyle( element ).direction;
+	const align =
+		{ start: rtl ? 'end' : 'start', end: rtl ? 'start' : 'end' }[
+			config.align
+		] || config.align;
+
+	if ( 'end' === align ) {
 		left += box.width - width;
-	} else if ( 'center' === config.align ) {
+	} else if ( 'center' === align ) {
 		left += ( box.width - width ) / 2;
 	}
 
@@ -156,6 +164,16 @@ function close( dropdown, { restoreFocus = false } = {} ) {
 	}
 
 	const { element, button, drawer } = dropdown;
+
+	// A dropdown open inside this one's drawer closes with it.
+	dropdowns
+		.filter(
+			( other ) =>
+				other.open &&
+				other !== dropdown &&
+				element.contains( other.element )
+		)
+		.forEach( ( other ) => close( other ) );
 
 	dropdown.open = false;
 	element.classList.remove( 'is-open' );
@@ -315,7 +333,10 @@ function init( root = document ) {
 	);
 }
 
-document.addEventListener( 'click', ( event ) => {
+// Pointer down, not click: a click elsewhere that opens a dropdown through
+// window.tmbDropdown.open() mustn't close it again as the click bubbles.
+// (Keyboard users moving away are handled by focusout.)
+document.addEventListener( 'pointerdown', ( event ) => {
 	dropdowns
 		.filter(
 			( dropdown ) =>
@@ -325,20 +346,26 @@ document.addEventListener( 'click', ( event ) => {
 } );
 
 document.addEventListener( 'keydown', ( event ) => {
-	if ( 'Escape' !== event.key ) {
+	// Something inside (a select, another widget) already used the key.
+	if ( 'Escape' !== event.key || event.defaultPrevented ) {
 		return;
 	}
 
-	const focused = event.target.ownerDocument?.activeElement || event.target;
+	const doc = event.target.ownerDocument || event.target;
+	const focused = doc.activeElement;
 
-	// The innermost open dropdown around the focus (or any open one).
+	// The innermost open dropdown around the focus; with nothing focused
+	// (after a mouse click), the open one.
 	const target =
 		[ ...dropdowns ]
 			.reverse()
 			.find(
 				( dropdown ) =>
 					dropdown.open && dropdown.element.contains( focused )
-			) || dropdowns.find( ( dropdown ) => dropdown.open );
+			) ||
+		( ! focused || focused === doc.body
+			? dropdowns.find( ( dropdown ) => dropdown.open )
+			: null );
 
 	if ( target ) {
 		close( target, {

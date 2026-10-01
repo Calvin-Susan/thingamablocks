@@ -12,19 +12,20 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds three blocks to the GenerateBlocks category in the block inserter:
+Thingamablocks adds four blocks to the GenerateBlocks category in the block inserter:
 
 * **Toggle** – a switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes.
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
 * **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
+* **Dropdown** – a button that opens a drawer of links, downloads or any other blocks.
 
 It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
 
 And it adds **image masks** to the GenerateBlocks Image block: cut an image to a wave, a curve or your own SVG shape.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the boxes) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's and Dropdown's few lines of CSS) loads only on pages with that block, and image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS). The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 = Toggle: starting layouts =
 
@@ -161,6 +162,58 @@ It repeats the row just enough to fill the space, matches the gap where it repea
 * Keyboard focus always pauses it, a focused link is moved fully into view, and the faded edges are removed while it has focus.
 * Visitors who prefer reduced motion get a still row they can scroll, also with the keyboard (it's focusable and named with the marquee's label, or "Scrolling content").
 
+= Dropdown: what it's for =
+
+A button that opens a drawer underneath it: a downloads menu, a short list of links, or a small panel with any blocks in it. The drawer floats over the page, lines up with the button, flips above it when there isn't room below, and stays on screen.
+
+= Dropdown: starting layouts =
+
+* **Downloads** – a "Downloads" button opening a list of files, each with its type and size ("PDF · 2.4 MB").
+* **Simple links** – a "Resources" button opening a plain list of links.
+* **Panel** – a "Need help?" button opening a panel with text and a "Contact us" button.
+
+The button is a GenerateBlocks Button with a chevron that turns over while it's open. The links start as `#`: point them at your files or pages.
+
+= Dropdown: ready-made pattern =
+
+Under Patterns → **Dropdowns**, **Product resources with a Downloads dropdown** is a short section with a heading, a line of text and a Downloads dropdown with three files. Change the file names and links, and publish.
+
+= Dropdown: parts and settings =
+
+Select a GenerateBlocks block inside a Dropdown and use the **Dropdown part** panel to mark it as **The button that opens it** (a GenerateBlocks Button using the `<button>` tag; anything else gets `role="button"` and keyboard support) or **The drawer** (a GenerateBlocks Element holding anything).
+
+The drawer is as wide as the button unless you give it a width in the Styles panel (the Panel layout uses 18rem). The plugin's positioning rules have zero specificity, so your GenerateBlocks styles always win.
+
+In the **Drawer** panel:
+
+* **Reveal animation** – None, Fade, Slide down (default), Grow or Unfold. Plays in reverse when it closes.
+* **Speed** – Fast, Normal or Slow.
+* **Line up with the button's** – Start, Centre or End, for drawers wider than the button.
+* **Space between button and drawer** – in px, 8 by default.
+* **Close when an item is clicked** – on by default.
+
+The **Preview** button in the block toolbar plays the reveal in the editor. In the editor the drawer shows, in the page flow, while the dropdown or anything inside it is selected.
+
+= Dropdown: styling the open state =
+
+* The button while open: `&[aria-expanded="true"]` (the layouts turn the chevron with it).
+* Anything while open: `.tmb-dropdown.is-open` in global CSS.
+* Which way it opened: `data-placement="top"` or `"bottom"` on the wrapper while open.
+
+Like any popover, a drawer inside a container with `overflow: hidden` is cut off at that container's edge.
+
+= Dropdown: accessibility =
+
+* A disclosure button (`aria-expanded`, `aria-controls`), not an ARIA menu, which would make screen readers expect app-style arrow keys. Visitors Tab through the items like any links.
+* Escape closes it and returns focus to the button. A click outside, tabbing away, or using an item also closes it.
+* The Down arrow opens it and moves to the first item. Only one dropdown is open at a time.
+* No animation for visitors who prefer reduced motion. Without JavaScript the drawers are simply shown.
+* The Downloads and Simple links layouts are real lists.
+
+= Dropdown: for developers =
+
+The Dropdown fires `tmb-dropdown:open` and `tmb-dropdown:close` on its wrapper, and has `window.tmbDropdown.init()`, `.open()`, `.close()` and `.toggle()`, which take the wrapper element or its HTML anchor. See the README for details.
+
 = Entrance animations =
 
 Select any GenerateBlocks 2 block (or GenerateBlocks Pro block) and open the **Entrance animation** panel. The legacy GenerateBlocks 1.x blocks aren't supported.
@@ -225,7 +278,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown** and **Marquee** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns and Patterns → Marquees. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee** and **Dropdown** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 == Frequently Asked Questions ==
 
@@ -286,6 +339,18 @@ So you can click into it and edit the content. Use the **Preview** button in the
 = Can I put links or buttons in a marquee? =
 
 Yes. Only the original row can be reached with the keyboard and screen readers; the copies made for the loop are skipped. The marquee always stops while a link inside it has keyboard focus, and brings that link fully into view, so it isn't a moving target. Keep in mind that moving links are harder to click, so don't put anything essential only in a marquee.
+
+= Why does the dropdown's drawer stay open in the editor? =
+
+So you can edit what's in it. It shows while the Dropdown or anything inside it is selected, and hides when you click elsewhere. On the front end it opens and closes with the button. Use the **Preview** button in the block toolbar to see the reveal animation.
+
+= Why does an Author's dropdown show as invalid in the editor? =
+
+GenerateBlocks button icons (like the dropdown's chevron) are inline SVGs, and WordPress removes SVGs from content saved by users without the "unfiltered HTML" capability: Authors, Contributors, and on multisite, administrators. When the icon is removed the editor reports the button as invalid. This affects any GenerateBlocks button with an icon, not just this block. Have an Editor or Administrator save the page, or remove the icon from the button.
+
+= Why is my dropdown's drawer cut off? =
+
+It's probably inside a container with `overflow: hidden` (some sliders and cards use it). Like any popover, the drawer can't show outside that container. Move the dropdown out of it, or remove the overflow setting.
 
 = Will animations slow my site down? =
 

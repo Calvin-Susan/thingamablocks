@@ -10,18 +10,22 @@
 }
 
 // The drawer opens below the button, as wide as it, until it's given a
-// width of its own. The script sets "left" so it lines up and stays on screen.
-:where(.tmb-dropdown) :where([data-dropdown-part="drawer"]) {
+// width of its own. Only drawers the server wired to a button
+// ([data-dropdown-owned]); one without a button stays in the page flow.
+// The script sets "left" so it lines up and stays on screen.
+:where(.tmb-dropdown) :where([data-dropdown-part="drawer"][data-dropdown-owned]) {
 	position: absolute;
 	z-index: 100;
 	top: calc(100% + var(--tmb-dropdown-gap, 8px));
 	left: 0;
 	box-sizing: border-box;
 	width: 100%;
+	// Never wider than the screen (a set max-width in GB still wins).
+	max-width: calc(100vw - 16px);
 }
 
 // Flipped above the button when there isn't room below.
-:where(.tmb-dropdown[data-placement="top"]) :where([data-dropdown-part="drawer"]) {
+:where(.tmb-dropdown[data-placement="top"]) :where([data-dropdown-part="drawer"][data-dropdown-owned]) {
 	top: auto;
 	bottom: calc(100% + var(--tmb-dropdown-gap, 8px));
 }

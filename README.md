@@ -9,16 +9,17 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Toggle**](#toggle-block) | `thingamablocks/toggle` | A switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes. |
 | [**Countdown**](#countdown-block) | `thingamablocks/countdown` | A countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats. |
 | [**Marquee**](#marquee-block) | `thingamablocks/marquee` | A smooth, endless scrolling strip of logos, messages, headlines or cards, left/right or up/down. |
+| [**Dropdown**](#dropdown-block) | `thingamablocks/dropdown` | A button that opens a drawer of links, downloads or any other blocks. |
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
 And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask" panel that crops an image to a shape from the GenerateBlocks shape library, or to an SVG of your own.
 
-All three blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All four blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. Each block's script (and the Toggle's and Dropdown's few lines of CSS) loads only on pages with that block. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 ---
 
@@ -37,6 +38,10 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
   - [Marquee quick start](#marquee-quick-start)
   - [How marquee parts and styling work](#how-marquee-parts-and-styling-work)
   - [Marquee settings](#marquee-settings)
+- [Dropdown block](#dropdown-block)
+  - [Dropdown quick start](#dropdown-quick-start)
+  - [How dropdown parts and styling work](#how-dropdown-parts-and-styling-work)
+  - [Dropdown settings](#dropdown-settings)
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
@@ -55,7 +60,7 @@ All three blocks sit in the GenerateBlocks category of the inserter, and all wor
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown** and **Marquee** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns** and **Patterns → Marquees**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee** and **Dropdown** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, and a GenerateBlocks Image block to find the **Mask** panel.
 
 ---
 
@@ -576,6 +581,123 @@ Select the Marquee block (the wrapper) to see these in the sidebar. In List View
 
 ---
 
+## Dropdown block
+
+A button that opens a drawer underneath it. Use it for:
+
+- **A downloads menu** – brochures, price lists, logo packs, each with its file type and size.
+- **A short list of links** – "Resources", "More", "Other locations".
+- **A small panel** – a few lines of text and a button, like "Need help? Talk to a real person".
+
+The drawer can hold any blocks. It floats over the page (it doesn't push content down), lines up with the button, and flips above it when there isn't room below.
+
+**Why not a menu?** It's a *disclosure* – a button that shows and hides some content – not an app-style ARIA menu. See [Accessibility behaviour](#accessibility-behaviour-3) for why.
+
+### Dropdown quick start
+
+When you insert a Dropdown you pick a starting layout:
+
+| Layout | What you get | Drawer width |
+| --- | --- | --- |
+| **Downloads** (default) | A "Downloads" button opening a list of three files, each a link with its name and its type and size ("PDF · 2.4 MB") | As wide as the button |
+| **Simple links** | A "Resources" button opening a plain list of three links | As wide as the button |
+| **Panel** | A "Need help?" button opening a panel with a heading, a line of text and a "Contact us" button | `18rem` |
+
+Every layout's button is a GenerateBlocks Button (`<button>` tag) with a chevron icon that turns over while the drawer is open. Button and drawer share the same corner radius and colours, and like the other blocks' layouts they use the GeneratePress global colour variables with fallbacks. The links start as `#`: point them at your files or pages (add a `download` attribute under **HTML Attributes** if you want files to download rather than open).
+
+> **In the editor, the drawer shows while the dropdown or anything inside it is selected**, sitting in the page flow under the button so you can edit it. Click elsewhere and it hides again. The **Preview** button in the block toolbar plays the reveal animation.
+
+#### Fastest: the downloads pattern
+
+The plugin registers **Product resources with a Downloads dropdown** in a **Dropdowns** pattern category (only while GenerateBlocks is active): a light grey section with a "Product resources" heading, a line of text, and a Downloads dropdown with three files. Insert it from **Patterns → Dropdowns**, change the file names and links, and publish. It's also on the Playground demo page.
+
+#### Recipe: a downloads menu for a product page
+
+1. **Insert a Dropdown** and choose **Downloads** (or insert the pattern above).
+2. **Rename the button.** Click its text and type, e.g. "Spec sheets".
+3. **Edit the files.** Open List View and expand the drawer (its sidebar shows **Dropdown part: The drawer**). Each list item holds a link with two lines of text: the file name and its type and size. Change the text, and set each link's `href` to the file's URL in **HTML Attributes**. Duplicate a list item to add another file.
+4. **Optional:** make the drawer wider than the button by giving it a **width** in its Styles (e.g. `16rem`), and choose **Line up with the button's → End** if the button sits at the right of the page.
+5. Publish.
+
+#### Recipe: a "Need help?" panel
+
+1. Insert a Dropdown and choose **Panel**.
+2. Replace the text and the **Contact us** link. Put any GenerateBlocks blocks you like in the drawer: an image, a phone number, two buttons.
+3. The panel is `18rem` wide (set on the drawer in its Styles). Change it there.
+4. If the panel has a form or several things to click, turn off **Close when an item is clicked** so it stays open while the visitor uses it.
+
+### How dropdown parts and styling work
+
+#### Dropdown parts
+
+Select any GenerateBlocks Element, Text, Shape or Media block inside a Dropdown and you'll get a **Dropdown part** panel with one setting, *This block is*:
+
+| Option | `data-dropdown-part` value | What it does |
+| --- | --- | --- |
+| Part of the content | *(none)* | Nothing special – e.g. a link inside the drawer |
+| The button that opens it | `button` | Opens and closes the drawer. Use a GenerateBlocks **Button** set to the `<button>` tag. Anything else (a `<div>`, a link) is given `role="button"`, keyboard focus, and Space/Enter support so it still works from the keyboard, but a real `<button>` is best. |
+| The drawer | `drawer` | What opens. A GenerateBlocks Element holding anything. |
+
+A dropdown needs one of each; the sidebar warns you if either is missing. Put everything that should be hidden inside the drawer. As with the other blocks, the value lives in GB's own HTML attributes.
+
+#### Width and position
+
+- **The drawer is as wide as the button** unless you give it a width in the GB Styles panel (the Panel layout sets `18rem`). It can also have a min- or max-width.
+- **It opens below the button** and **flips above** when there isn't enough room below (and there's more room above). It moves sideways if it would go off the edge of the screen, keeping 8 px clear, and repositions as the visitor scrolls or resizes.
+- The positioning rules (`position: absolute`, `top`, `width: 100%`, `z-index: 100`) are written with zero specificity (`:where()`), so anything you set in the GB Styles panel wins.
+- **Overflow: hidden clips it.** Like any popover, a drawer inside a container with `overflow: hidden` (some sliders, cards with rounded corners that clip) is cut off at that container's edge. Put the dropdown outside such a container, or remove the overflow setting.
+
+#### Styling the open state
+
+Style everything in the GB Styles panel. For the open state:
+
+| What | Selector | Set it on |
+| --- | --- | --- |
+| Button while open | `&[aria-expanded="true"]` | the button – the layouts darken it and turn the chevron with `&[aria-expanded="true"] .gb-shape svg` |
+| Anything while the dropdown is open | `.tmb-dropdown.is-open …` | global CSS |
+| Anything depending on which way it opened | `.tmb-dropdown[data-placement="top"] …` (or `"bottom"`) | global CSS – only set while open |
+
+The drawer itself needs no "open" styling: it's hidden while closed and shown while open.
+
+### Dropdown settings
+
+Select the Dropdown block (the wrapper) to see these in the sidebar, in a **Drawer** panel.
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Reveal animation | `animation` | `slide` | `none`, `fade`, `slide` (shown as "Slide down"), `grow`, `unfold`. Plays in reverse when it closes. When the drawer flips above the button, it slides and unfolds upwards instead. |
+| Speed | `speed` | `normal` | `fast` (150 ms), `normal` (250 ms), `slow` (400 ms). Hidden when the animation is None. |
+| Line up with the button's | `align` | `start` | `start`, `center` (shown as "Centre"), `end`. Matters when the drawer is wider than the button. |
+| Space between button and drawer (px) | `gap` | `8` | 0–48. |
+| Close when an item is clicked | `closeOnClick` | `true` | Closes after a link or button inside the drawer is used, and puts keyboard focus back on the dropdown's button. Turn it off for drawers with forms or several controls. |
+
+#### Toolbar
+
+- **Preview** – plays the reveal animation in the editor (while the drawer is showing).
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the wrapper's `id`; what `window.tmbDropdown.open()` and friends take.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+#### Accessibility behaviour
+
+- **A disclosure, not a menu.** The button gets `aria-expanded` and `aria-controls` (pointing at the drawer, which is given an ID if it doesn't have one), as in the WAI-ARIA disclosure pattern. It deliberately isn't an ARIA `menu`: that role tells screen readers to expect app-style arrow-key navigation, which suits app toolbars, not a list of website links. Visitors Tab through the items like any other links.
+- **Server-rendered.** The drawer starts hidden and the button has its ARIA state before any JavaScript runs. A `<button>` is given `type="button"` so it never submits a form it sits in.
+- **Closing:** **Escape** closes it and returns focus to the button; so does using an item when **Close when an item is clicked** is on. A click outside, or tabbing out of it, closes it too.
+- **Down arrow** on the button opens it and moves focus to the first link or button in the drawer.
+- **One open at a time:** opening a dropdown closes any other. (A dropdown inside another's drawer leaves its parent open.)
+- **Reduced motion:** visitors who prefer reduced motion see it open and close without animation.
+- **Without JavaScript** every drawer is simply shown in the page flow under its button, so nothing is out of reach.
+- **Real lists:** the Downloads and Simple links layouts use a `<ul>` drawer with `<li>` items, so screen readers announce how many items there are.
+
+#### Authors and Contributors: button icons
+
+GenerateBlocks button icons are inline SVGs. WordPress's content filter removes SVGs when they're saved by users without the "unfiltered HTML" capability – Authors, Contributors, and on multisite, everyone but Super Admins. So if one of them saves a dropdown, the editor reports its button as invalid. This is a GenerateBlocks limitation that affects any GB button with an icon, not just this block. Workarounds: have an Editor or Administrator save the page, or remove the icon from the button.
+
+---
+
 ## Entrance animations
 
 Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
@@ -785,6 +907,35 @@ window.tmbMarquee.pause( element, false );        // play (pass the .tmb-marquee
 
 The Marquee fires no events.
 
+### Dropdown: events
+
+Both bubble from the dropdown's wrapper (`.tmb-dropdown`), so you can listen on `document`.
+
+```js
+document.addEventListener( 'tmb-dropdown:open', ( event ) => {
+	if ( 'product-downloads' === event.detail.dropdown.id ) {
+		console.log( 'Someone opened the downloads' );
+	}
+} );
+```
+
+| Event | `event.detail` | When |
+| --- | --- | --- |
+| `tmb-dropdown:open` | `dropdown` (the wrapper element) | The drawer opens, by the button, the keyboard or `window.tmbDropdown`. |
+| `tmb-dropdown:close` | `dropdown` (the wrapper element) | The drawer closes, for any reason. Fired as it starts closing, before the closing animation ends. |
+
+### Dropdown: `window.tmbDropdown`
+
+```js
+window.tmbDropdown.init( container );            // set up dropdowns added later, e.g. by AJAX
+window.tmbDropdown.open( 'product-downloads' );  // open the dropdown with this HTML anchor
+window.tmbDropdown.close( 'product-downloads' ); // close it
+window.tmbDropdown.toggle( element );            // open or close (pass the .tmb-dropdown element itself)
+```
+
+- `init( root )` sets up every dropdown inside `root` (default `document`) that isn't set up yet; calling it more than once is safe.
+- `open`, `close` and `toggle` take the wrapper element or its HTML anchor. Opening one closes any other that's open, as a click would. They don't move keyboard focus.
+
 ### Entrance animations: `window.tmbAnimate`
 
 ```js
@@ -806,6 +957,8 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 - `.tmb-marquee` – the Marquee wrapper, with `.is-paused` while it isn't moving.
 - `[data-marquee-part="items|pause"]` – the scrolling row and the pause button (with `aria-pressed`); `[data-marquee-owned]` once a marquee has claimed them.
 - `.tmb-marquee__viewport` > `.tmb-marquee__track` – added by the script: the viewport clips and carries the edge fade; the track holds the row and its copies, and is what moves.
+- `.tmb-dropdown` – the Dropdown wrapper, with `.is-open` while open, `data-placement="bottom|top"` while open, and the `--tmb-dropdown-gap` custom property (the **Space between button and drawer**).
+- `[data-dropdown-part="button|drawer"]` – the button (with `aria-expanded` and `aria-controls`) and the drawer (an inline `display: none` while closed); `[data-dropdown-owned]` once a dropdown has claimed them.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
 - `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
 
@@ -833,15 +986,15 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper `<div>` is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All four blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper `<div>` is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -863,6 +1016,13 @@ All three blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 - PHP (`includes/class-thingamablocks-marquee-render.php`) renders the wrapper `<div class="tmb-marquee" data-tmb-marquee="{…config…}">` with its clipping, edge fade (a CSS mask) and, for up/down, height as inline styles. WordPress's style filter in `get_block_wrapper_attributes()` drops `mask-image`, so the fade is added to the rendered tag afterwards (built only from a validated length). It keeps the row on one line at its natural length (`width: max-content`, no wrapping), and gives the pause button its role, `aria-pressed` and label. So the strip looks right before the script runs, and stays a plain row without JavaScript.
 - The front-end script (`src/marquee/view.js`, loaded only on pages with a Marquee) moves the row into a track (`.tmb-marquee__track`) inside a clipping viewport (`.tmb-marquee__viewport`), and moves the edge fade from the wrapper onto the viewport so the pause button isn't faded. It clones the row enough times to fill the space, and animates the track with the Web Animations API by one row's length plus the gap. Duration is distance ÷ speed, so speed is in px/s. A `ResizeObserver` re-measures (adding or removing copies) and keeps the current position; an `IntersectionObserver` pauses it off screen.
 - In the editor (`src/marquee/edit.js`) the wrapper gets the same clipping and fade so you see the real edges, but nothing moves unless you press **Preview**.
+
+**Dropdown**
+
+- PHP (`includes/class-thingamablocks-dropdown-render.php`) renders the wrapper `<div class="tmb-dropdown" data-tmb-dropdown="{…config…}">` with the gap as `--tmb-dropdown-gap`. It gives the drawer an ID (keeping yours if it has one) and an inline `display:none`, and the button `aria-expanded="false"`, `aria-controls` and `type="button"` (or `role="button"` and `tabindex="0"` if it isn't a `<button>`). So it's closed and correctly labelled before the script runs. Settings are checked against their allowed values, so a forged attribute can't inject anything. Before the first dropdown on a page it prints a `<noscript><style>` that shows every drawer in the page flow when JavaScript is off.
+- The positioning lives in a small stylesheet (`src/dropdown/style.scss`), loaded as a `viewStyle` only on pages with a Dropdown. Every rule is wrapped in `:where()`, so it has no specificity and any GB style wins. The wrapper is `position: relative; display: inline-block`, so it's as wide as the button, and the drawer is `position: absolute; width: 100%` below it.
+- The front-end script (`src/dropdown/view.js`, loaded only on pages with a Dropdown) opens and closes it, measures the room above and below to choose the side (`data-placement`), sets the drawer's `left` to line it up and keep it on screen (allowing for a theme's list margins), and handles Escape, outside clicks, focus leaving, the Down arrow, one-at-a-time, the events and `window.tmbDropdown`. The reveal animations (`src/dropdown/reveal.js`) use the Web Animations API and are shared with the editor's **Preview** button.
+- In the editor (`src/dropdown/edit.js`, `editor.scss`) the drawer sits in the page flow under the button rather than floating, and is shown only while the dropdown or something inside it is selected.
 
 ### How entrance animations work
 
@@ -905,7 +1065,7 @@ Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all three blocks).
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all four blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews).
 
@@ -935,7 +1095,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/` and `src/marquee/` into `build/toggle/`, `build/countdown/` and `build/marquee/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/` and `src/dropdown/` into `build/toggle/`, `build/countdown/`, `build/marquee/` and `build/dropdown/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`) and the image mask panel (`src/mask/editor.js` → `build/mask/`), which have no `block.json`.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
@@ -954,8 +1114,9 @@ includes/
   class-thingamablocks-toggle-render.php       Toggle render: wrapper, config, ARIA on parts, no-flash show/hide CSS, remembered-choice script
   class-thingamablocks-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
   class-thingamablocks-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
+  class-thingamablocks-dropdown-render.php     Dropdown render: config, closed drawer with an ID, button ARIA, no-JavaScript <noscript> style
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
-  patterns.php                  Registers the "Toggles", "Countdowns" and "Marquees" pattern categories and the patterns in patterns/
+  patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
 patterns/
@@ -963,6 +1124,7 @@ patterns/
   sale-banner.php               "Sale banner with countdown" pattern
   launch-countdown.php          "Launch countdown" pattern
   logo-marquee.php              "Logo strip: Trusted by…" pattern
+  downloads-dropdown.php        "Product resources with a Downloads dropdown" pattern
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
@@ -993,6 +1155,17 @@ src/marquee/
   view.js                       Front-end copies, Web Animations loop, pausing, window.tmbMarquee
   icon.js                       Block and layout icons
   editor.scss                   Sidebar helper styles
+src/dropdown/
+  block.json                    Block name, attributes, supports, asset files
+  index.js                      Registers the block, variations and inserter example
+  edit.js                       Editor UI: layout picker, Drawer settings, Preview button, missing-part warning, drawer shown while selected
+  parts.js                      "Dropdown part" panel added to GB Element/Text/Shape/Media blocks
+  templates.js                  The three starting layouts (Downloads, Simple links, Panel)
+  reveal.js                     Reveal animations and speeds, shared by editor and front end
+  view.js                       Front-end open/close, placement, keyboard, events, window.tmbDropdown
+  icon.js                       Block and layout icons
+  style.scss                    Positioning (zero-specificity :where() rules); a viewStyle, so only on pages with a Dropdown
+  editor.scss                   Drawer in the page flow while selected, sidebar helper styles
 src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
@@ -1015,7 +1188,7 @@ webpack.config.js               Default wp-scripts build plus the src/animations
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), dropdown (dropdown.spec.js)
 tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

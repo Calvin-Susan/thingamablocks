@@ -74,20 +74,13 @@ class Thingamablocks_Dropdown_Render {
 	}
 
 	/**
-	 * Without JavaScript, show every drawer in the page flow, so its content
-	 * is never out of reach. Printed once, before the first dropdown.
+	 * Without JavaScript, show the drawer in the page flow, so its content is
+	 * never out of reach. Printed with each dropdown (it's tiny), so it can't
+	 * be lost if the first dropdown is rendered somewhere that's thrown away.
 	 *
 	 * @return string
 	 */
 	private static function no_script_style() {
-		static $printed = false;
-
-		if ( $printed ) {
-			return '';
-		}
-
-		$printed = true;
-
 		return '<noscript><style>.tmb-dropdown [data-dropdown-part="drawer"]{display:block!important;position:static!important}</style></noscript>';
 	}
 
@@ -103,6 +96,24 @@ class Thingamablocks_Dropdown_Render {
 			return $content;
 		}
 
+		// Only a complete dropdown is wired up: a drawer without a button
+		// would be hidden for good, a button without a drawer would announce
+		// a state it can't change.
+		$parts     = array();
+		$processor = new WP_HTML_Tag_Processor( $content );
+
+		while ( $processor->next_tag() ) {
+			$part = $processor->get_attribute( 'data-dropdown-part' );
+
+			if ( is_string( $part ) && null === $processor->get_attribute( self::OWNED ) ) {
+				$parts[ $part ] = true;
+			}
+		}
+
+		if ( empty( $parts['button'] ) || empty( $parts['drawer'] ) ) {
+			return $content;
+		}
+
 		// First the drawer, so its ID is known when the button comes first.
 		$drawer_id = '';
 		$processor = new WP_HTML_Tag_Processor( $content );
@@ -114,7 +125,9 @@ class Thingamablocks_Dropdown_Render {
 
 			$drawer_id = (string) $processor->get_attribute( 'id' );
 
-			if ( ! preg_match( '/^[A-Za-z][\w\-]*$/D', $drawer_id ) ) {
+			// Keep an ID set in GenerateBlocks (anchor links and CSS may use it);
+			// HTML allows anything but spaces.
+			if ( '' === $drawer_id || preg_match( '/\s/', $drawer_id ) ) {
 				$drawer_id = wp_unique_id( 'tmb-dropdown-' );
 				$processor->set_attribute( 'id', $drawer_id );
 			}

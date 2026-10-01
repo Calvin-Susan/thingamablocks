@@ -71,6 +71,27 @@ async function dropdownMarkup( page, variation, attributes = {} ) {
 	);
 }
 
+/**
+ * Wait until no drawer is animating (rather than a fixed delay).
+ *
+ * @param {import('@playwright/test').Page} page Page.
+ */
+async function settled( page ) {
+	await expect
+		.poll( () =>
+			page.evaluate(
+				() =>
+					[
+						...document.querySelectorAll(
+							'[data-dropdown-part="drawer"]'
+						),
+					].filter( ( drawer ) => drawer.getAnimations().length )
+						.length
+			)
+		)
+		.toBe( 0 );
+}
+
 const paragraph = ( text ) =>
 	`<!-- wp:paragraph --><p>${ text }</p><!-- /wp:paragraph -->`;
 
@@ -162,7 +183,7 @@ test.describe( 'Dropdown', () => {
 		await expect( wrapper ).toHaveAttribute( 'data-placement', 'bottom' );
 
 		// Let the reveal finish before measuring.
-		await page.waitForTimeout( 400 );
+		await settled( page );
 		const [ b, d ] = [
 			await button.boundingBox(),
 			await drawer.boundingBox(),
@@ -265,7 +286,7 @@ test.describe( 'Dropdown', () => {
 		} );
 		await button.click();
 		await expect( wrapper ).toHaveAttribute( 'data-placement', 'top' );
-		await page.waitForTimeout( 400 );
+		await settled( page );
 
 		const [ b, d ] = [
 			await button.boundingBox(),
@@ -288,7 +309,7 @@ test.describe( 'Dropdown', () => {
 		const { button, drawer } = first( page );
 
 		await button.click();
-		await page.waitForTimeout( 400 );
+		await settled( page );
 
 		const box = await drawer.boundingBox();
 		const viewport = await page.evaluate(
@@ -369,7 +390,7 @@ test.describe( 'Dropdown', () => {
 		expect( await scan() ).toEqual( [] );
 
 		await first( page ).button.click();
-		await page.waitForTimeout( 400 );
+		await settled( page );
 		expect( await scan() ).toEqual( [] );
 	} );
 
@@ -426,5 +447,89 @@ test.describe( 'Dropdown', () => {
 		await expect(
 			wrapper.locator( '[data-dropdown-part="drawer"]' )
 		).toBeHidden();
+	} );
+
+	test( 'opens from a script on another button’s click', async ( {
+		page,
+	} ) => {
+		await page.setViewportSize( { width: 1280, height: 1200 } );
+		await page.goto( url, { waitUntil: 'networkidle' } );
+
+		await page.evaluate( () => {
+			const opener = document.createElement( 'button' );
+			opener.id = 'opener';
+			opener.textContent = 'Open the second dropdown';
+			opener.addEventListener( 'click', () =>
+				window.tmbDropdown.open( 'second-dropdown' )
+			);
+			document.querySelector( '.entry-content' ).prepend( opener );
+		} );
+
+		await page.locator( '#opener' ).click();
+		await expect(
+			page.locator( '#second-dropdown [data-dropdown-part="button"]' )
+		).toHaveAttribute( 'aria-expanded', 'true' );
+	} );
+
+	test( 'a drawer wider than the screen never makes the page scroll sideways', async ( {
+		page,
+	} ) => {
+		await page.setViewportSize( { width: 360, height: 800 } );
+		await page.goto( url, { waitUntil: 'networkidle' } );
+
+		const { button, drawer } = first( page );
+
+		await drawer.evaluate( ( element ) => {
+			element.style.width = '500px';
+		} );
+		await button.click();
+		await settled( page );
+
+		const sizes = await page.evaluate( () => ( {
+			scroll: document.documentElement.scrollWidth,
+			client: document.documentElement.clientWidth,
+		} ) );
+		expect( sizes.scroll ).toBeLessThanOrEqual( sizes.client );
+	} );
+
+	test( 'on a right-to-left site, Start lines up with the right-hand edge', async ( {
+		page,
+	} ) => {
+		await page.setViewportSize( { width: 1280, height: 1200 } );
+		await page.goto( url, { waitUntil: 'networkidle' } );
+
+		const { wrapper, button, drawer } = first( page );
+
+		await wrapper.evaluate( ( element ) => {
+			element.style.direction = 'rtl';
+			// Away from the left edge, as on a right-to-left page.
+			element.style.marginLeft = '600px';
+			element.querySelector(
+				'[data-dropdown-part="drawer"]'
+			).style.width = '320px';
+		} );
+		await button.click();
+		await settled( page );
+
+		const [ b, d ] = [
+			await button.boundingBox(),
+			await drawer.boundingBox(),
+		];
+		expect( Math.abs( d.x + d.width - ( b.x + b.width ) ) ).toBeLessThan(
+			1
+		);
+	} );
+
+	test( 'a drawer without a button is left visible, not hidden for good', async ( {
+		page,
+	} ) => {
+		const orphan = await testPage(
+			page,
+			'tmb-test-dropdown-orphan',
+			'<!-- wp:thingamablocks/dropdown --><!-- wp:generateblocks/element {"uniqueId":"dd00aa11","tagName":"div","htmlAttributes":{"data-dropdown-part":"drawer"}} --><div class="gb-element-dd00aa11" data-dropdown-part="drawer"><!-- wp:paragraph --><p>Still here</p><!-- /wp:paragraph --></div><!-- /wp:generateblocks/element --><!-- /wp:thingamablocks/dropdown -->'
+		);
+
+		await page.goto( orphan, { waitUntil: 'networkidle' } );
+		await expect( page.getByText( 'Still here' ) ).toBeVisible();
 	} );
 } );
