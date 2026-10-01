@@ -1,6 +1,7 @@
 /**
  * Helpers shared by the browser tests.
  */
+const { readFileSync } = require( 'node:fs' );
 const { expect } = require( '@playwright/test' );
 
 const DEMO = '/thingamablocks-demo/';
@@ -146,10 +147,65 @@ function invalidBlocks( page, markup ) {
 	}, markup );
 }
 
+/**
+ * Upload the test photo to the Media Library once, and reuse it afterwards.
+ *
+ * @param {import('@playwright/test').Page} page Any page in the context.
+ * @return {Promise<{id: number, url: string}>} The attachment.
+ */
+async function testImage( page ) {
+	const [ existing ] = await rest( page, '/wp/v2/media', {
+		params: { search: 'tmb-test-photo' },
+	} );
+
+	if ( existing ) {
+		return { id: existing.id, url: existing.source_url };
+	}
+
+	const response = await page.request.post( '/?rest_route=/wp/v2/media', {
+		headers: {
+			'X-WP-Nonce': page.tmbNonce,
+			'Content-Type': 'image/png',
+			'Content-Disposition': 'attachment; filename=tmb-test-photo.png',
+		},
+		data: readFileSync( require.resolve( './fixtures/photo.png' ) ),
+	} );
+	const media = await response.json();
+
+	expect( response.ok(), JSON.stringify( media ) ).toBeTruthy();
+
+	return { id: media.id, url: media.source_url };
+}
+
+/**
+ * Open a new, empty post in the editor, with the welcome guide off and the
+ * block settings sidebar open.
+ *
+ * @param {import('@playwright/test').Page} page Page.
+ */
+async function newPost( page ) {
+	await page.goto( '/wp-admin/post-new.php' );
+	await page.waitForFunction(
+		() => window.wp?.blocks?.getBlockType( 'generateblocks/media' ),
+		null,
+		{ timeout: 60_000 }
+	);
+	await page.evaluate( () => {
+		window.wp.data
+			.dispatch( 'core/preferences' )
+			.set( 'core/edit-post', 'welcomeGuide', false );
+		window.wp.data
+			.dispatch( 'core/edit-post' )
+			.openGeneralSidebar( 'edit-post/block' );
+	} );
+}
+
 module.exports = {
 	DEMO,
 	rest,
 	testPage,
+	testImage,
+	newPost,
 	pluginAssets,
 	openEditor,
 	invalidBlocks,
