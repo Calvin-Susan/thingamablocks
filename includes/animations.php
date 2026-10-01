@@ -68,19 +68,75 @@ function thingamablocks_enqueue_animation_editor() {
 	wp_set_script_translations( 'thingamablocks-animations-editor', 'thingamablocks' );
 }
 
+/**
+ * Set once any published content uses an entrance animation, so the small
+ * hiding CSS is only printed in <head> on sites that use them.
+ */
+const THINGAMABLOCKS_ANIMATIONS_OPTION = 'thingamablocks_animations_used';
+
+add_action( 'save_post', 'thingamablocks_animation_note_usage', 10, 2 );
+/**
+ * Remember that the site uses entrance animations.
+ *
+ * @param int     $post_id Post ID.
+ * @param WP_Post $post    Post.
+ */
+function thingamablocks_animation_note_usage( $post_id, $post ) {
+	if ( wp_is_post_revision( $post_id ) || get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) ) {
+		return;
+	}
+
+	if ( false !== strpos( $post->post_content, 'data-tmb-animate' ) ) {
+		update_option( THINGAMABLOCKS_ANIMATIONS_OPTION, 1, true );
+	}
+}
+
+add_action( 'wp_head', 'thingamablocks_animation_print_head', 2 );
+/**
+ * Print the hiding CSS in <head>, where it can't upset any block's layout
+ * (inside a container it would count as a child for :first-child rules and
+ * "one by one" timing). It's about 600 bytes and does nothing on pages
+ * without animated blocks.
+ */
+function thingamablocks_animation_print_head() {
+	if ( ! get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) || ! apply_filters( 'thingamablocks_animations_print_css', true ) ) {
+		return;
+	}
+
+	thingamablocks_animation_markup_printed( true );
+
+	echo thingamablocks_animation_head_markup(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS and a core-built script tag.
+}
+
+/**
+ * Whether the hiding CSS has been printed on this page.
+ *
+ * @param bool|null $set Mark as printed.
+ * @return bool
+ */
+function thingamablocks_animation_markup_printed( $set = null ) {
+	static $printed = false;
+
+	if ( null !== $set ) {
+		$printed = (bool) $set;
+	}
+
+	return $printed;
+}
+
 add_filter( 'render_block', 'thingamablocks_animation_render_block', 20, 2 );
 /**
- * When the first animated block on a page renders, load the script and put
- * the "hidden until animated" CSS just before it.
+ * When an animated block renders, make sure the script is loaded. If the CSS
+ * wasn't printed in <head> (the first animated content on a site, or content
+ * from somewhere that isn't a post), put it just before the block instead and
+ * remember for next time.
  *
  * @param string $content Rendered block.
  * @param array  $block   Parsed block.
  * @return string
  */
 function thingamablocks_animation_render_block( $content, $block ) {
-	static $printed = false;
-
-	if ( $printed || is_admin() || false === strpos( $content, 'data-tmb-animate' ) ) {
+	if ( is_admin() || false === strpos( $content, 'data-tmb-animate' ) ) {
 		return $content;
 	}
 
@@ -89,9 +145,22 @@ function thingamablocks_animation_render_block( $content, $block ) {
 		return $content;
 	}
 
-	$printed = true;
-
 	wp_enqueue_script( 'thingamablocks-animations' );
+
+	if ( thingamablocks_animation_markup_printed() ) {
+		return $content;
+	}
+
+	if ( ! get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) ) {
+		update_option( THINGAMABLOCKS_ANIMATIONS_OPTION, 1, true );
+	}
+
+	// Rendered before <head> was printed (block themes): <head> will print it.
+	if ( ! did_action( 'wp_head' ) ) {
+		return $content;
+	}
+
+	thingamablocks_animation_markup_printed( true );
 
 	return thingamablocks_animation_head_markup() . $content;
 }
@@ -99,24 +168,25 @@ function thingamablocks_animation_render_block( $content, $block ) {
 /**
  * The CSS and one-line script that hide animated blocks until they animate in.
  *
- * - Nothing is hidden unless JavaScript is running (the tmb-animate-js class),
- *   or for visitors who prefer reduced motion.
- * - If the animation script never arrives (blocked, or delayed by an
- *   optimisation plugin), a fail-safe shows everything after 4 seconds.
+ * - Nothing is hidden unless JavaScript is running (html.tmb-animate-js) and
+ *   only on screens, for visitors who haven't asked for reduced motion.
+ * - Before the animation script arrives, every animated block is hidden, with
+ *   a fail-safe that shows them after 4 seconds if the script never comes.
+ * - After it arrives (html.tmb-animate-ready), only blocks the script is
+ *   watching (.tmb-wait) are hidden, so nothing can get stuck invisible.
  *
  * @return string
  */
 function thingamablocks_animation_head_markup() {
-	$hidden = '.tmb-animate-js [data-tmb-animate]:not([data-tmb-animate-children]):not(.tmb-in),'
-		. '.tmb-animate-js [data-tmb-animate-children]:not(.tmb-in)>*';
-
-	$failsafe = '.tmb-animate-js:not(.tmb-animate-ready) [data-tmb-animate]:not([data-tmb-animate-children]):not(.tmb-in),'
+	$before = '.tmb-animate-js:not(.tmb-animate-ready) [data-tmb-animate]:not([data-tmb-animate-children]):not(.tmb-in),'
 		. '.tmb-animate-js:not(.tmb-animate-ready) [data-tmb-animate-children]:not(.tmb-in)>*';
 
-	// "screen": printing shows everything.
+	$after = '.tmb-animate-ready .tmb-wait[data-tmb-animate]:not([data-tmb-animate-children]):not(.tmb-in),'
+		. '.tmb-animate-ready .tmb-wait[data-tmb-animate-children]:not(.tmb-in)>*';
+
 	$css = '@media screen and (prefers-reduced-motion:no-preference){'
-		. $hidden . '{opacity:0}'
-		. $failsafe . '{animation:tmb-animate-failsafe 0s 4s forwards}'
+		. $before . '{opacity:0;animation:tmb-animate-failsafe 0s 4s forwards}'
+		. $after . '{opacity:0}'
 		. '}@keyframes tmb-animate-failsafe{to{opacity:1}}';
 
 	$style = '<style id="tmb-animate-css">' . $css . '</style>';

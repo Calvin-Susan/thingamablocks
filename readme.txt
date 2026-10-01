@@ -163,7 +163,7 @@ Each animation plays once, when the block scrolls into view. The settings are st
 
 Built to be light and safe:
 
-* Nothing loads on pages without an animation. Pages with one get a ~1.4 KB script and a few lines of inline CSS.
+* Nothing loads on pages without an animation. Pages with one get a ~1.8 KB script, plus ~600 bytes of CSS in the page head on sites that use animations.
 * Uses the Web Animations API with opacity, translate and scale, animating to the block's own styles, so GenerateBlocks transforms and hover transitions keep working.
 * No flash: blocks are only hidden while waiting to animate when JavaScript is running and the visitor hasn't asked for reduced motion. If the script is blocked or delayed, everything is shown after 4 seconds anyway.
 * Visitors who prefer reduced motion see no animation.
@@ -246,7 +246,7 @@ Yes. Only the original row can be reached with the keyboard and screen readers; 
 
 = Will animations slow my site down? =
 
-No. Pages without an animation load nothing extra. Pages with one load a ~1.4 KB script (deferred, in the footer) and a few lines of inline CSS. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
+No. Pages without an animation load nothing extra. Pages with one load a ~1.8 KB script (deferred, in the footer); sites that use animations also get ~600 bytes of CSS in the page head. The animations use the browser's Web Animations API on opacity, translate and scale, which the browser can run smoothly without re-laying out the page, and each one plays only once.
 
 = Do animations work with caching/optimisation plugins? =
 
@@ -259,7 +259,7 @@ On purpose: animations don't play on their own in the editor, so blocks never di
 == Changelog ==
 
 = Unreleased =
-* New: entrance animations for every GenerateBlocks 2 / GB Pro block (fade, fade up/down, slide in from the left/right, zoom; speed; delay; animate the blocks inside one by one). Plays once on scroll, ~1.4 KB, only on pages that use it, with reduced-motion support and a no-JavaScript fail-safe.
+* New: entrance animations for every GenerateBlocks 2 / GB Pro block (fade, fade up/down, slide in from the left/right, zoom; speed; delay; animate the blocks inside one by one). Plays once on scroll, ~1.8 KB, only on pages that use it, with reduced-motion support and a no-JavaScript fail-safe.
 * New Marquee block: a smooth, endless scrolling strip of logos, messages, headlines or cards (left, right, up or down), with a pause button, faded edges and reduced-motion support.
 * New pattern: "Logo strip: Trusted by…", in a new Marquees category.
 * New Countdown block: count to a date, a per-visitor (evergreen) deadline, or a repeating time; end actions (message, stay at zero, disappear, hide/show elements, redirect).

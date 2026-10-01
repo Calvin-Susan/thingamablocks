@@ -5,16 +5,21 @@
  * scroll into view. With data-tmb-animate-children="100" the block stays put
  * and its children animate in one after another, 100ms apart.
  *
- * Until then they're hidden by a few lines of CSS that the server prints only
- * after this script is known to be on the page (see includes/animations.php),
- * and only for visitors who haven't asked for reduced motion.
+ * Hiding: before this script arrives, CSS in <head> hides animated blocks
+ * (only when JavaScript runs and the visitor hasn't asked for reduced motion),
+ * with a fail-safe that shows them after 4s. Once the script is ready it only
+ * hides blocks it is actually watching (marked .tmb-wait), so content it never
+ * sees can't get stuck invisible. See includes/animations.php.
  */
 import { animateIn } from './presets';
 
 const SELECTOR = '[data-tmb-animate]';
+const root = document.documentElement;
 
-// Tell the fail-safe CSS the script has arrived.
-document.documentElement.classList.add( 'tmb-animate-ready' );
+// Never let a "one by one" group take longer than this to start its last item.
+const MAX_STAGGER = 1200;
+
+let observer = null;
 
 function reveal( element ) {
 	const type = element.getAttribute( 'data-tmb-animate' );
@@ -22,30 +27,62 @@ function reveal( element ) {
 	const delay = Number( element.getAttribute( 'data-tmb-delay' ) ) || 0;
 	const stagger = element.getAttribute( 'data-tmb-animate-children' );
 
-	const targets = null === stagger ? [ element ] : [ ...element.children ];
+	// Children that are actually shown (not <style>, <template> or hidden ones).
+	const targets =
+		null === stagger
+			? [ element ]
+			: [ ...element.children ].filter( ( child ) => child.getClientRects().length );
 	const step = Number( stagger ) || 0;
 
 	// Same frame: drop the "hidden" rule and start the animation from hidden.
 	element.classList.add( 'tmb-in' );
-	targets.forEach( ( target, index ) => animateIn( target, type, delay + index * step, speed ) );
+	targets.forEach( ( target, index ) =>
+		animateIn( target, type, delay + Math.min( index * step, MAX_STAGGER ), speed )
+	);
 }
 
-function init( root = document ) {
-	const elements = [ ...root.querySelectorAll( SELECTOR ) ].filter(
-		( element ) => ! element.classList.contains( 'tmb-in' ) && ! element.tmbAnimate
-	);
+function showWithoutAnimating( element ) {
+	element.classList.add( 'tmb-in' );
+}
 
-	if ( ! elements.length ) {
+function watch( element ) {
+	if ( element.tmbAnimate || element.classList.contains( 'tmb-in' ) ) {
 		return;
 	}
 
-	if ( ! ( 'IntersectionObserver' in window ) || window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
-		elements.forEach( ( element ) => element.classList.add( 'tmb-in' ) );
-		return;
-	}
+	element.tmbAnimate = true;
+	element.classList.add( 'tmb-wait' );
+	observer.observe( element );
+}
 
-	const observer = new IntersectionObserver(
-		( entries ) =>
+/**
+ * Watch every animated block inside `container` that isn't watched yet. Runs
+ * on page load and automatically for content added later; can also be called
+ * by hand: window.tmbAnimate.init( container ).
+ *
+ * @param {ParentNode} container Where to look.
+ */
+function init( container = document ) {
+	const elements = [
+		...( container.matches?.( SELECTOR ) ? [ container ] : [] ),
+		...container.querySelectorAll( SELECTOR ),
+	];
+
+	elements.forEach( observer ? watch : showWithoutAnimating );
+}
+
+function start() {
+	const reduced = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+
+	/*
+	 * If the fail-safe has already shown everything (slow connection, or a
+	 * "delay JavaScript" optimisation), animating now would make the page
+	 * blink, so just leave it all visible.
+	 */
+	const late = performance.now() > 3800;
+
+	if ( 'IntersectionObserver' in window && ! reduced && ! late ) {
+		observer = new IntersectionObserver( ( entries ) =>
 			entries.forEach( ( entry ) => {
 				if ( entry.isIntersecting ) {
 					observer.unobserve( entry.target );
@@ -54,24 +91,36 @@ function init( root = document ) {
 					// Already scrolled past (e.g. the visitor arrived via an #anchor
 					// lower down): just show it, there's nothing to watch.
 					observer.unobserve( entry.target );
-					entry.target.classList.add( 'tmb-in' );
+					showWithoutAnimating( entry.target );
 				}
-			} ),
-		// Start a little before the block is fully in view, so it's moving as it arrives.
-		{ rootMargin: '0px 0px -8% 0px', threshold: 0 }
-	);
+			} )
+		);
+	}
 
-	elements.forEach( ( element ) => {
-		element.tmbAnimate = true;
-		observer.observe( element );
-	} );
+	init();
+
+	// From here on, only blocks marked .tmb-wait are hidden.
+	root.classList.add( 'tmb-animate-ready' );
+
+	// Pick up animated blocks added later (filters, infinite scroll, modals).
+	// Mutation callbacks run before the next paint, so new blocks don't flash.
+	if ( 'MutationObserver' in window ) {
+		new MutationObserver( ( mutations ) =>
+			mutations.forEach( ( mutation ) =>
+				mutation.addedNodes.forEach( ( node ) => {
+					if ( 1 === node.nodeType ) {
+						init( node );
+					}
+				} )
+			)
+		).observe( document.body, { childList: true, subtree: true } );
+	}
 }
 
 if ( 'loading' === document.readyState ) {
-	document.addEventListener( 'DOMContentLoaded', () => init() );
+	document.addEventListener( 'DOMContentLoaded', start );
 } else {
-	init();
+	start();
 }
 
-// For content added later (AJAX, infinite scroll): window.tmbAnimate.init( container ).
 window.tmbAnimate = { init };

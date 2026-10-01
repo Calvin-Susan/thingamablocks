@@ -568,7 +568,7 @@ Not a block: an **Entrance animation** panel added to the sidebar of every Gener
 
 - Works on GenerateBlocks 2 blocks (Element, Text, Media, Shape, Query, Looper, Loop Item…) and, by the same rule, GenerateBlocks Pro's. **Not** on the legacy GB 1.x blocks (Container, Grid, Headline, Button), which have no HTML attributes to store it in.
 - Plays **once** per page view. It doesn't replay when you scroll back up.
-- **Nothing loads** on pages that don't use an animation. Pages that do get a ~1.4 KB script and a few lines of inline CSS.
+- **Nothing loads** on pages that don't use an animation. Pages that do get a ~1.8 KB script. Sites that use animations also get ~600 bytes of CSS in `<head>` (it only hides animated blocks, so it does nothing elsewhere).
 - Visitors who prefer **reduced motion** see everything straight away, with no animation.
 
 > **In the editor, animations don't play on their own,** so blocks never vanish while you're editing. Choosing an animation plays it once; after that, press **Preview** in the panel.
@@ -706,7 +706,7 @@ The Marquee fires no events.
 window.tmbAnimate.init( container ); // set up animated blocks added later, e.g. by AJAX
 ```
 
-- `init( root )` sets up every `[data-tmb-animate]` block inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. Blocks are hidden by CSS until they animate, so content you add after the page has loaded **stays hidden** until you call `init()` on it (the 4-second fail-safe only covers the first page load).
+- `init( root )` sets up every `[data-tmb-animate]` block inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. Content added after the page has loaded (filters, infinite scroll, modals) is picked up automatically by a MutationObserver, so you rarely need this. Before the script arrives every animated block is hidden (with a 4-second fail-safe); after it arrives only blocks it is watching (`.tmb-wait`) are hidden, so nothing can get stuck invisible.
 - To animate your own markup, add the attributes yourself: `<div data-tmb-animate="fade-up" data-tmb-delay="200">`. The script and CSS load only when a block rendered through WordPress contains `data-tmb-animate`, so on a page without one, enqueue `thingamablocks-animations` and print the CSS (see the filter below).
 
 ### CSS hooks
@@ -728,7 +728,7 @@ window.tmbAnimate.init( container ); // set up animated blocks added later, e.g.
 
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
-- Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` printed before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state).
+- Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` printed in `<head>` once the site has used an animation (`thingamablocks_animations_used` option), or just before the first animated block the first time. Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>`. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state).
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 
 ### Storage keys

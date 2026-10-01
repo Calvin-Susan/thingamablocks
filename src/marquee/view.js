@@ -54,9 +54,9 @@ function makeInert( copy ) {
 	);
 
 	// Entrance animations inside a copy: show it as already animated.
-	copy.querySelectorAll( '[data-tmb-animate]' ).forEach( ( animated ) =>
-		animated.classList.add( 'tmb-in' )
-	);
+	[ copy, ...copy.querySelectorAll( '[data-tmb-animate]' ) ]
+		.filter( ( animated ) => animated.matches( '[data-tmb-animate]' ) )
+		.forEach( ( animated ) => animated.classList.add( 'tmb-in' ) );
 }
 
 /**

@@ -7,7 +7,8 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls } from '@wordpress/block-editor';
+import { InspectorControls, store as blockEditorStore } from '@wordpress/block-editor';
+import { useSelect } from '@wordpress/data';
 import { getBlockType } from '@wordpress/blocks';
 import {
 	Button,
@@ -64,8 +65,14 @@ function preview( clientId, settings ) {
 		);
 }
 
-function AnimationPanel( { attributes, setAttributes, clientId, hasInnerBlocks } ) {
+function AnimationPanel( { attributes, setAttributes, clientId } ) {
 	const htmlAttributes = attributes.htmlAttributes || {};
+	const blockCount = useSelect(
+		( select ) => select( blockEditorStore ).getBlockCount( clientId ),
+		[ clientId ]
+	);
+	// "One by one" only makes sense for a block with blocks inside it.
+	const hasInnerBlocks = blockCount > 1 || null !== ( htmlAttributes[ KEYS.children ] ?? null );
 
 	const settings = {
 		type: htmlAttributes[ KEYS.type ] || '',
@@ -164,7 +171,7 @@ function AnimationPanel( { attributes, setAttributes, clientId, hasInnerBlocks }
 									__nextHasNoMarginBottom
 									label={ __( 'Animate the blocks inside one by one', 'thingamablocks' ) }
 									help={ __(
-										'The block itself stays put, and each block inside it animates in turn. Great for grids, cards and query loops.',
+										'The block itself stays put, and each block inside it animates in turn. Great for grids and cards; for a query loop, set it on the Looper.',
 										'thingamablocks'
 									) }
 									checked={ null !== settings.children }
@@ -211,23 +218,11 @@ const withEntranceAnimation = createHigherOrderComponent(
 					attributes={ props.attributes }
 					setAttributes={ props.setAttributes }
 					clientId={ props.clientId }
-					hasInnerBlocks={ hasInnerBlocksSupport( props.name ) }
 				/>
 			</>
 		);
 	},
 	'withEntranceAnimation'
 );
-
-/**
- * Blocks that hold other blocks (Element, Looper, Grid…). Block types don't
- * declare this, so it's inferred from the known GenerateBlocks containers.
- *
- * @param {string} name Block name.
- * @return {boolean} Whether children can be staggered.
- */
-function hasInnerBlocksSupport( name ) {
-	return ! [ 'generateblocks/text', 'generateblocks/media', 'generateblocks/shape', 'generateblocks/query-page-numbers' ].includes( name );
-}
 
 addFilter( 'editor.BlockEdit', 'thingamablocks/entrance-animation', withEntranceAnimation );
