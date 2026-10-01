@@ -17,15 +17,17 @@ Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks bl
 
 And [**Image masks**](#image-masks) for the GenerateBlocks Image block: a "Mask" panel that crops an image to a shape from the GenerateBlocks shape library, or to an SVG of your own.
 
+And [**Video backgrounds**](#video-backgrounds) for the GenerateBlocks Element block: a "Video background" panel that plays a muted Bunny or Vimeo video behind a container, like a background image, with a poster image, an overlay and a pause button, and the video loaded only once the page has.
+
 And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an "FAQ schema" panel that tells search engines the accordion is a list of questions and answers (schema.org `FAQPage` structured data), built from the accordion's own text.
 
 All six blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site); everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
-**Light on the editor, too:** don't need the Marquee, or masks? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
+**Light on the editor, too:** don't need the Marquee, masks or video backgrounds? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
 ---
 
@@ -66,6 +68,11 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 - [Image masks](#image-masks)
   - [Image mask recipes](#image-mask-recipes)
   - [Image mask settings](#image-mask-settings)
+- [Video backgrounds](#video-backgrounds)
+  - [Video background recipe](#video-background-recipe)
+  - [Video background settings](#video-background-settings)
+  - [How a video background behaves](#how-a-video-background-behaves)
+  - [Why only Bunny and Vimeo?](#why-only-bunny-and-vimeo)
 - [FAQ schema](#faq-schema)
   - [FAQ schema recipe](#faq-schema-recipe)
   - [What goes into the schema](#what-goes-into-the-schema)
@@ -82,7 +89,7 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
@@ -91,18 +98,20 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 **Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has an on/off switch for each block and feature, in two cards. Everything is on by default.
 
 - **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs and Search. On means the block is in the block inserter.
-- **Features** – Entrance animations, Image masks and FAQ schema. On means the panel shows in the editor.
+- **Features** – Entrance animations, Image masks, Video backgrounds and FAQ schema. On means the panel shows in the editor.
 
-Each item has its name, a one-line description and where it's used ("In use on 3 items" or "Not used anywhere yet"), with its switch beside it, counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, and FAQ schema by accordions with **Add FAQ structured data** on.
+Each item has its name, a one-line description and where it's used ("In use on 3 items" or "Not used anywhere yet"), with its switch beside it, counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, video backgrounds by containers with a video background, and FAQ schema by accordions with **Add FAQ structured data** on.
 
 The switches are ordinary checkboxes styled as switches (with `role="switch"`, so screen readers announce them as "on" / "off"), work from the keyboard with Tab and Space, and take their "on" colour from your admin colour scheme (Users → Profile). Their styles load only on this page. Nothing changes until you press **Save Changes**.
 
 **Switching off only hides things.** Nothing on your site changes:
 
 - A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited. WordPress may not let you duplicate or paste it while it's switched off (a block that's out of the inserter can't always be added again by other routes); switch it back on for that.
-- A switched-off **feature**'s sidebar panel (Entrance animation, Mask, FAQ schema) no longer loads in the editor. Existing animations keep animating, existing masks stay, and accordions that already have FAQ schema keep printing it.
+- A switched-off **feature**'s sidebar panel (Entrance animation, Mask, Video background, FAQ schema) no longer loads in the editor. Existing animations keep animating, existing masks stay, existing video backgrounds keep playing, and accordions that already have FAQ schema keep printing it.
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
+
+Below the switches, a **Video backgrounds** card has one field, **Your own Bunny hostnames**. Bunny's own addresses (`*.b-cdn.net`) and Vimeo always work. If a Bunny pull zone uses your own hostname (like `video.example.com`), add it here, one per line. Only videos from these places can be used, so nobody editing a page can point a background at anything else. (A pasted address is cut down to its hostname.)
 
 ---
 
@@ -1127,6 +1136,122 @@ Select a GenerateBlocks Image block. The panel opens by itself on images that al
 
 ---
 
+## Video backgrounds
+
+Not a block: a **Video background** panel added to the sidebar of the GenerateBlocks **Element** block (GB 2's `generateblocks/element`, the container). Paste a video address, pick a poster image, and the video plays silently behind whatever is in the container, the way a background image would sit there. Think a hero with slow drone footage, or a section with a looping kitchen shot behind the text.
+
+- **Only Bunny and Vimeo.** A video file on [Bunny](https://bunny.net) (an `.mp4` or `.webm` address), or a Vimeo video. Never YouTube, and never a video uploaded to the Media Library (see [Why only Bunny and Vimeo?](#why-only-bunny-and-vimeo)).
+- **The page doesn't wait for the video.** The HTML only has the poster image (with `srcset`, so phones get a small one), the overlay and the pause button. A small deferred script adds the video once the page has finished loading, and only when the section is on screen (or nearly).
+- **A pause button is always there** while a video can play, as WCAG 2.2.2 requires for anything that moves for more than five seconds. Use the round one the plugin adds (in the corner you choose) or your own GenerateBlocks button.
+- **Poster only** for visitors who prefer reduced motion, who have Data Saver on or are on a 2G connection, or who paused a background video before. They get a Play button to start it anyway.
+- **Nothing loads** on pages without a video background. Pages with one get a ~6.3 KB script (2.7 KB gzipped) and ~2.3 KB of CSS (0.7 KB gzipped).
+
+> **In the editor the video doesn't play.** The poster (with the overlay) is shown as the container's background, so editing stays quick. The video plays on the site.
+
+### Video background recipe
+
+#### A hero with a Bunny video behind it
+
+1. **Get an MP4 address from Bunny.** In Bunny Stream, turn on **MP4 fallback** in the video library's settings, so its videos also get MP4 files. Then copy a video's `play_720p.mp4` link (its Direct play URL), like `https://vz-abc123.b-cdn.net/1234-5678/play_720p.mp4`. (A video in a plain Bunny Storage zone with a pull zone works too: its `.b-cdn.net` address ending in `.mp4`.)
+2. **Grab a still for the poster.** A frame from the start of the video, exported as a JPG or WebP about 1920 px wide, uploaded to the Media Library.
+3. Select the hero's **Element** block and open **Video background** in the sidebar.
+4. Paste the address into **Video address**. The help text under it says what kind of video it found (or why it can't be used).
+5. Under **Poster image**, click **Choose an image** and pick the still. Drag the **focal point** onto the part of the picture that must stay in frame on narrow screens.
+6. Turn on **First thing on the page**, since this is the hero.
+7. Pick an **Overlay** colour (say your theme's Contrast colour) and set the **Overlay opacity** until the heading reads well over the poster. Check the contrast against the poster, as it's what many visitors see.
+8. Optional: under **Smaller video for phones**, paste the same address ending `play_480p.mp4`, to save visitors' data.
+9. Publish and view the page.
+
+Give the Element its height, padding and layout in GB's Styles panel as usual (a `min-height` for a hero). The video covers the whole container, like `background-size: cover`.
+
+**With Vimeo** instead: paste the video's normal address (`https://vimeo.com/123456789`; for an unlisted video, the address with its privacy code, `https://vimeo.com/123456789/abcdef1234`) and set **Vimeo video shape** to the video's proportions (16:9 for most). It plays with Vimeo's background player, which needs a paid Vimeo plan; Vimeo's player loads only when it's time to play, with `dnt=1` so Vimeo sets no tracking cookies. Or, on a paid Vimeo plan, paste a **video file link** from the video's Vimeo settings: it plays in the page like a Bunny video, without Vimeo's player, which is lighter.
+
+#### Use your own pause button
+
+1. Inside the container with the video background, add a GenerateBlocks **Text** block and set its tag to **Button**. Give it some text ("Pause video") or an icon, and style it in the Styles panel.
+2. With it selected, open its **Video background** panel and turn on **Video pause/play button**.
+3. Style the two states with nested selectors on the button: `&[data-state="playing"]` and `&[data-state="paused"]`.
+
+The plugin's round button is then left out. Your button is hidden until the video can play (and stays hidden if it never can), and it keeps its own text as its name (what voice-control users say), with `aria-pressed="true"` while the video is paused. An icon-only button is named "Pause background video" / "Play background video" as it changes instead.
+
+### Video background settings
+
+Select a GenerateBlocks Element block. The panel opens by itself on containers that already have a video background. The settings below **Video address** appear once there's an address.
+
+| Setting | Stored as | Default | Notes |
+| --- | --- | --- | --- |
+| Video address | `src` | – | A Bunny video (an `.mp4` or `.webm` address on `*.b-cdn.net`, or on a hostname added in [Settings](#settings)) or a Vimeo video (`vimeo.com/123`, `vimeo.com/123/hash`, `player.vimeo.com/video/123`, or a Vimeo video file link). `https://` only. Always muted. The help text says which kind it is, or why it won't be used (below). |
+| Poster image | `poster` | – | A Media Library image (its ID). Shows straight away while the video loads, and is all that visitors who prefer less motion or are saving data see. Use a frame from the video. A warning shows until one is chosen: without it the section is blank until the video loads. |
+| Focal point | `focus` | `50% 50%` | Shown over the poster once one is chosen. Keeps that point in frame on narrow screens, for both the poster and the video (`object-position`). |
+| First thing on the page | `hero` | Off | For a hero: the poster loads straight away and first (`fetchpriority="high"`, not lazy-loaded), since it's what the page's loading score (LCP) measures. Leave off for anything further down, so the poster lazy-loads. |
+| Playback | `loop` | Loop | **Loop** or **Play once**. |
+| When it ends | `end` | Stay on last frame | Shown for Play once. **Stay on last frame** (`last`) or **Back to poster** (`poster`). Either way the button then offers Play, which starts it again. |
+| Speed | `speed` | Normal | Half speed (`0.5`), Slow motion (`0.75`), Normal (`1`), A little faster (`1.25`). |
+| On phones | `phones` | Video | **Video** or **Poster only** (`poster`): screens under 768 px wide get just the poster, with no video loaded and no button. |
+| Smaller video for phones (optional) | `mobile` | – | Shown when On phones is Video. Screens under 768 px wide play this instead, e.g. Bunny's `play_480p.mp4`. Checked like the Video address. |
+| Vimeo video shape | `ratio` | `16:9` | Shown for a Vimeo address (not a Vimeo file link). `16:9`, `21:9`, `4:3`, `1:1` or `9:16`. Vimeo's player can't crop itself, so the script scales it to cover the section using this shape. |
+| Overlay | `overlay` | None | A colour from the theme palette (GeneratePress global colours included) over the video, so text on it stays readable. |
+| Overlay opacity (%) | `opacity` | `40` | Shown once there's an overlay colour. 0–90. |
+| Pause button position | `button` | Bottom right | `bottom-right`, `bottom-left`, `top-right` or `top-left`. Ignored when the container has its own [pause/play button](#use-your-own-pause-button). |
+| **Remove video background** | – | – | Removes the setting from the container. |
+| Video pause/play button | `data-video-part="button"` | Off | Not in this panel: on a GB Text block **inside** a container with a video background, in its own **Video background** panel. |
+
+The settings are saved as one JSON attribute, `data-tmb-video`, in the Element's own GenerateBlocks **HTML Attributes** (you'll see it in that panel), so GenerateBlocks saves it like any other attribute. Only values that differ from the defaults are stored: `{"src":"https://vz-abc.b-cdn.net/…/play_720p.mp4","poster":123,"hero":true}`.
+
+**Addresses that won't work**, and what the panel says about them (with "This video won't be used on the site"):
+
+- **YouTube**: not supported; use a Bunny or Vimeo video.
+- **Bunny's player page** (`iframe.mediadelivery.net`, `player.mediadelivery.net`, `video.bunnycdn.com`): use the video's MP4 address instead (turn on MP4 fallback and copy a `play_720p.mp4` link).
+- **HLS streams** (`.m3u8`): they need a heavy player script; use the MP4 version instead.
+- **Not a video file** (a Bunny address that doesn't end in `.mp4` or `.webm`), **not a Vimeo video address** (a Vimeo showcase or channel page, say), **another site**, or **not `https://`**.
+
+### How a video background behaves
+
+- **Fades in over the poster** once it's actually playing (0.6 s; no fade for reduced motion), so there's no black flash while it loads.
+- **Plays only while it can be seen.** It pauses when the section scrolls off screen and when the browser tab is hidden, and carries on when it's back.
+- **Always muted, plays inline** (no full-screen takeover on iPhones), with no controls, picture-in-picture or casting. The video is hidden from screen readers and can't be reached with Tab: it's decoration, like a background image.
+- **Pausing is remembered** across the site (in the visitor's browser), and pausing one background video pauses every background video on the page. Pressing Play starts them again and forgets the pause.
+- **If the browser won't autoplay** (iOS Low Power Mode, for example), the button offers Play instead of Pause.
+- **If a video file can't load** (a typo, a deleted file), the poster stays and the button goes away.
+- **Without JavaScript** the poster and overlay show, and the button stays hidden, since nothing moves.
+- **Entrance animations**: animating a container's blocks "one by one" skips the video layer and pause button, so they never animate in as if they were content.
+
+### Video background performance
+
+- **Nothing on pages without one.** The script and CSS are enqueued by a container with a video background as it renders, so other pages load nothing, and the editor panel only loads in the editor.
+- **The video never competes with the page.** It isn't in the HTML. The script (deferred, in the footer) adds it only after the page's `load` event, and only for sections on screen or within 200 px of it. A video further down the page isn't downloaded until the visitor scrolls near it.
+- **The poster is a normal responsive image** (`wp_get_attachment_image()` with `srcset` and `sizes="100vw"`): lazy-loaded, or for **First thing on the page** loaded eagerly with `fetchpriority="high"`, which is what makes a hero's LCP fast.
+- **Smaller on phones**: a phone video, or the poster only.
+- **No player for file links.** A Bunny or Vimeo file plays in a plain `<video>`. Only a Vimeo address loads Vimeo's background player, in an iframe, when it's time to play.
+- **Saves data**: Data Saver and 2G connections get the poster only.
+
+### Video background accessibility
+
+- **Pause/play button (WCAG 2.2.2)**: always present when a video can play, a real `<button>` whose name switches between "Pause background video" and "Play background video". A focus ring that shows on any video (a white ring with a dark edge), and a border in Windows high-contrast mode. 44 px (2.75rem) by default. Your own GB button keeps its text as its name and says it's pressed (`aria-pressed`) while paused; an icon-only one gets the same names. It gets `role="button"`, `tabindex="0"` and Enter/Space if it isn't a `<button>`.
+- **Reduced motion and saving data**: the poster only, unless the visitor presses Play.
+- **The video is decoration**: hidden from screen readers (`aria-hidden` on the background layer), not focusable, no sound.
+- **Text over video**: use the overlay, and check your text's contrast against the poster (4.5:1 for normal text). A busy, bright video under white text is the usual problem; a darker overlay at 40–60% fixes most.
+
+### Video background security
+
+Anyone who can edit a post (Authors, Contributors) can set a video background, and an HTML attribute can be typed by hand. So:
+
+- **The source is checked on the server every time the page is built**, not just in the editor: `https` only, no user names or ports; Bunny only on `*.b-cdn.net` or a hostname an administrator listed in Settings; Vimeo only as a video ID (plus privacy code) or a Vimeo file address. Anything else and the container renders with no video, no script and the attribute removed. So nobody editing a page can point a background at another site.
+- **The script's settings are rebuilt from the checked values** (the `data-tmb-video` the visitor's browser sees isn't the saved one), and the script checks them again before using them, since data attributes can be forged.
+- **Everything else is whitelisted**: the overlay colour must be a hex, `rgb()`/`hsl()`, named colour or `var(--…)`; the focal point two percentages; the speed, button position, Vimeo shape and phone setting one of the listed values; opacity 0–90; the poster a Media Library image ID.
+- **Vimeo**: messages are only accepted from Vimeo's player (`https://player.vimeo.com`, from that iframe), and commands are only sent there. The player is loaded with `dnt=1`, so Vimeo sets no tracking cookies.
+- **Your own Bunny hostnames** can only be changed by administrators (Settings → Thingamablocks), and are cleaned to plain hostnames (20 at most).
+
+### Why only Bunny and Vimeo?
+
+- **Not the Media Library**, because video files are big and most WordPress hosts serve them slowly, without the streaming-friendly delivery a CDN gives, and they'd count against the site's storage and bandwidth. Bunny is cheap, fast and serves plain MP4s; Vimeo is what many clients already use.
+- **Not YouTube**, because its player is heavy (several hundred KB of script), sets cookies, and can't be stopped from showing its own title, logo and "more videos" screens, which don't belong on a background.
+- **Not HLS (`.m3u8`) or Bunny's own player**, because both need a player script on the page. An MP4 (Bunny's MP4 fallback) plays in a plain `<video>`, which every browser handles natively.
+
+Keeping the list short is also what makes the [security](#video-background-security) check simple: the server only has to recognise two kinds of address.
+
+---
+
 ## FAQ schema
 
 Not a block: an **FAQ schema** panel added to the sidebar of the **GenerateBlocks Pro Accordion** block. Switch it on and the page gets schema.org `FAQPage` structured data: each accordion item's title is a question, and its content the answer.
@@ -1303,6 +1428,17 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 - `replay( element )` plays the animations inside (and on) `element` again, restarting any still playing; with no argument, the whole page. Only blocks that have already animated in are replayed. Does nothing for visitors who prefer reduced motion.
 - To animate your own markup, add the attributes yourself: `<div data-tmb-animate="fade-up" data-tmb-delay="200">`. The script and CSS load only when a block rendered through WordPress contains `data-tmb-animate`, so on a page without one, enqueue `thingamablocks-animations` and print the CSS (see the filter below).
 
+### Video backgrounds: `window.tmbVideo`
+
+```js
+window.tmbVideo.init( container );                       // set up video backgrounds added later, e.g. by AJAX
+document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .play() to play it)
+```
+
+- `init( root )` sets up every `.tmb-has-video[data-tmb-video]` container inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. The container must have come from the server (it needs the layer and button PHP adds).
+- Each set-up container gets `element.tmbVideo.play()` and `.pause()`. These don't touch the remembered pause; the visitor's button does.
+- The pause/play button is a normal button: style the default one with the custom properties below, or use your own (see [Use your own pause button](#use-your-own-pause-button)). The `tmb-video:paused` event on `document` is internal (it keeps the videos on a page in step), not an API.
+
 ### CSS hooks
 
 - `.tmb-toggle` – the Toggle wrapper, with `.is-on` or `.is-off`.
@@ -1323,13 +1459,18 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 - `[data-search-part="field|input|submit|label|toggle"]` – the parts; the expanding style's toggle has `aria-expanded` and `aria-controls`, and its field an inline `display: none` while closed.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
 - `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
+- `.tmb-has-video` – a container with a video background (with `data-tmb-video`, the cleaned settings for the script). It gets `position: relative` and `isolation: isolate` at zero specificity, so a position set in GB wins.
+- `.tmb-video-bg` – the background layer (`aria-hidden`, `data-tmb-video-layer`), with `.is-playing` once the video is playing. Inside it: `.tmb-video-bg__poster` (the `<img>`), `.tmb-video-bg__video` (the `<video>`) or `.tmb-video-bg__iframe` (Vimeo's player), and `.tmb-video-bg__overlay`.
+- `.tmb-video-bg__button` – the default pause/play button, with `data-position="bottom-right|bottom-left|top-right|top-left"` and `data-state="playing|paused"`. Your own button (`[data-video-part="button"]`) gets the same `data-state`.
+- Custom properties for the default button (set them on the container or any ancestor): `--tmb-video-button-size` (2.75rem), `--tmb-video-button-background` (`rgba(0,0,0,.6)`), `--tmb-video-button-background-hover` (`rgba(0,0,0,.8)`), `--tmb-video-button-color` (`#fff`), `--tmb-video-button-inset` (1rem, the distance from the corner). `--tmb-video-focus` is the focal point, set inline on the layer.
 
 ### PHP
 
-- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `animations`, `masks`, `faq`.
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `animations`, `masks`, `video`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
+- Option `thingamablocks_video_hosts` – the extra Bunny hostnames allowed for video backgrounds (**Your own Bunny hostnames**), as a list of lower-case hostnames. `Thingamablocks_Video_Background::hosts()` returns them cleaned.
 - Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
 - Filter `thingamablocks_breadcrumbs_trail` – change the breadcrumb trail. Receives `$trail`, a list of steps (`array( 'label' => 'Recipes', 'url' => 'https://…' )`, the last being the current page; a step with an empty `url` isn't a link), and `$options`, the block's cleaned settings. It runs after the trail is built (or taken from the SEO plugin). Labels are stripped of HTML and escaped afterwards, and steps without a label are dropped.
 
@@ -1361,6 +1502,7 @@ window.tmbAnimate.replay( element ); // play the animations inside element again
 - URL parameter `tmb_types` – a comma-separated list of content types to limit the main search query to (`/?s=lemon&tmb_types=page,post`), sent by Search blocks that search Pages or several types. Only viewable types are used; anything else is ignored. It's read in `pre_get_posts` rather than registered as a query variable, so it never changes which page WordPress shows.
 - Script handle `thingamablocks-search-expand` – the Search block's expanding-style script (`build/search/expand.js`), registered on every page, enqueued only by a search that uses it.
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
+- Script and style handles `thingamablocks-video` – the video background script and CSS (`build/video/view.js`, `view.css`), registered on every page, enqueued only by a container with a usable video background.
 
 ### Storage keys
 
@@ -1368,6 +1510,7 @@ All in `localStorage`:
 
 - **Toggle:** `tmb-toggle:` then `group:<sync group>`, else `id:<HTML anchor>`, else `path:<page path>#<position>` (e.g. `tmb-toggle:path:/pricing/#0`). Dark mode always uses `tmb-toggle:color-scheme`, which the `<head>` script reads.
 - **Countdown** (evergreen only): `tmb-countdown:id:<HTML anchor>`, else `tmb-countdown:path:<page path>#<position>`, where position counts the countdowns on the page from 0. The value is the visitor's end time in ms since the epoch.
+- **Video backgrounds:** `tmb-video-paused` – `1` once the visitor has paused a background video; removed when they press Play. Applies site-wide.
 
 ---
 
@@ -1431,7 +1574,7 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 **Search**
 
 - PHP (`includes/class-thingamablocks-search-render.php`, `Thingamablocks_Search_Render`) renders the wrapper as `<form role="search" method="get" action="{home URL}">`. A text input can't be a GenerateBlocks block, so the **input** part (a Text block) is swapped for a real `<input type="search" name="s">` with its text as the `placeholder`, the current search (`get_search_query()`) as its value, `enterkeyhint="search"`, and `aria-label` from the **Label** setting unless there's a label part. A **label** part becomes a `<label for>` pointing at the input. The **submit** button gets `type="submit"`; the expanding style's **toggle** gets `type="button"` (or `role="button"` and `tabindex="0"` if it isn't a `<button>`), `aria-expanded="false"` and `aria-controls`, and its field an ID and an inline `display:none`. Icon-only buttons (no text once the SVG is ignored) get `aria-label` from the **Label** setting. Attributes are added with `WP_HTML_Tag_Processor`, and every value is escaped.
-- **Content types** become one hidden field: `post_type` for a single publicly queryable type (WordPress and WooCommerce handle it as usual), otherwise `tmb_types`. A `pre_get_posts` hook applies `tmb_types` to the main search query only (never in the admin). Both the saved list and the incoming `tmb_types` go through `allowed_types()`, which keeps only viewable post types (`is_post_type_viewable()`, not attachments), so a forged attribute or URL can't search private types. Parts are found with `Thingamablocks_Search_Html` (`includes/class-thingamablocks-search-html.php`), a `WP_HTML_Tag_Processor` subclass whose bookmarks give each part's exact start and end, matching nested tags of the same name, so the input can be swapped in (keeping its class and ID) and a label part of any tag made a `<label>`.
+- **Content types** become one hidden field: `post_type` for a single publicly queryable type (WordPress and WooCommerce handle it as usual), otherwise `tmb_types`. A `pre_get_posts` hook applies `tmb_types` to the main search query only (never in the admin). Both the saved list and the incoming `tmb_types` go through `allowed_types()`, which keeps only viewable post types (`is_post_type_viewable()`, not attachments), so a forged attribute or URL can't search private types. Parts are found with `Thingamablocks_Html` (`includes/class-thingamablocks-html.php`), a `WP_HTML_Tag_Processor` subclass whose bookmarks give each part's exact start and end, matching nested tags of the same name, so the input can be swapped in (keeping its class and ID) and a label part of any tag made a `<label>`.
 - **The input's look** comes from a few lines of CSS (`src/search/style.scss`, a `viewStyle`): a reset strong enough to beat a theme's `input[type="search"]` styles (no border, background or padding; font and colour inherited), a minimum height, and a focus outline on the field (`:focus-within`, zero specificity, so the GB styles' own `&:focus-within` wins).
 - **The expanding style's script** (`src/search/expand.js`, built by a `webpack.config.js` entry since it has no `block.json`) is registered on `init` and enqueued only by a search with both a toggle and a field. It opens and closes the field (an opacity fade with the Web Animations API, none for reduced motion), focuses the input, handles Escape, outside clicks and focus leaving, and nudges a positioned field sideways with `translate` to keep it 8 px inside the screen. Before such a search PHP prints a `<noscript><style>` that shows the field and hides the toggle when JavaScript is off.
 - In the editor (`src/search/edit.js`, `editor.scss`) the input part is shown dimmed like a placeholder, the expanding style's field sits in the page flow under the icon, and the sidebar lists the site's viewable post types (from the REST API) as tick boxes.
@@ -1459,6 +1602,20 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 - **Library shapes** come from the shape list GenerateBlocks gives the editor (`window.generateBlocksInfo.svgShapes`, which GB builds with its `generateblocks_svg_shapes` filter), and go through the same cleaning.
 - **Why not the Media Library?** WordPress refuses SVG uploads by default, because an SVG opened directly can run scripts. Storing the cleaned shape in the block's CSS avoids needing an SVG-upload plugin, and means a mask never depends on a file that could be deleted.
 
+### How video backgrounds work
+
+`includes/class-thingamablocks-video-background.php` (`Thingamablocks_Video_Background`), `src/video/`. The server builds everything you see first; the script only adds the video.
+
+- **The panel** (`src/video/editor.js`) is another `editor.BlockEdit` filter, shown on `generateblocks/element`. It stores the settings as JSON in one HTML attribute, `data-tmb-video`, keeping only values that differ from the defaults. The same filter adds a small **Video background** panel with the **Video pause/play button** switch to a GB Text block inside such a container, which stores `data-video-part="button"`. An `editor.BlockListBlock` filter shows the poster and overlay as the container's background in the canvas; the video never plays in the editor.
+- **Recognising an address** (`classify()`, in PHP and in `src/video/source.js`, which mirror each other): `https` only, no user name or port; `vimeo.com/<id>[/<hash>]` and `player.vimeo.com/video/<id>` are Vimeo videos; `player.vimeo.com/progressive_redirect/…`, `player.vimeo.com/external/…` and `*.vimeocdn.com` are Vimeo files; Bunny is `*.b-cdn.net` or a listed hostname, with a path ending in `.mp4`, `.webm`, `.m4v` or `.mov`. Bunny's player hosts, `.m3u8`, YouTube and anything else get a named error, which the editor turns into the help messages. The JavaScript copy only explains; the PHP one decides.
+- **Rendering.** A `render_block_generateblocks/element` filter (priority 20) runs on containers with `data-tmb-video`. `settings()` decodes the JSON and checks every value (`classify()` for the sources, `color()` for the overlay, a pattern for the focal point, lists for speed, position and shape, a clamp for opacity, `absint()` for the poster). With no usable source, the attribute is removed and nothing else is added. Otherwise the tag processor replaces `data-tmb-video` with JSON rebuilt from the clean values (`script_config()`: sources, loop, end, speed, phones) and adds `.tmb-has-video`, and the background is added at the end of the container, just before its closing tag, so its first child is still its first content and `:first-child` and spacing rules are unchanged: the layer (`aria-hidden` and `inert`, with the poster from `wp_get_attachment_image()` and the overlay `<div>`), then the `hidden` pause/play `<button>` with both labels in `data-label-pause` / `data-label-play`. The layer and poster carry their few essential styles inline, and the first layer on a page holds a one-line `<style>` (`:where(.tmb-has-video){position:relative;isolation:isolate}`), so nothing shifts before the stylesheet loads; on a single post or page whose content has a video background the stylesheet is also enqueued for `<head>`. Settings are stored with `&`, `<` and `>` escaped as `\u0026` etc., so WordPress's content filter (for Authors and Contributors) can't turn `&` in a URL into `&amp;`; content saved before that is repaired on render. If the container holds its own `[data-video-part="button"]` (found with `Thingamablocks_Html::next_own_tag()`, which skips nested containers with their own video), that gets `type="button"` (or `role="button"` and `tabindex="0"`), the labels and an inline `display:none` instead, and no default button is added. The script and CSS are enqueued there.
+- **The front-end script** (`src/video/view.js`) reads the config, cleans the source again, and decides per container: phone (`max-width: 767px`) and Poster only → nothing; reduced motion, Data Saver / 2G, or `tmb-video-paused` → paused, button showing Play. It waits for `window` `load`, then an `IntersectionObserver` (200 px margin) and `visibilitychange` decide when to play or pause. The first time it should play it creates the player: for a file, a muted, `playsinline`, `disablePictureInPicture`, `disableRemotePlayback`, `tabindex="-1"` `<video>` placed after the poster; for Vimeo, an iframe of `player.vimeo.com/video/<id>?background=1&autoplay=1&muted=1&dnt=1…` sized by a `ResizeObserver` to cover the layer at the chosen shape, controlled with Vimeo's `postMessage` API (no Vimeo script on the page), only trusting messages from that iframe at `https://player.vimeo.com`. `.is-playing` on the layer fades the video in. A rejected `play()` (autoplay blocked) switches the button to Play; a `<video>` error removes it and the button.
+- **The button** toggles the container's video, writes or clears `tmb-video-paused`, and fires an internal `tmb-video:paused` event so every other video background on the page follows. After Play once has ended, it restarts the video.
+- **The CSS** (`src/video/view.scss`): the layer is `position: absolute; inset: 0; z-index: -1` inside the container (which gets `position: relative; isolation: isolate` through `:where()`, so GB's own position wins), poster and video `object-fit: cover` at `--tmb-video-focus`, the button's corners, colours, focus ring and `forced-colors` border.
+- **Entrance animations** (`src/animations/view.js`) skip `[data-tmb-video-layer]` and `.tmb-video-bg__button` when animating a container's children one by one.
+- **Build.** `webpack.config.js` adds the `video/editor` and `video/view` entries (`src/video/` → `build/video/`). The editor script is enqueued in the block editor (with the allowed hostnames as `window.tmbVideoHosts`) unless Video backgrounds is switched off; the front end doesn't depend on the switch.
+- **Tests:** `tests/e2e/video.spec.js` (16 tests). Bunny and Vimeo are faked in the browser: requests to a test Bunny host get a tiny recorded video (`tests/e2e/fixtures/background.webm`), and Vimeo's player address gets a stand-in page that answers Vimeo's `postMessage` API. They check the server markup (poster, overlay, hidden button, no `<video>` yet), playing muted, inline and at speed after load with a pause button, pausing remembered across pages, your own GB button replacing the default one, loading only on screen and pausing off screen, Play once ending on the poster and restarting, the phone video and Poster only on phones, reduced motion and Data Saver getting the poster and a Play button, Vimeo's background player with `dnt=1` controlled by the button, only Bunny and Vimeo allowed with forged settings cleaned, a Bunny hostname added in Settings, assets loading only on pages with a video background, axe, and the editor panel writing the settings and previewing the poster.
+
 ### How FAQ schema works
 
 `includes/class-thingamablocks-faq-schema.php` (`Thingamablocks_Faq_Schema`), `src/faq/editor.js`. Nothing on the front end but the JSON-LD.
@@ -1476,10 +1633,11 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 
 - **Blocks.** Every block stays registered in PHP, so its render callback still runs and existing content renders exactly as before. In the editor, a tiny inline script (registered before the blocks, in `enqueue_block_editor_assets`) adds a `blocks.registerBlockType` filter that sets `supports.inserter` to `false` for the switched-off blocks. That's WordPress's own way to hide a block from the inserter while existing copies still load and edit normally.
 - **Patterns.** `includes/patterns.php` tags each pattern with its block and skips registering the ones whose block is switched off.
-- **Features.** The editor scripts for the Entrance animation, Mask and FAQ schema panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, masks are plain GenerateBlocks CSS, and FAQ schema is built on the server from `data-tmb-faq`.
-- **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles, FAQ schema by `"data-tmb-faq":"true"` in an accordion's saved attributes.
+- **Features.** The editor scripts for the Entrance animation, Mask, Video background and FAQ schema panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, masks are plain GenerateBlocks CSS, video backgrounds are rendered from `data-tmb-video`, and FAQ schema is built on the server from `data-tmb-faq`.
+- **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles, video backgrounds by `"data-tmb-video":` in a container's saved attributes, FAQ schema by `"data-tmb-faq":"true"` in an accordion's saved attributes.
 - **The page.** Each group (Blocks, Features) is a card, and each item a row with its name (a `<label>`), description and usage count (linked to the switch with `aria-describedby`) and the switch. A switch is a real checkbox with `role="switch"` and a `tmb-switch` class, styled as a sliding switch by a small inline stylesheet that's enqueued only on this page (`admin_enqueue_scripts`, checking the page's hook). The "on" colour and focus ring use `--wp-admin-theme-color`, so they follow the user's admin colour scheme; the "off" track is dark enough to see against white (3:1), and the slide is switched off for reduced motion.
 - **Saving.** Each switch has a hidden `0` field before its checkbox, so unticked boxes are saved as `false`; the sanitize callback keeps only known keys, as true/false.
+- **Your own Bunny hostnames** (the Video backgrounds card) is a textarea saved to its own option, `thingamablocks_video_hosts`, registered in the same settings group. Its sanitize callback splits on new lines, spaces or commas, keeps the hostname of a pasted URL, lower-cases, drops anything that isn't a valid hostname and keeps at most 20.
 
 ### The dark mode head output
 
@@ -1499,6 +1657,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
+- `includes/class-thingamablocks-html.php` – `Thingamablocks_Html`: a `WP_HTML_Tag_Processor` subclass that finds a whole element (nested tags of the same name included) by an attribute, or the end of an opening tag, using bookmarks. Used by the Search block (to swap in the input and turn a part into a `<label>`) and video backgrounds (to insert the background inside the container and find your own pause button).
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
 - `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all six blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
@@ -1530,7 +1689,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
@@ -1553,13 +1712,14 @@ includes/
   class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: SEO plugin detection, Yoast/Rank Math trails, the block's own trail for every kind of page
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
-  class-thingamablocks-search-html.php         Search: finds a part's whole element (nested tags included) with WP_HTML_Tag_Processor bookmarks
+  class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, video backgrounds)
   color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
   class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
-  settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
+  class-thingamablocks-video-background.php  Video backgrounds: checks sources (Bunny/Vimeo) and settings, renders the poster, overlay and pause button, the Bunny hostnames option, loads the panel and front-end assets
+  settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, the Bunny hostnames field, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
   sale-banner.php               "Sale banner with countdown" pattern
@@ -1638,6 +1798,12 @@ src/mask/
   editor.scss                   Panel and shape picker styles
 src/faq/
   editor.js                     "FAQ schema" panel on the GB Pro Accordion block, question preview and "left out" warning
+src/video/
+  editor.js                     "Video background" panel on the GB Element block, address messages, poster preview in the canvas, "Video pause/play button" switch on GB Text blocks
+  source.js                     Recognises Bunny/Vimeo addresses (mirrors the PHP check), shared by editor and front end
+  view.js                       Front end: adds the video after load and on screen, pause/play, remembered pause, Vimeo postMessage, window.tmbVideo
+  view.scss                     Background layer, cover/focal point, fade-in, pause button (custom properties, focus ring, high contrast)
+  editor.scss                   Panel styles
 src/shared/
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   variation-placeholder.js      "Choose a starting layout" placeholder
@@ -1646,13 +1812,13 @@ src/shared/
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
-webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/ and src/search/expand.js entries
+webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/, src/video/ and src/search/expand.js entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), search (search.spec.js), settings page (settings.spec.js)
-tests/e2e/fixtures/             Test files for the mask tests: a sample SVG, a malicious SVG, a photo
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), search (search.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
+tests/e2e/fixtures/             Test files: a sample SVG, a malicious SVG and a photo (mask tests), a tiny recorded video (background.webm, video background tests)
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
 ```

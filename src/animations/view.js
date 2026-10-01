@@ -50,7 +50,11 @@ function prepare( element, keep = null ) {
 			: [ ...element.children ].filter(
 					( child ) =>
 						child.getClientRects().length &&
-						! child.contains( keep )
+						! child.contains( keep ) &&
+						// A video background's layer and button aren't content.
+						! child.matches(
+							'[data-tmb-video-layer], .tmb-video-bg__button'
+						)
 			  );
 	const step = Number( stagger ) || 0;
 

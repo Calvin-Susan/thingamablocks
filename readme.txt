@@ -25,11 +25,13 @@ It also adds **entrance animations** to every GenerateBlocks block: fade, slide 
 
 And it adds **image masks** to the GenerateBlocks Image block: cut an image to a wave, a curve or your own SVG shape.
 
+And it adds **video backgrounds** to the GenerateBlocks Element block (containers): a muted Bunny or Vimeo video behind a section, like a background image, with a poster, an overlay and a pause button. The video loads only after the page has, and only when the section is on screen.
+
 With GenerateBlocks Pro, it adds **FAQ schema** to the Accordion block: one switch tells search engines the accordion is a list of questions and answers (schema.org FAQPage structured data), built from the accordion's own text.
 
 Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
 
-Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block (the Search block has no script at all unless it uses the expanding style), image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), and FAQ schema adds only the structured data itself, on pages with an FAQ accordion. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
+Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block (the Search block has no script at all unless it uses the expanding style), image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), FAQ schema adds only the structured data itself, on pages with an FAQ accordion, and video backgrounds load their small script and CSS only on pages with one. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy: each has an on/off switch, with a short description and how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
 
@@ -352,6 +354,37 @@ How it works:
 * Purely visual: the image's alt text works as normal, and a linked image keeps its keyboard focus outline. Don't mask away parts of an image that carry information.
 * CSS masks work in all current browsers (Chrome and Edge 120+, Safari 15.4+, Firefox 53+). Older browsers show the image without the mask.
 
+= Video backgrounds =
+
+Select a GenerateBlocks Element block (a container) and open the **Video background** panel. Paste a **Video address**:
+
+* **Bunny** – an .mp4 or .webm address on *.b-cdn.net. With Bunny Stream, turn on "MP4 fallback" for the library and use a play_720p.mp4 link. HLS streams (.m3u8) and Bunny's player page aren't accepted; the panel explains why. A Bunny pull zone on your own hostname works once an administrator adds the hostname under Settings → Thingamablocks → **Your own Bunny hostnames**.
+* **Vimeo** – a video file link (on paid Vimeo plans; plays straight in the page, the lightest option), or the video's normal address (vimeo.com/123456789, or vimeo.com/123456789/abcdef for an unlisted video), which plays with Vimeo's background player (needs a paid Vimeo plan for background embeds). Vimeo's player loads only when it's time to play, with `dnt=1`, so Vimeo sets no tracking cookies.
+
+YouTube and Media Library uploads aren't supported (see the FAQ). Then:
+
+* **Poster image** – from the Media Library, with a focal point. Shows straight away, while the video loads, and is all that visitors who prefer less motion or are saving data see. The panel warns you until there is one.
+* **First thing on the page** – for a hero: the poster loads straight away and first (`fetchpriority="high"`). Otherwise it's lazy-loaded.
+* **Playback** – Loop, or Play once (then **When it ends**: stay on the last frame, or back to the poster).
+* **Speed** – half, 0.75×, normal or 1.25×.
+* **On phones** – Video (with an optional **Smaller video for phones**, e.g. play_480p.mp4, for screens under 768px) or Poster only.
+* **Vimeo video shape** – 16:9, 21:9, 4:3, 1:1 or 9:16, so Vimeo's player can be scaled to fill the section.
+* **Overlay** – a colour from your palette and its opacity (0–90%), so text on the video stays readable.
+* **Pause button position** – any corner. Or use your own: add a GenerateBlocks Text block set to Button inside the container, and turn on **Video pause/play button** in its Video background panel. Style it with `&[data-state="playing"]` and `&[data-state="paused"]`.
+* **Remove video background**.
+
+How it behaves:
+
+* The page's HTML holds only the poster (a responsive image with srcset), the overlay and the button. A small deferred script adds the video once the page has finished loading, and only when the section is on screen or nearly. It pauses when the section scrolls away or the tab is hidden, and fades in over the poster when it starts.
+* Always muted and inline, with no controls, picture-in-picture or casting. Hidden from screen readers and never focusable.
+* Visitors who prefer reduced motion, have Data Saver on or are on 2G, or paused a background video before (remembered across the site) get the poster, with a Play button. Pausing one background video pauses all of them on the page.
+* If the browser blocks autoplay (iOS Low Power Mode, say), the button offers Play. If the video can't load, the poster stays and the button goes.
+* The pause/play button is always there when a video can play (WCAG 2.2.2): a real button, labelled "Pause background video" / "Play background video", with a focus ring that shows on any video and a border in high-contrast mode. Without JavaScript nothing moves, so the button stays hidden.
+* Nothing loads on pages without a video background. Pages with one get a ~6.3 KB script (2.7 KB gzipped) and ~2.3 KB of CSS.
+* Safe with Authors and Contributors: the address is checked on the server every time the page is built (only Bunny and Vimeo, over https), the script's settings are rebuilt from the checked values, and the overlay colour, focal point, speed, positions and the rest are limited to allowed values.
+* Stored as JSON in the container's `data-tmb-video` HTML attribute (only the settings you change).
+* For developers: `window.tmbVideo.init( container )` for content added with AJAX, `element.tmbVideo.play()` / `.pause()`, and custom properties for the default button (`--tmb-video-button-size`, `--tmb-video-button-background`, `--tmb-video-button-background-hover`, `--tmb-video-button-color`, `--tmb-video-button-inset`).
+
 = FAQ schema =
 
 Needs GenerateBlocks Pro 2.x (the Accordion is a Pro block). Select the **Accordion** (the outer block, not an item), open the **FAQ schema** panel and turn on **Add FAQ structured data**. The panel lists the questions that will be included and warns about any items left out because their title or content is empty.
@@ -384,8 +417,8 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
-5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need, and add your own Bunny hostnames for video backgrounds.
 
 == Frequently Asked Questions ==
 
@@ -473,7 +506,7 @@ Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on
 
 = Can I hide blocks I don't use? =
 
-Yes. Go to **Settings → Thingamablocks** (administrators only), turn off the switch for any block or feature, and save. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
+Yes. Go to **Settings → Thingamablocks** (administrators only), turn off the switch for any block or feature, and save. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks, video backgrounds and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 
@@ -498,6 +531,14 @@ No: on a page with a Yoast SEO or Rank Math FAQ block (which add their own FAQPa
 = Can the Search block search only WooCommerce products? =
 
 Yes. Tick **Products** under **Search only** in the block's sidebar. The search then goes to WooCommerce's own product results page. You can tick several types too (Pages and Posts, say), and the results page shows only those.
+
+= Why only Bunny and Vimeo for video backgrounds? =
+
+Speed, privacy and safety. Video files are big, and most WordPress hosts serve them slowly, so Media Library uploads aren't offered: a video CDN does the job far better. Bunny serves plain MP4 files cheaply and fast, and they play in an ordinary `<video>` with no player script. Vimeo is what many sites already use, and its background player is made for this. YouTube isn't supported: its player is heavy, sets cookies, and shows its own title, logo and suggested videos, which don't belong behind a section. HLS streams (.m3u8) and Bunny's own player page would need a player script too, so use Bunny's MP4 fallback instead. A short list also means the server can check every address, so nobody editing a page can point a background somewhere else. If your Bunny pull zone uses your own hostname, add it under Settings → Thingamablocks.
+
+= Will a video background slow my page down? =
+
+Very little. The video isn't in the page's HTML: visitors first get the poster image (which, with **First thing on the page** on, loads first and fast, for a good LCP score), and the video is only added once the page has finished loading and the section is on screen. Phones can get a smaller video or just the poster, and visitors saving data or preferring reduced motion get the poster only. Pages without a video background load nothing extra.
 
 = Why aren't mask SVGs uploaded to the Media Library? =
 

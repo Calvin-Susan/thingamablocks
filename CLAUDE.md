@@ -8,7 +8,8 @@ the essentials:
   (`thingamablocks/countdown`), Marquee (`thingamablocks/marquee`), Dropdown
   (`thingamablocks/dropdown`), Breadcrumbs (`thingamablocks/breadcrumbs`),
   Search (`thingamablocks/search`) — plus entrance animations added to every
-  GenerateBlocks 2 / GB Pro block.
+  GenerateBlocks 2 / GB Pro block, and video backgrounds (Bunny/Vimeo, a
+  "Video background" panel on the GB Element block, `data-tmb-video`).
 - **The core idea**: each block is a *settings-only wrapper* (like GB Pro's
   Accordion/Tabs). Everything visible inside is a real GenerateBlocks block
   (Element, Text, Shape, Media), styled with GB's own Styles panel. Parts are

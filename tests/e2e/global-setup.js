@@ -7,6 +7,7 @@
  */
 const { chromium } = require( '@playwright/test' );
 const config = require( '../../playwright.config' );
+const { rest } = require( './utils' );
 
 module.exports = async () => {
 	const browser = await chromium.launch( config.use.launchOptions );
@@ -39,6 +40,17 @@ module.exports = async () => {
 					.getByRole( 'button', { name: 'Save Changes' } )
 					.click();
 				await page.waitForLoadState();
+
+				// GeneratePress lists every page in its menu until one is set,
+				// so test pages would grow the header and push content down.
+				const locations = await rest( page, '/wp/v2/menu-locations' );
+
+				if ( locations.primary && ! locations.primary.menu ) {
+					await rest( page, '/wp/v2/menus', {
+						method: 'POST',
+						data: { name: 'Tests', locations: [ 'primary' ] },
+					} );
+				}
 
 				return;
 			}

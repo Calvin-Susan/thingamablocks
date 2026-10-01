@@ -127,7 +127,7 @@ class Thingamablocks_Search_Render {
 		$label = '' !== $label ? $label : __( 'Search', 'thingamablocks' );
 
 		// The input's own ID (from GenerateBlocks) if it has one.
-		$input    = Thingamablocks_Search_Html::part( $content, 'input' );
+		$input    = Thingamablocks_Html::element( $content, 'data-search-part', 'input' );
 		$input_id = is_string( $input['attributes']['id'] ?? null ) && '' !== $input['attributes']['id'] && ! preg_match( '/\s/', $input['attributes']['id'] )
 			? $input['attributes']['id']
 			: wp_unique_id( 'tmb-search-' );
@@ -218,7 +218,7 @@ class Thingamablocks_Search_Render {
 	 * @return string
 	 */
 	private static function input( $content, $id, $label ) {
-		$part = Thingamablocks_Search_Html::part( $content, 'input' );
+		$part = Thingamablocks_Html::element( $content, 'data-search-part', 'input' );
 
 		if ( ! $part ) {
 			return $content;
@@ -260,7 +260,7 @@ class Thingamablocks_Search_Render {
 	 * @return array { 0: string content, 1: bool whether a label was made }
 	 */
 	private static function label( $content, $id ) {
-		$part = Thingamablocks_Search_Html::part( $content, 'label' );
+		$part = Thingamablocks_Html::element( $content, 'data-search-part', 'label' );
 
 		if ( ! $part ) {
 			return array( $content, false );
@@ -290,7 +290,7 @@ class Thingamablocks_Search_Render {
 	 * @return string
 	 */
 	private static function name_icon_only( $content, $part, $label, $type ) {
-		$found = Thingamablocks_Search_Html::part( $content, $part );
+		$found = Thingamablocks_Html::element( $content, 'data-search-part', $part );
 
 		if ( ! $found ) {
 			return $content;
@@ -332,8 +332,8 @@ class Thingamablocks_Search_Render {
 	 * @return array { 0: string content, 1: bool whether it's expandable }
 	 */
 	private static function toggle( $content ) {
-		$field  = Thingamablocks_Search_Html::part( $content, 'field' );
-		$toggle = Thingamablocks_Search_Html::part( $content, 'toggle' );
+		$field  = Thingamablocks_Html::element( $content, 'data-search-part', 'field' );
+		$toggle = Thingamablocks_Html::element( $content, 'data-search-part', 'toggle' );
 
 		if ( ! $field || ! $toggle || ( $toggle['start'] > $field['start'] && $toggle['start'] < $field['end'] ) ) {
 			return array( $content, false );

@@ -72,6 +72,12 @@ function thingamablocks_switches() {
 			// No backslashes: they mean different things to LIKE in MySQL and SQLite.
 			'needle'      => '"maskImage":"url(',
 		),
+		'video'       => array(
+			'label'       => __( 'Video backgrounds', 'thingamablocks' ),
+			'description' => __( 'The “Video background” panel on the GenerateBlocks Element block: a Bunny or Vimeo video behind a section.', 'thingamablocks' ),
+			'type'        => 'feature',
+			'needle'      => '"data-tmb-video":',
+		),
 		'faq'         => array(
 			'label'       => __( 'FAQ schema', 'thingamablocks' ),
 			'description' => __( 'The “FAQ schema” panel on the GenerateBlocks Pro Accordion block.', 'thingamablocks' ),
@@ -148,6 +154,8 @@ function thingamablocks_settings_style( $hook_suffix ) {
 		. '.tmb-settings__label{font-size:14px;font-weight:600;color:#1d2327}'
 		. '.tmb-settings .tmb-settings__text .description{margin:4px 0 0}'
 		. '.tmb-settings__usage{display:block;margin-top:2px;color:#50575e}'
+		. '.tmb-settings__row--field{flex-wrap:wrap;align-items:flex-start}'
+		. '.tmb-settings__row--field textarea{width:100%;max-width:none}'
 		. '.tmb-settings input.tmb-switch{appearance:none;-webkit-appearance:none;position:relative;flex:none;box-sizing:border-box;width:48px;height:28px;margin:0;padding:0;border:0;border-radius:999px;background:#8c8f94;cursor:pointer;transition:background-color .15s ease;box-shadow:none}'
 		. '.tmb-settings input.tmb-switch::before,.tmb-settings input.tmb-switch:checked::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;margin:0;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}'
 		. '.tmb-settings input.tmb-switch:checked{background:var(--wp-admin-theme-color,#2271b1)}'
@@ -324,6 +332,17 @@ function thingamablocks_render_settings_page() {
 					<?php endforeach; ?>
 				</div>
 			<?php endforeach; ?>
+
+			<div class="tmb-settings__card">
+				<h2><?php esc_html_e( 'Video backgrounds', 'thingamablocks' ); ?></h2>
+				<div class="tmb-settings__row tmb-settings__row--field">
+					<div class="tmb-settings__text">
+						<label class="tmb-settings__label" for="thingamablocks-video-hosts"><?php esc_html_e( 'Your own Bunny hostnames', 'thingamablocks' ); ?></label>
+						<p class="description" id="thingamablocks-video-hosts-description"><?php esc_html_e( 'Bunny’s own addresses (*.b-cdn.net) and Vimeo always work. If a Bunny pull zone uses your own hostname (like video.example.com), add it here, one per line. Only videos from these places can be used, so nobody editing a page can point a background at anything else.', 'thingamablocks' ); ?></p>
+					</div>
+					<textarea id="thingamablocks-video-hosts" name="<?php echo esc_attr( Thingamablocks_Video_Background::OPTION ); ?>" rows="3" class="regular-text code" aria-describedby="thingamablocks-video-hosts-description"><?php echo esc_textarea( implode( "\n", Thingamablocks_Video_Background::hosts() ) ); ?></textarea>
+				</div>
+			</div>
 
 			<?php submit_button(); ?>
 		</form>

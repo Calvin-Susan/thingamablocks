@@ -1,0 +1,139 @@
+// Video backgrounds, front end (only on pages with one).
+
+// The container holds the background behind its content. :where() keeps
+// these at zero specificity, so a position set in GenerateBlocks wins.
+:where(.tmb-has-video) {
+	position: relative;
+	isolation: isolate;
+}
+
+.tmb-video-bg {
+	position: absolute;
+	z-index: -1;
+	inset: 0;
+	overflow: hidden;
+	border-radius: inherit;
+	pointer-events: none;
+}
+
+.tmb-video-bg__poster,
+.tmb-video-bg__video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	margin: 0;
+	object-fit: cover;
+	object-position: var(--tmb-video-focus, 50% 50%);
+}
+
+// Vimeo's player, scaled (by the script) to cover like object-fit.
+.tmb-video-bg__iframe {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	max-width: none;
+	border: 0;
+	transform: translate(-50%, -50%);
+}
+
+// The video fades in over the poster once it's actually playing.
+.tmb-video-bg__video,
+.tmb-video-bg__iframe {
+	opacity: 0;
+	transition: opacity 0.6s ease;
+}
+
+.tmb-video-bg.is-playing .tmb-video-bg__video,
+.tmb-video-bg.is-playing .tmb-video-bg__iframe {
+	opacity: 1;
+}
+
+.tmb-video-bg__overlay {
+	position: absolute;
+	inset: 0;
+}
+
+// The pause/play button. Colours via custom properties; the hover, focus
+// and pressed states are set too, because themes give every <button> one.
+.tmb-video-bg__button {
+	position: absolute;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: var(--tmb-video-button-size, 2.75rem);
+	height: var(--tmb-video-button-size, 2.75rem);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: var(--tmb-video-button-background, rgba(0, 0, 0, 0.6));
+	color: var(--tmb-video-button-color, #fff);
+	line-height: 1;
+	cursor: pointer;
+
+	&:is(:hover, :focus, :active) {
+		background: var(--tmb-video-button-background-hover, rgba(0, 0, 0, 0.8));
+		color: var(--tmb-video-button-color, #fff);
+	}
+
+	// Seen on any background: a white ring with a dark edge.
+	&:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+		box-shadow: 0 0 0 4px #000;
+	}
+
+	&[hidden] {
+		display: none;
+	}
+
+	svg {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	&[data-position="bottom-right"] {
+		right: var(--tmb-video-button-inset, 1rem);
+		bottom: var(--tmb-video-button-inset, 1rem);
+	}
+
+	&[data-position="bottom-left"] {
+		bottom: var(--tmb-video-button-inset, 1rem);
+		left: var(--tmb-video-button-inset, 1rem);
+	}
+
+	&[data-position="top-right"] {
+		top: var(--tmb-video-button-inset, 1rem);
+		right: var(--tmb-video-button-inset, 1rem);
+	}
+
+	&[data-position="top-left"] {
+		top: var(--tmb-video-button-inset, 1rem);
+		left: var(--tmb-video-button-inset, 1rem);
+	}
+}
+
+// One icon at a time: pause while playing, play while paused.
+.tmb-video-bg__button[data-state="playing"] .tmb-video-bg__icon-play,
+.tmb-video-bg__button:not([data-state="playing"]) .tmb-video-bg__icon-pause {
+	display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.tmb-video-bg__video,
+	.tmb-video-bg__iframe {
+		transition: none;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.tmb-video-bg__button {
+		border: 2px solid ButtonText;
+	}
+}

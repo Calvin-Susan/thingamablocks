@@ -31,13 +31,14 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-marquee-render.
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-dropdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-trail.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-render.php';
-require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-html.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-html.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 require_once THINGAMABLOCKS_DIR . 'includes/mask.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-faq-schema.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-video-background.php';
 
 add_action( 'init', 'thingamablocks_register_blocks' );
 /**
