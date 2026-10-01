@@ -13,7 +13,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-import { border, color, padding, radius } from '../shared/gb';
+import { border, color, padding, radius, visuallyHidden } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const UNIT_LABELS = () => ( {
@@ -79,7 +79,12 @@ const boxes = () => {
 
 	return [
 		timer(
-			{ display: 'flex', flexWrap: 'wrap', columnGap: '0.75rem', rowGap: '0.75rem' },
+			{
+				display: 'flex',
+				flexWrap: 'wrap',
+				columnGap: '0.75rem',
+				rowGap: '0.75rem',
+			},
 			UNITS.map( ( unit ) => [
 				'generateblocks/element',
 				{
@@ -120,6 +125,7 @@ const boxes = () => {
 
 const inline = () => {
 	const labels = SHORT_LABELS();
+	const fullLabels = UNIT_LABELS();
 
 	return [
 		timer(
@@ -131,18 +137,32 @@ const inline = () => {
 				color: color.text,
 			},
 			[
-				text( __( 'Ends in', 'thingamablocks' ), { color: color.muted } ),
+				text( __( 'Ends in', 'thingamablocks' ), {
+					color: color.muted,
+				} ),
 				...UNITS.map( ( unit ) => [
 					'generateblocks/element',
 					{
 						// GB Elements can't be a <span>; an inline-flex <div> does the same job.
 						tagName: 'div',
 						htmlAttributes: { 'data-countdown-unit': unit },
-						styles: { display: 'inline-flex', alignItems: 'baseline', columnGap: '0.125rem' },
+						styles: {
+							display: 'inline-flex',
+							alignItems: 'baseline',
+							columnGap: '0.125rem',
+						},
 					},
 					[
-						number( unit, { display: 'inline', fontWeight: '700' } ),
-						text( labels[ unit ], { color: color.muted } ),
+						number( unit, {
+							display: 'inline',
+							fontWeight: '700',
+						} ),
+						// Screen readers would read "m" as a letter (or "metres"), so
+						// the short label is visual only and the full word is read instead.
+						text( labels[ unit ], { color: color.muted }, 'span', {
+							'aria-hidden': 'true',
+						} ),
+						text( fullLabels[ unit ], visuallyHidden ),
 					],
 				] ),
 			]
@@ -231,7 +251,10 @@ export const variations = [
 	{
 		name: 'inline',
 		title: __( 'Inline text', 'thingamablocks' ),
-		description: __( '“Ends in 2d 5h 12m 9s”, for banners and buttons.', 'thingamablocks' ),
+		description: __(
+			'“Ends in 2d 5h 12m 9s”, for banners and buttons.',
+			'thingamablocks'
+		),
 		icon: variationIcons.inline,
 		// Reads like a sentence: "Ends in 5h 2m 9s", not "Ends in 00d 05h 02m 09s".
 		attributes: { padNumbers: false, hideEmptyUnits: true },
@@ -241,7 +264,10 @@ export const variations = [
 	{
 		name: 'colons',
 		title: __( 'Large numbers', 'thingamablocks' ),
-		description: __( 'Big numbers with colons, for launches.', 'thingamablocks' ),
+		description: __(
+			'Big numbers with colons, for launches.',
+			'thingamablocks'
+		),
 		icon: variationIcons.colons,
 		innerBlocks: colons(),
 		scope: [ 'block' ],

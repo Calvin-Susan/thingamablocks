@@ -3,13 +3,21 @@
  *
  * The zip contains a single top-level folder, thingamablocks/, with
  * only what WordPress needs at runtime: the main plugin file, readme.txt,
+ * uninstall.php,
  * includes/, patterns/, build/ (and LICENSE if there is one). Source files, node_modules
  * and dev tooling stay out.
  *
  * Run through `npm run zip`, which builds first. Uses the system `zip` command.
  */
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import {
+	cpSync,
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readdirSync,
+	rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,7 +27,14 @@ const root = resolve( dirname( fileURLToPath( import.meta.url ) ), '..' );
 const distDir = join( root, 'dist' );
 const zipPath = join( distDir, `${ SLUG }.zip` );
 
-const required = [ `${ SLUG }.php`, 'readme.txt', 'includes', 'patterns', 'build' ];
+const required = [
+	`${ SLUG }.php`,
+	'readme.txt',
+	'uninstall.php',
+	'includes',
+	'patterns',
+	'build',
+];
 const optional = [ 'LICENSE' ];
 
 function fail( message ) {
@@ -32,11 +47,19 @@ const blocks = readdirSync( join( root, 'src' ) ).filter( ( name ) =>
 	existsSync( join( root, 'src', name, 'block.json' ) )
 );
 
-if ( blocks.some( ( name ) => ! existsSync( join( root, 'build', name, 'block.json' ) ) ) ) {
-	fail( 'build/ is missing or incomplete. Run `npm run build` first (or use `npm run zip`, which builds for you).' );
+if (
+	blocks.some(
+		( name ) => ! existsSync( join( root, 'build', name, 'block.json' ) )
+	)
+) {
+	fail(
+		'build/ is missing or incomplete. Run `npm run build` first (or use `npm run zip`, which builds for you).'
+	);
 }
 
-const missing = required.filter( ( entry ) => ! existsSync( join( root, entry ) ) );
+const missing = required.filter(
+	( entry ) => ! existsSync( join( root, entry ) )
+);
 
 if ( missing.length ) {
 	fail( `missing required file(s): ${ missing.join( ', ' ) }` );
@@ -48,8 +71,13 @@ const pluginDir = join( stage, SLUG );
 try {
 	mkdirSync( pluginDir );
 
-	[ ...required, ...optional.filter( ( entry ) => existsSync( join( root, entry ) ) ) ].forEach(
-		( entry ) => cpSync( join( root, entry ), join( pluginDir, entry ), { recursive: true } )
+	[
+		...required,
+		...optional.filter( ( entry ) => existsSync( join( root, entry ) ) ),
+	].forEach( ( entry ) =>
+		cpSync( join( root, entry ), join( pluginDir, entry ), {
+			recursive: true,
+		} )
 	);
 
 	mkdirSync( distDir, { recursive: true } );
@@ -62,7 +90,11 @@ try {
 } catch ( error ) {
 	// process.exit() would skip a finally block, so clean up here before failing.
 	rmSync( stage, { recursive: true, force: true } );
-	fail( error.code === 'ENOENT' ? 'the `zip` command was not found on this system.' : error.message );
+	fail(
+		error.code === 'ENOENT'
+			? 'the `zip` command was not found on this system.'
+			: error.message
+	);
 }
 
 rmSync( stage, { recursive: true, force: true } );

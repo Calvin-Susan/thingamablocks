@@ -26,21 +26,30 @@ function isVertical( config ) {
  * Hide a copy from screen readers and keyboard users: only the original row
  * is "real" content.
  *
- * @param {Element} copy Cloned row.
+ * @param {Element} copy    Cloned row.
+ * @param {Object}  marquee Marquee record.
  */
-function makeInert( copy ) {
+function makeInert( copy, marquee ) {
 	copy.setAttribute( 'aria-hidden', 'true' );
 	copy.setAttribute( 'inert', '' );
 	copy.removeAttribute( 'id' );
-	copy.querySelectorAll( '[id]' ).forEach( ( element ) => element.removeAttribute( 'id' ) );
-	copy.querySelectorAll( 'a, button, input, select, textarea, [tabindex]' ).forEach( ( element ) =>
-		element.setAttribute( 'tabindex', '-1' )
+	copy.querySelectorAll( '[id]' ).forEach( ( element ) =>
+		element.removeAttribute( 'id' )
 	);
+	copy.querySelectorAll(
+		'a, button, input, select, textarea, [tabindex]'
+	).forEach( ( element ) => element.setAttribute( 'tabindex', '-1' ) );
 
-	// Copies scroll into view almost at once, so don't make their images wait.
-	copy.querySelectorAll( 'img[loading="lazy"]' ).forEach( ( image ) =>
-		image.setAttribute( 'loading', 'eager' )
-	);
+	// Copies scroll into view almost at once, so once the marquee is near the
+	// screen their images shouldn't wait. Before that they stay lazy, so a strip
+	// far down the page doesn't download its logos during page load.
+	copy.querySelectorAll( 'img[loading="lazy"]' ).forEach( ( image ) => {
+		if ( marquee.seen ) {
+			image.setAttribute( 'loading', 'eager' );
+		} else {
+			image.setAttribute( 'data-tmb-lazy', '' );
+		}
+	} );
 
 	// One playing video is enough; copies show their poster/first frame.
 	copy.querySelectorAll( 'video' ).forEach( ( video ) => {
@@ -70,7 +79,8 @@ function makeInert( copy ) {
  * @return {number} Gap in layout px.
  */
 function gapOf( items, vertical, scale ) {
-	const value = getComputedStyle( items )[ vertical ? 'rowGap' : 'columnGap' ];
+	const value =
+		getComputedStyle( items )[ vertical ? 'rowGap' : 'columnGap' ];
 
 	if ( /^-?[\d.]+px$/.test( value ) ) {
 		return parseFloat( value );
@@ -84,7 +94,9 @@ function gapOf( items, vertical, scale ) {
 
 	const a = first.getBoundingClientRect();
 	const b = second.getBoundingClientRect();
-	const gap = vertical ? b.top - a.bottom : Math.max( b.left - a.right, a.left - b.right );
+	const gap = vertical
+		? b.top - a.bottom
+		: Math.max( b.left - a.right, a.left - b.right );
 
 	return Math.max( 0, gap / scale );
 }
@@ -95,13 +107,13 @@ function gapOf( items, vertical, scale ) {
  * @param {Object} marquee Marquee record.
  */
 function layout( marquee ) {
-	const { config, track, items, viewport } = marquee;
-	const vertical = isVertical( config );
-
 	if ( reducedMotion.matches ) {
 		stop( marquee );
 		return;
 	}
+
+	const { config, track, items, viewport } = marquee;
+	const vertical = isVertical( config );
 
 	/*
 	 * getBoundingClientRect() is in screen pixels, which include any scale on
@@ -115,7 +127,6 @@ function layout( marquee ) {
 			: viewportRect.width / ( viewport.offsetWidth || 1 ) ) || 1;
 	// offsetWidth is rounded, so only correct for a real scale, not rounding noise.
 	const scale = Math.abs( rawScale - 1 ) < 0.02 ? 1 : rawScale;
-	const gap = gapOf( items, vertical, scale );
 	const rect = items.getBoundingClientRect();
 	const size = ( vertical ? rect.height : rect.width ) / scale;
 	const space = vertical ? viewport.clientHeight : viewport.clientWidth;
@@ -123,6 +134,8 @@ function layout( marquee ) {
 	if ( ! size || ! space ) {
 		return;
 	}
+
+	const gap = gapOf( items, vertical, scale );
 
 	// The gap between copies matches the gap between items, so the seam is invisible.
 	track.style.gap = `${ gap }px`;
@@ -132,7 +145,7 @@ function layout( marquee ) {
 
 	while ( marquee.copies.length < needed - 1 ) {
 		const copy = items.cloneNode( true );
-		makeInert( copy );
+		makeInert( copy, marquee );
 		track.appendChild( copy );
 		marquee.copies.push( copy );
 	}
@@ -148,13 +161,15 @@ function layout( marquee ) {
 	 */
 	const first = items.getBoundingClientRect();
 	const copy = marquee.copies[ 0 ].getBoundingClientRect();
-	const distance = ( vertical ? copy.top - first.top : copy.left - first.left ) / scale;
+	const distance =
+		( vertical ? copy.top - first.top : copy.left - first.left ) / scale;
 
 	if ( distance === marquee.distance && marquee.animation ) {
 		return;
 	}
 
 	marquee.distance = distance;
+	marquee.scale = scale;
 
 	const axis = vertical ? 'Y' : 'X';
 	// The track is always laid out left to right (see setup), so the maths is the same on RTL sites.
@@ -166,16 +181,20 @@ function layout( marquee ) {
 
 	// Keep the current position when the size changes, rather than jumping back.
 	const progress = marquee.animation
-		? ( marquee.animation.currentTime % marquee.animation.effect.getTiming().duration ) /
+		? ( marquee.animation.currentTime %
+				marquee.animation.effect.getTiming().duration ) /
 		  marquee.animation.effect.getTiming().duration
 		: 0;
 
 	marquee.animation?.cancel();
-	marquee.animation = track.animate( [ { transform: from }, { transform: to } ], {
-		duration,
-		iterations: Infinity,
-		easing: 'linear',
-	} );
+	marquee.animation = track.animate(
+		[ { transform: from }, { transform: to } ],
+		{
+			duration,
+			iterations: Infinity,
+			easing: 'linear',
+		}
+	);
 	marquee.animation.currentTime = progress * duration;
 
 	updatePlayState( marquee );
@@ -190,11 +209,31 @@ function stop( marquee ) {
 
 	// Without motion, let people scroll to see everything, with no faded ends hiding the first and last items.
 	const vertical = isVertical( marquee.config );
-	marquee.viewport.style.setProperty( vertical ? 'overflow-y' : 'overflow-x', 'auto' );
+	marquee.viewport.style.setProperty(
+		vertical ? 'overflow-y' : 'overflow-x',
+		'auto'
+	);
+
+	// Keyboard users need to be able to scroll it too: a scroller with no
+	// focusable content inside isn't reachable by Tab in every browser.
+	const overflows = vertical
+		? marquee.viewport.scrollHeight > marquee.viewport.clientHeight
+		: marquee.viewport.scrollWidth > marquee.viewport.clientWidth;
+
+	if ( overflows ) {
+		marquee.viewport.setAttribute( 'tabindex', '0' );
+		marquee.viewport.setAttribute( 'role', 'region' );
+		marquee.viewport.setAttribute(
+			'aria-label',
+			String( marquee.config.scrollLabel || '' )
+		);
+	}
 	marquee.viewport.style.removeProperty( 'mask-image' );
 	marquee.viewport.style.removeProperty( '-webkit-mask-image' );
 	// The GB styles give the button display:flex, which would beat the hidden attribute.
-	marquee.pauseButtons.forEach( ( button ) => button.style.setProperty( 'display', 'none', 'important' ) );
+	marquee.pauseButtons.forEach( ( button ) =>
+		button.style.setProperty( 'display', 'none', 'important' )
+	);
 }
 
 /**
@@ -207,13 +246,40 @@ function restart( marquee ) {
 
 	viewport.style.setProperty( 'overflow-x', 'hidden' );
 	viewport.style.setProperty( 'overflow-y', 'hidden' );
+	[ 'tabindex', 'role', 'aria-label' ].forEach( ( name ) =>
+		viewport.removeAttribute( name )
+	);
 
 	if ( mask ) {
 		viewport.style.setProperty( 'mask-image', mask );
 		viewport.style.setProperty( '-webkit-mask-image', mask );
 	}
 
-	marquee.pauseButtons.forEach( ( button ) => button.style.removeProperty( 'display' ) );
+	marquee.pauseButtons.forEach( ( button ) =>
+		button.style.removeProperty( 'display' )
+	);
+}
+
+/**
+ * Turn the faded edges off while something in the row has keyboard focus,
+ * so a focused link at the edge isn't half faded out.
+ *
+ * @param {Object}  marquee Marquee record.
+ * @param {boolean} on      Show the fade.
+ */
+function setFade( marquee, on ) {
+	const { viewport, mask } = marquee;
+
+	// No fade to restore, or reduced motion has removed it for good.
+	if ( ! mask || ! marquee.animation ) {
+		return;
+	}
+
+	[ 'mask-image', '-webkit-mask-image' ].forEach( ( name ) =>
+		on
+			? viewport.style.setProperty( name, mask )
+			: viewport.style.removeProperty( name )
+	);
 }
 
 function updatePlayState( marquee ) {
@@ -223,10 +289,13 @@ function updatePlayState( marquee ) {
 		return;
 	}
 
+	// Focus always pauses (a keyboard user must be able to see what they're
+	// on); hovering pauses only if the block is set to.
 	const paused =
 		marquee.pausedByButton ||
 		marquee.offscreen ||
-		( marquee.config.pauseOnHover && ( marquee.hovered || marquee.focused ) );
+		marquee.focused ||
+		( marquee.config.pauseOnHover && marquee.hovered );
 
 	if ( paused && 'running' === animation.playState ) {
 		animation.pause();
@@ -239,8 +308,67 @@ function updatePlayState( marquee ) {
 
 function syncPauseButtons( marquee ) {
 	marquee.pauseButtons.forEach( ( button ) => {
-		button.setAttribute( 'aria-pressed', marquee.pausedByButton ? 'true' : 'false' );
+		button.setAttribute(
+			'aria-pressed',
+			marquee.pausedByButton ? 'true' : 'false'
+		);
 	} );
+}
+
+/**
+ * Move the loop so a focused link or button in the row is fully visible
+ * (and clear of the faded edges), centred where possible. Only the original
+ * row can take focus; the copies are inert.
+ *
+ * @param {Object}  marquee Marquee record.
+ * @param {Element} target  Focused element.
+ */
+function bringIntoView( marquee, target ) {
+	const { animation, viewport, items, distance, scale } = marquee;
+
+	if ( ! animation || ! distance || ! items.contains( target ) ) {
+		return;
+	}
+
+	// Undo any scroll the browser made to show the focused element; the
+	// animation does the moving.
+	viewport.scrollLeft = 0;
+	viewport.scrollTop = 0;
+
+	const vertical = isVertical( marquee.config );
+	const box = viewport.getBoundingClientRect();
+	const rect = target.getBoundingClientRect();
+	const start = vertical ? rect.top - box.top : rect.left - box.left;
+	const length = vertical ? rect.height : rect.width;
+	const space = vertical ? box.height : box.width;
+	const edge = marquee.mask ? space * 0.15 : 0;
+
+	if ( start >= edge && start + length <= space - edge ) {
+		return;
+	}
+
+	// Where the target would sit with the row at its starting position.
+	const row = items.getBoundingClientRect();
+	const offset =
+		( start - ( vertical ? row.top - box.top : row.left - box.left ) ) /
+		scale;
+	// The row's translate that centres the target, within the loop's range.
+	const shift = Math.min(
+		0,
+		Math.max( -distance, ( space / scale - length / scale ) / 2 - offset )
+	);
+	const duration = animation.effect.getTiming().duration;
+	const forwards =
+		'left' === marquee.config.direction ||
+		'up' === marquee.config.direction;
+
+	// Pause first: a pause takes effect a frame later, and the row would drift
+	// out of place in the meantime. updatePlayState() keeps it paused.
+	animation.pause();
+	// Forwards the row runs 0 → -distance; backwards -distance → 0.
+	animation.currentTime =
+		( forwards ? -shift / distance : ( shift + distance ) / distance ) *
+		duration;
 }
 
 function setup( element ) {
@@ -272,9 +400,9 @@ function setup( element ) {
 	// The track holds the original row and its copies, and is what moves.
 	const track = document.createElement( 'div' );
 	track.className = 'tmb-marquee__track';
-	track.style.cssText = `display:flex;flex-direction:${ vertical ? 'column' : 'row' };width:${
-		vertical ? '100%' : 'max-content'
-	};will-change:transform`;
+	track.style.cssText = `display:flex;flex-direction:${
+		vertical ? 'column' : 'row'
+	};width:${ vertical ? '100%' : 'max-content' };will-change:transform`;
 
 	/*
 	 * The track sits in a clipping viewport that carries the edge fade, so the
@@ -285,15 +413,17 @@ function setup( element ) {
 	viewport.className = 'tmb-marquee__viewport';
 	// contain: the viewport never grows to fit the track, even in a container
 	// that sizes to its content (which would otherwise add copies forever).
-	viewport.style.cssText = `overflow:hidden;contain:${ vertical ? 'size' : 'inline-size' };${
-		vertical ? 'height:100%;' : 'width:100%;'
-	}direction:ltr`;
+	viewport.style.cssText = `overflow:hidden;contain:${
+		vertical ? 'size' : 'inline-size'
+	};${ vertical ? 'height:100%;' : 'width:100%;' }direction:ltr`;
 
 	// The track runs left to right even on RTL sites, so the loop maths is the
 	// same; the row keeps the page's direction for its own content.
 	items.style.direction = getComputedStyle( element ).direction;
 
-	const mask = element.style.getPropertyValue( 'mask-image' ) || element.style.getPropertyValue( '-webkit-mask-image' );
+	const mask =
+		element.style.getPropertyValue( 'mask-image' ) ||
+		element.style.getPropertyValue( '-webkit-mask-image' );
 
 	if ( mask ) {
 		viewport.style.setProperty( 'mask-image', mask );
@@ -330,6 +460,8 @@ function setup( element ) {
 		hovered: false,
 		focused: false,
 		offscreen: false,
+		seen: false,
+		scale: 1,
 		pauseButtons: own( '[data-marquee-part="pause"]' ),
 	};
 
@@ -345,7 +477,10 @@ function setup( element ) {
 	marquee.pauseButtons.forEach( ( button ) => {
 		// A button with its own visible text ("Stop motion") should be named by
 		// that text, not the server's default label for icon-only buttons.
-		if ( button.textContent.trim() && 'tmbDefaultLabel' in button.dataset ) {
+		if (
+			button.textContent.trim() &&
+			'tmbDefaultLabel' in button.dataset
+		) {
 			button.removeAttribute( 'aria-label' );
 		}
 
@@ -357,7 +492,10 @@ function setup( element ) {
 		// A pause "button" built from a GB Element (a div) needs Space/Enter too.
 		if ( 'BUTTON' !== button.tagName ) {
 			button.addEventListener( 'keydown', ( event ) => {
-				if ( ( ' ' === event.key || 'Enter' === event.key ) && ! event.repeat ) {
+				if (
+					( ' ' === event.key || 'Enter' === event.key ) &&
+					! event.repeat
+				) {
 					event.preventDefault();
 					togglePause();
 				}
@@ -379,10 +517,17 @@ function setup( element ) {
 	// Keyboard users tabbing to a link in the row get the same pause as a mouse hover.
 	element.addEventListener( 'focusin', ( event ) => {
 		marquee.focused = ! marquee.pauseButtons.includes( event.target );
+
+		if ( marquee.focused ) {
+			bringIntoView( marquee, event.target );
+			setFade( marquee, false );
+		}
+
 		updatePlayState( marquee );
 	} );
 	element.addEventListener( 'focusout', () => {
 		marquee.focused = false;
+		setFade( marquee, true );
 		updatePlayState( marquee );
 	} );
 
@@ -399,6 +544,29 @@ function setup( element ) {
 			marquee.offscreen = ! entries[ entries.length - 1 ].isIntersecting;
 			updatePlayState( marquee );
 		} ).observe( element );
+
+		// Load the copies' images a little before the strip scrolls into view.
+		const preload = new IntersectionObserver(
+			( entries ) => {
+				if ( entries.some( ( entry ) => entry.isIntersecting ) ) {
+					preload.disconnect();
+					marquee.seen = true;
+					marquee.copies.forEach( ( copy ) =>
+						copy
+							.querySelectorAll( 'img[data-tmb-lazy]' )
+							.forEach( ( image ) => {
+								image.removeAttribute( 'data-tmb-lazy' );
+								image.setAttribute( 'loading', 'eager' );
+							} )
+					);
+				}
+			},
+			{ rootMargin: '300px 0px' }
+		);
+
+		preload.observe( element );
+	} else {
+		marquee.seen = true;
 	}
 
 	return marquee;
@@ -411,10 +579,17 @@ function setup( element ) {
  * @param {ParentNode} root Where to look.
  */
 function init( root = document ) {
-	[ ...root.querySelectorAll( '.tmb-marquee[data-tmb-marquee]' ) ]
+	const added = [
+		...root.querySelectorAll( '.tmb-marquee[data-tmb-marquee]' ),
+	]
 		.map( setup )
-		.filter( Boolean )
-		.forEach( layout );
+		.filter( Boolean );
+
+	// ResizeObserver calls layout() for each new marquee in the next frame,
+	// all together; laying them out here too would measure everything twice.
+	if ( ! ( 'ResizeObserver' in window ) ) {
+		added.forEach( layout );
+	}
 }
 
 if ( 'loading' === document.readyState ) {
@@ -446,11 +621,15 @@ window.tmbMarquee = {
 	 * @param {boolean}        [pause] Pause (true) or play (false); toggles if omitted.
 	 */
 	pause( target, pause ) {
-		const element = 'string' === typeof target ? document.getElementById( target ) : target;
+		const element =
+			'string' === typeof target
+				? document.getElementById( target )
+				: target;
 		const marquee = element?.tmbMarquee;
 
 		if ( marquee ) {
-			marquee.pausedByButton = undefined === pause ? ! marquee.pausedByButton : !! pause;
+			marquee.pausedByButton =
+				undefined === pause ? ! marquee.pausedByButton : !! pause;
 			syncPauseButtons( marquee );
 			updatePlayState( marquee );
 		}

@@ -47,7 +47,9 @@ export function zoneOffset( utcMs, timeZone ) {
 			second: 'numeric',
 		} )
 			.formatToParts( new Date( utcMs ) )
-			.forEach( ( { type, value } ) => ( parts[ type ] = Number( value ) ) );
+			.forEach(
+				( { type, value } ) => ( parts[ type ] = Number( value ) )
+			);
 
 		const asUtc = Date.UTC(
 			parts.year,

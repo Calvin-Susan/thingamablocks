@@ -3,7 +3,7 @@
  * Plugin Name:       Thingamablocks
  * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
  * Version:           0.1.0
- * Requires at least: 6.5
+ * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  generateblocks
  * Author:            OGAL Web Design
@@ -23,6 +23,7 @@ define( 'THINGAMABLOCKS_VERSION', '0.1.0' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once THINGAMABLOCKS_DIR . 'includes/class-sanitize.php';
+require_once THINGAMABLOCKS_DIR . 'includes/kses.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-toggle-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-countdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-marquee-render.php';

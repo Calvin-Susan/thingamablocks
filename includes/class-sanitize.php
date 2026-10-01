@@ -71,18 +71,22 @@ class Thingamablocks_Sanitize {
 	/**
 	 * Whether a selector is safe to print inside a <style> element.
 	 *
-	 * Never "<" (which could close the element), "\\" escapes or control
-	 * characters. Outside quotes, only selector punctuation, letters, digits
-	 * and non-ASCII letters: so no "{", "}", ";" (declarations) or "@"
-	 * (at-rules such as @import). Brackets, parentheses and quotes must
-	 * balance, so an open "(" can't swallow the rule that follows it.
+	 * Never "<" (which could close the element), "\\" escapes, control
+	 * characters, "{", "}", ";" (declarations), "@" (at-rules such as
+	 * @import), comments or url(): not even inside quotes, because a browser
+	 * and this check could disagree about where a quoted string ends (an
+	 * unquoted url( treats quotes differently). Outside quotes, only selector
+	 * punctuation, letters, digits and non-ASCII letters. Brackets,
+	 * parentheses and quotes must balance, so an open "(" can't swallow the
+	 * rule that follows it.
 	 *
 	 * @param string $selector Selector.
 	 * @return bool
 	 */
 	public static function is_safe_selector( $selector ) {
-		// No "<" anywhere (it could close the <style>), no escapes, no line breaks.
-		if ( preg_match( '/[<\\\\\x00-\x1f\x7f]/', $selector ) ) {
+		// Nowhere, quoted or not: "<" (it could close the <style>), escapes, line
+		// breaks, anything that starts a declaration block or at-rule, comments, url().
+		if ( preg_match( '/[<\\\\{};@\x00-\x1f\x7f]|\/\*|url\s*\(/i', $selector ) ) {
 			return false;
 		}
 
@@ -163,30 +167,44 @@ class Thingamablocks_Sanitize {
 	}
 
 	/**
-	 * A no-flash <style> that hides targets until the script takes over.
-	 * Ambiguous tag-name targets are left to the script.
+	 * The CSS rules that hide targets: one rule per selector, so an invalid
+	 * selector only voids its own rule. Ambiguous tag-name targets are left to
+	 * the script.
 	 *
-	 * @param array  $selectors Cleaned targets.
-	 * @param string $class     Class for the <style>, which the script removes.
+	 * @param array $selectors Cleaned targets.
 	 * @return string
 	 */
-	public static function hide_style( $selectors, $class ) {
+	public static function hide_rules( $selectors ) {
 		$rules = '';
 
 		foreach ( $selectors as $selector ) {
+			// "header" could be id="header" or every <header>; only the script can tell.
 			if ( in_array( $selector, self::TAG_TARGETS, true ) ) {
 				continue;
 			}
 
-			// One rule per selector, so an invalid selector only voids its own rule.
 			$rules .= self::to_css_selector( $selector ) . '{display:none!important}';
 		}
+
+		return $rules;
+	}
+
+	/**
+	 * A no-flash <style> that hides targets until the script takes over.
+	 *
+	 * @param array  $selectors  Cleaned targets.
+	 * @param string $class_name Class for the <style>, which the script removes.
+	 * @return string
+	 */
+	public static function hide_style( $selectors, $class_name ) {
+		$rules = self::hide_rules( $selectors );
 
 		if ( '' === $rules ) {
 			return '';
 		}
 
-		// Not escaped: <style> is raw text, and selectors() only lets through safe, balanced selectors.
-		return '<style class="' . esc_attr( $class ) . '">' . $rules . '</style>';
+		// Not escaped: <style> is raw text (entities would break selectors like
+		// [data-plan="annual"]), and selectors() only lets through safe, balanced selectors.
+		return '<style class="' . esc_attr( $class_name ) . '">' . $rules . '</style>';
 	}
 }

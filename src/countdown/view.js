@@ -31,12 +31,24 @@ function writeStorage( key, value ) {
 }
 
 // Bare words that may also mean a tag, mirroring Thingamablocks_Sanitize::TAG_TARGETS.
-const TAG_TARGETS = [ 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' ];
+const TAG_TARGETS = [
+	'html',
+	'body',
+	'main',
+	'header',
+	'footer',
+	'nav',
+	'aside',
+	'article',
+	'section',
+];
 
 function resolve( value ) {
 	try {
 		if ( /^[A-Za-z][\w-]*$/.test( value ) ) {
-			const byId = [ ...document.querySelectorAll( `[id="${ value }"]` ) ];
+			const byId = [
+				...document.querySelectorAll( `[id="${ value }"]` ),
+			];
 
 			if ( byId.length || ! TAG_TARGETS.includes( value ) ) {
 				return byId;
@@ -114,7 +126,8 @@ function endTime( countdown, now ) {
 	if ( 'evergreen' === config.mode ) {
 		const duration = Math.max( 1, config.evergreenMinutes ) * 60000;
 		// Fall back to this page view's deadline if the browser blocks storage.
-		let end = Number( readStorage( countdown.key ) ) || countdown.evergreenEnd;
+		let end =
+			Number( readStorage( countdown.key ) ) || countdown.evergreenEnd;
 
 		// First visit, or a finished run that should start over.
 		if ( ! end || ( end <= now && config.evergreenRestart ) ) {
@@ -144,7 +157,8 @@ function paintNumbers( countdown, ms ) {
 		parts[ unit ].forEach( ( element ) => setNumber( element, text ) );
 
 		if ( config.hideEmptyUnits ) {
-			const empty = leading && 0 === value && ! alwaysShown.includes( unit );
+			const empty =
+				leading && 0 === value && ! alwaysShown.includes( unit );
 			const boxes = countdown.units[ unit ].length
 				? countdown.units[ unit ]
 				: parts[ unit ];
@@ -155,7 +169,10 @@ function paintNumbers( countdown, ms ) {
 				// A separator right after a hidden unit ("00 : 14") goes with it.
 				const next = box.nextElementSibling;
 
-				if ( next && 'separator' === next.getAttribute( 'data-countdown-part' ) ) {
+				if (
+					next &&
+					'separator' === next.getAttribute( 'data-countdown-part' )
+				) {
 					( empty ? hide : show )( next );
 				}
 			} );
@@ -209,7 +226,7 @@ function setEnded( countdown, ended, initial ) {
 }
 
 /**
- * Go to the "when it ends" page, unless it's the page we're on: "/offer" and
+ * Go to the "when it ends" page (http/https only), unless it's the page we're on: "/offer" and
  * "/offer/" count as the same, since WordPress redirects one to the other.
  *
  * @param {string} url Redirect URL.
@@ -217,7 +234,14 @@ function setEnded( countdown, ended, initial ) {
 function redirect( url ) {
 	try {
 		const target = new URL( url, window.location.href );
-		const path = ( location ) => location.origin + location.pathname.replace( /\/+$/, '' );
+		const path = ( location ) =>
+			location.origin + location.pathname.replace( /\/+$/, '' );
+
+		// Web pages only: the config is a data attribute, which anyone who can
+		// write HTML could forge, so never follow a javascript: (or other) URL.
+		if ( ! [ 'http:', 'https:' ].includes( target.protocol ) ) {
+			return;
+		}
 
 		if ( path( target ) !== path( window.location ) ) {
 			window.location.assign( target.href );
@@ -235,7 +259,9 @@ function redirect( url ) {
  * @param {Object} countdown Countdown record.
  */
 function announceEnd( countdown ) {
-	const message = countdown.parts.ended.map( ( part ) => part.textContent.trim() ).join( ' ' );
+	const message = countdown.parts.ended
+		.map( ( part ) => part.textContent.trim() )
+		.join( ' ' );
 
 	if ( message && countdown.live ) {
 		countdown.live.textContent = message;
@@ -245,7 +271,10 @@ function announceEnd( countdown ) {
 function update( countdown, initial = false ) {
 	const now = Date.now();
 
-	if ( ! countdown.end || ( countdown.end <= now && 'date' !== countdown.config.mode ) ) {
+	if (
+		! countdown.end ||
+		( countdown.end <= now && 'date' !== countdown.config.mode )
+	) {
 		// Recurring and restarting evergreen countdowns roll on to their next run.
 		const next = endTime( countdown, now );
 
@@ -285,10 +314,14 @@ function tick() {
 		}
 	} );
 
-	const running = countdowns.some( ( countdown ) => ! countdown.ended && ! countdown.idle );
+	const running = countdowns.some(
+		( countdown ) => ! countdown.ended && ! countdown.idle
+	);
 
 	// Wake just after the next whole second, so seconds change on time.
-	timer = running ? window.setTimeout( tick, 1005 - ( Date.now() % 1000 ) ) : null;
+	timer = running
+		? window.setTimeout( tick, 1005 - ( Date.now() % 1000 ) )
+		: null;
 }
 
 function setup( element ) {
@@ -329,9 +362,13 @@ function setup( element ) {
 		config,
 		parts,
 		units,
-		present: UNITS.map( ( [ unit ] ) => unit ).filter( ( unit ) => parts[ unit ].length ),
+		present: UNITS.map( ( [ unit ] ) => unit ).filter(
+			( unit ) => parts[ unit ].length
+		),
 		// Evergreen deadlines are per visitor: keyed by anchor, else page and position.
-		key: element.id ? `id:${ element.id }` : `path:${ window.location.pathname }#${ position }`,
+		key: element.id
+			? `id:${ element.id }`
+			: `path:${ window.location.pathname }#${ position }`,
 		end: null,
 		ended: undefined,
 		idle: false,
@@ -361,7 +398,9 @@ function setup( element ) {
  * @param {ParentNode} root Where to look.
  */
 function init( root = document ) {
-	const added = [ ...root.querySelectorAll( '.tmb-countdown[data-tmb-countdown]' ) ]
+	const added = [
+		...root.querySelectorAll( '.tmb-countdown[data-tmb-countdown]' ),
+	]
 		.map( setup )
 		.filter( Boolean );
 
@@ -399,7 +438,11 @@ window.tmbCountdown = {
 	 */
 	reset( id ) {
 		countdowns
-			.filter( ( item ) => 'evergreen' === item.config.mode && ( ! id || item.element.id === id ) )
+			.filter(
+				( item ) =>
+					'evergreen' === item.config.mode &&
+					( ! id || item.element.id === id )
+			)
 			.forEach( ( item ) => {
 				try {
 					window.localStorage.removeItem( STORAGE_PREFIX + item.key );

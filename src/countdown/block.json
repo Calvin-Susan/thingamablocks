@@ -6,7 +6,15 @@
 	"title": "Countdown",
 	"category": "generateblocks",
 	"description": "A countdown timer built from GenerateBlocks elements. Count to a date, a per-visitor deadline, or a time that repeats every day.",
-	"keywords": [ "countdown", "timer", "clock", "deadline", "sale", "launch", "evergreen" ],
+	"keywords": [
+		"countdown",
+		"timer",
+		"clock",
+		"deadline",
+		"sale",
+		"launch",
+		"evergreen"
+	],
 	"textdomain": "thingamablocks",
 	"attributes": {
 		"mode": {

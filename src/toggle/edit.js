@@ -25,7 +25,9 @@ import {
 	ToggleControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -75,7 +77,8 @@ function collectParts( select, clientId ) {
 				return;
 			}
 
-			const type = block.attributes?.htmlAttributes?.[ 'data-toggle-part' ];
+			const type =
+				block.attributes?.htmlAttributes?.[ 'data-toggle-part' ];
 
 			if ( type ) {
 				parts.push( {
@@ -94,7 +97,6 @@ function collectParts( select, clientId ) {
 
 	return parts;
 }
-
 
 function BehaviourSettings( { attributes, setAttributes } ) {
 	const {
@@ -125,7 +127,9 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 					<TargetsControl
 						label={ __( 'Show when off', 'thingamablocks' ) }
 						value={ showWhenOff }
-						onChange={ ( value ) => setAttributes( { showWhenOff: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { showWhenOff: value } )
+						}
 						help={ __(
 							'Element IDs (e.g. monthly-prices) or CSS selectors. Hidden when the toggle is on.',
 							'thingamablocks'
@@ -134,7 +138,9 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 					<TargetsControl
 						label={ __( 'Show when on', 'thingamablocks' ) }
 						value={ showWhenOn }
-						onChange={ ( value ) => setAttributes( { showWhenOn: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { showWhenOn: value } )
+						}
 						help={ __(
 							'Hidden when the toggle is off.',
 							'thingamablocks'
@@ -146,14 +152,25 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 						label={ __( 'Reveal animation', 'thingamablocks' ) }
 						value={ animation }
 						options={ [
-							{ value: 'none', label: __( 'None', 'thingamablocks' ) },
-							{ value: 'fade', label: __( 'Fade', 'thingamablocks' ) },
+							{
+								value: 'none',
+								label: __( 'None', 'thingamablocks' ),
+							},
+							{
+								value: 'fade',
+								label: __( 'Fade', 'thingamablocks' ),
+							},
 							{
 								value: 'slide',
-								label: __( 'Fade and slide up', 'thingamablocks' ),
+								label: __(
+									'Fade and slide up',
+									'thingamablocks'
+								),
 							},
 						] }
-						onChange={ ( value ) => setAttributes( { animation: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { animation: value } )
+						}
 					/>
 					<p className="tmb-toggle-help">
 						{ __(
@@ -168,24 +185,34 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 				<>
 					<ToggleControl
 						__nextHasNoMarginBottom
-						label={ __( 'Match the visitor’s system setting', 'thingamablocks' ) }
+						label={ __(
+							'Match the visitor’s system setting',
+							'thingamablocks'
+						) }
 						help={ __(
 							'Until they use the toggle, start in dark mode if their device is set to dark.',
 							'thingamablocks'
 						) }
 						checked={ followSystem }
-						onChange={ ( value ) => setAttributes( { followSystem: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { followSystem: value } )
+						}
 					/>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
-						label={ __( 'Also add a class to <html>', 'thingamablocks' ) }
+						label={ __(
+							'Also add a class to <html>',
+							'thingamablocks'
+						) }
 						help={ __(
 							'Optional, e.g. is-dark. The toggle always sets data-color-scheme="dark" or "light" on <html>.',
 							'thingamablocks'
 						) }
 						value={ htmlClass }
-						onChange={ ( value ) => setAttributes( { htmlClass: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { htmlClass: value } )
+						}
 					/>
 					<p className="tmb-toggle-help">
 						{ __(
@@ -201,7 +228,9 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 					<TargetsControl
 						label={ __( 'Elements', 'thingamablocks' ) }
 						value={ classTargets }
-						onChange={ ( value ) => setAttributes( { classTargets: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { classTargets: value } )
+						}
 						help={ __(
 							'Element IDs or CSS selectors, e.g. my-banner, body, .card',
 							'thingamablocks'
@@ -211,9 +240,14 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						label={ __( 'Class names', 'thingamablocks' ) }
-						help={ __( 'Separate several with spaces.', 'thingamablocks' ) }
+						help={ __(
+							'Separate several with spaces.',
+							'thingamablocks'
+						) }
 						value={ classNames }
-						onChange={ ( value ) => setAttributes( { classNames: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { classNames: value } )
+						}
 					/>
 					<SelectControl
 						__next40pxDefaultSize
@@ -227,10 +261,15 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 							},
 							{
 								value: 'removeWhenOn',
-								label: __( 'Removed when on', 'thingamablocks' ),
+								label: __(
+									'Removed when on',
+									'thingamablocks'
+								),
 							},
 						] }
-						onChange={ ( value ) => setAttributes( { classMode: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { classMode: value } )
+						}
 					/>
 				</>
 			) }
@@ -270,7 +309,9 @@ function StateSettings( { attributes, setAttributes } ) {
 						  )
 				}
 				value={ defaultState }
-				onChange={ ( value ) => setAttributes( { defaultState: value } ) }
+				onChange={ ( value ) =>
+					setAttributes( { defaultState: value } )
+				}
 			>
 				<ToggleGroupControlOption
 					value="off"
@@ -286,13 +327,18 @@ function StateSettings( { attributes, setAttributes } ) {
 				<>
 					<CheckboxControl
 						__nextHasNoMarginBottom
-						label={ __( 'Remember the visitor’s choice', 'thingamablocks' ) }
+						label={ __(
+							'Remember the visitor’s choice',
+							'thingamablocks'
+						) }
 						help={ __(
 							'Saved in their browser and restored on their next visit.',
 							'thingamablocks'
 						) }
 						checked={ persist }
-						onChange={ ( value ) => setAttributes( { persist: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { persist: value } )
+						}
 					/>
 					<TextControl
 						__next40pxDefaultSize
@@ -306,7 +352,9 @@ function StateSettings( { attributes, setAttributes } ) {
 						onChange={ ( value ) =>
 							setAttributes( {
 								// Same rules as the server: lowercase, a-z 0-9 - _.
-								group: value.toLowerCase().replace( /[^a-z0-9_-]+/g, '-' ),
+								group: value
+									.toLowerCase()
+									.replace( /[^a-z0-9_-]+/g, '-' ),
 							} )
 						}
 					/>
@@ -319,7 +367,9 @@ function StateSettings( { attributes, setAttributes } ) {
 function AccessibilitySettings( { attributes, setAttributes, parts } ) {
 	const hasSwitch = parts.some( ( part ) => 'switch' === part.type );
 	const hasOnLabel = parts.some( ( part ) => 'on' === part.type );
-	const needsLabel = hasSwitch && ! hasOnLabel && ! attributes.ariaLabel;
+	// A switch needs a name; so does a pair of buttons, whose group is announced by name.
+	const needsLabel =
+		! attributes.ariaLabel && ( hasSwitch ? ! hasOnLabel : hasOnLabel );
 
 	return (
 		<PanelBody
@@ -339,10 +389,15 @@ function AccessibilitySettings( { attributes, setAttributes, parts } ) {
 			/>
 			{ needsLabel && (
 				<Notice status="warning" isDismissible={ false }>
-					{ __(
-						'This switch has no visible “on” label, so give it a label here.',
-						'thingamablocks'
-					) }
+					{ hasSwitch
+						? __(
+								'This switch has no visible “on” label, so give it a label here.',
+								'thingamablocks'
+						  )
+						: __(
+								'Screen readers announce these buttons as a group, so give the group a label here, e.g. “Billing period”.',
+								'thingamablocks'
+						  ) }
 				</Notice>
 			) }
 		</PanelBody>
@@ -350,7 +405,8 @@ function AccessibilitySettings( { attributes, setAttributes, parts } ) {
 }
 
 function PartsSummary( { parts } ) {
-	const count = ( type ) => parts.filter( ( part ) => type === part.type ).length;
+	const count = ( type ) =>
+		parts.filter( ( part ) => type === part.type ).length;
 
 	if ( parts.length ) {
 		return (
@@ -436,10 +492,17 @@ function useSyncPartState( parts, defaultState ) {
 
 			if ( changed ) {
 				__unstableMarkNextChangeAsNotPersistent?.();
-				updateBlockAttributes( part.clientId, { htmlAttributes: next } );
+				updateBlockAttributes( part.clientId, {
+					htmlAttributes: next,
+				} );
 			}
 		} );
-	}, [ parts, defaultState ] );
+	}, [
+		parts,
+		defaultState,
+		updateBlockAttributes,
+		__unstableMarkNextChangeAsNotPersistent,
+	] );
 }
 
 /**
@@ -457,7 +520,9 @@ function TargetPreview( { attributes, clientId, isActive } ) {
 	const { action, defaultState, showWhenOff, showWhenOn } = attributes;
 	const isOn = 'on' === defaultState;
 	const hiddenIds = ( isOn ? showWhenOff : showWhenOn )
-		.filter( ( id ) => ! ( isOn ? showWhenOn : showWhenOff ).includes( id ) )
+		.filter(
+			( id ) => ! ( isOn ? showWhenOn : showWhenOff ).includes( id )
+		)
 		.join( ' ' );
 
 	const hiddenClientIds = useSelect(
@@ -478,7 +543,8 @@ function TargetPreview( { attributes, clientId, isActive } ) {
 
 					const blockAttributes = getBlockAttributes( id ) || {};
 					const htmlId =
-						blockAttributes.htmlAttributes?.id || blockAttributes.anchor;
+						blockAttributes.htmlAttributes?.id ||
+						blockAttributes.anchor;
 
 					return htmlId && wanted.includes( htmlId );
 				} )
@@ -521,7 +587,8 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 				select( blockEditorStore );
 
 			return (
-				isBlockSelected( clientId ) || hasSelectedInnerBlock( clientId, true )
+				isBlockSelected( clientId ) ||
+				hasSelectedInnerBlock( clientId, true )
 			);
 		},
 		[ clientId ]
@@ -546,11 +613,19 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 						isPressed={ isOn }
 						label={
 							isOn
-								? __( 'Showing the “on” state. Click to show “off”.', 'thingamablocks' )
-								: __( 'Showing the “off” state. Click to show “on”.', 'thingamablocks' )
+								? __(
+										'Showing the “on” state. Click to show “off”.',
+										'thingamablocks'
+								  )
+								: __(
+										'Showing the “off” state. Click to show “on”.',
+										'thingamablocks'
+								  )
 						}
 						onClick={ () =>
-							setAttributes( { defaultState: isOn ? 'off' : 'on' } )
+							setAttributes( {
+								defaultState: isOn ? 'off' : 'on',
+							} )
 						}
 					>
 						{ isOn

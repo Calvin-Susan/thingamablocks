@@ -18,7 +18,9 @@ import { variationIcons } from './icon';
 
 const color = {
 	accent: 'var(--accent, #1e73be)',
-	track: 'var(--contrast-3, #b2b2be)',
+	// A fixed mid grey, so the off switch has at least 3:1 contrast against the
+	// white knob and against the page in both light and dark mode (WCAG 1.4.11).
+	track: '#767680',
 	// The knob and its icons stay fixed colours so the switch reads the same in
 	// light and dark mode (the theme's base colours flip in dark mode).
 	knob: '#ffffff',
@@ -269,13 +271,16 @@ export const variations = [
 	},
 	{
 		name: 'segmented',
-		icon: variationIcons[ 'segmented' ],
+		icon: variationIcons.segmented,
 		title: __( 'Segmented buttons', 'thingamablocks' ),
 		description: __(
 			'Two buttons side by side; the active one is highlighted.',
 			'thingamablocks'
 		),
-		attributes: { action: 'showHide' },
+		attributes: {
+			action: 'showHide',
+			ariaLabel: __( 'Billing period', 'thingamablocks' ),
+		},
 		innerBlocks: [
 			segmented(
 				__( 'Monthly', 'thingamablocks' ),
@@ -286,7 +291,7 @@ export const variations = [
 	},
 	{
 		name: 'switch',
-		icon: variationIcons[ 'switch' ],
+		icon: variationIcons.switch,
 		title: __( 'Switch', 'thingamablocks' ),
 		description: __(
 			'Just the switch. Give it an accessible label in the settings.',

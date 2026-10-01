@@ -8,9 +8,9 @@
  * data-tmb-animate-children), so GenerateBlocks saves and renders them like
  * any other attribute.
  *
- * On the front end nothing loads unless a block on the page uses one. The
- * first time such a block renders, this prints a few lines of CSS that hide
- * animated blocks until they animate in, and loads a ~1 KB script.
+ * On the front end nothing loads unless a block on the page uses one. Then
+ * this prints a few lines of CSS that hide animated blocks until they animate
+ * in (in <head> where possible), and loads a ~1 KB (gzipped) script.
  *
  * @package Thingamablocks
  */
@@ -68,38 +68,25 @@ function thingamablocks_enqueue_animation_editor() {
 	wp_set_script_translations( 'thingamablocks-animations-editor', 'thingamablocks' );
 }
 
+add_action( 'wp_head', 'thingamablocks_animation_print_head', 2 );
 /**
- * Set once any published content uses an entrance animation, so the small
- * hiding CSS is only printed in <head> on sites that use them.
+ * Print the hiding CSS in <head> when this page is known to have animated
+ * blocks: in <head> it can't upset any block's layout (inside a container it
+ * would count as a child for :first-child rules). That's known when a block
+ * theme has already rendered the page (block templates render before <head>),
+ * or when the post being viewed uses an animation. Any other page with an
+ * animated block (from a GeneratePress Element, a widget, an archive) gets it
+ * just before that block instead; pages without one get nothing at all.
  */
-const THINGAMABLOCKS_ANIMATIONS_OPTION = 'thingamablocks_animations_used';
-
-add_action( 'save_post', 'thingamablocks_animation_note_usage', 10, 2 );
-/**
- * Remember that the site uses entrance animations.
- *
- * @param int     $post_id Post ID.
- * @param WP_Post $post    Post.
- */
-function thingamablocks_animation_note_usage( $post_id, $post ) {
-	if ( wp_is_post_revision( $post_id ) || get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) ) {
+function thingamablocks_animation_print_head() {
+	if ( ! apply_filters( 'thingamablocks_animations_print_css', true ) ) {
 		return;
 	}
 
-	if ( false !== strpos( $post->post_content, 'data-tmb-animate' ) ) {
-		update_option( THINGAMABLOCKS_ANIMATIONS_OPTION, 1, true );
-	}
-}
+	$post = is_singular() ? get_queried_object() : null;
+	$used = thingamablocks_animation_seen() || ( $post instanceof WP_Post && false !== strpos( $post->post_content, 'data-tmb-animate' ) );
 
-add_action( 'wp_head', 'thingamablocks_animation_print_head', 2 );
-/**
- * Print the hiding CSS in <head>, where it can't upset any block's layout
- * (inside a container it would count as a child for :first-child rules and
- * "one by one" timing). It's about 600 bytes and does nothing on pages
- * without animated blocks.
- */
-function thingamablocks_animation_print_head() {
-	if ( ! get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) || ! apply_filters( 'thingamablocks_animations_print_css', true ) ) {
+	if ( ! $used ) {
 		return;
 	}
 
@@ -124,12 +111,27 @@ function thingamablocks_animation_markup_printed( $set = null ) {
 	return $printed;
 }
 
+/**
+ * Whether an animated block was rendered before <head> was printed (block
+ * themes render the whole template first).
+ *
+ * @param bool|null $set Mark as seen.
+ * @return bool
+ */
+function thingamablocks_animation_seen( $set = null ) {
+	static $seen = false;
+
+	if ( null !== $set ) {
+		$seen = (bool) $set;
+	}
+
+	return $seen;
+}
+
 add_filter( 'render_block', 'thingamablocks_animation_render_block', 20, 2 );
 /**
- * When an animated block renders, make sure the script is loaded. If the CSS
- * wasn't printed in <head> (the first animated content on a site, or content
- * from somewhere that isn't a post), put it just before the block instead and
- * remember for next time.
+ * When an animated block renders, load the script (in the footer, deferred).
+ * If the CSS wasn't printed in <head>, put it just before the block instead.
  *
  * @param string $content Rendered block.
  * @param array  $block   Parsed block.
@@ -151,12 +153,15 @@ function thingamablocks_animation_render_block( $content, $block ) {
 		return $content;
 	}
 
-	if ( ! get_option( THINGAMABLOCKS_ANIMATIONS_OPTION ) ) {
-		update_option( THINGAMABLOCKS_ANIMATIONS_OPTION, 1, true );
-	}
-
 	// Rendered before <head> was printed (block themes): <head> will print it.
 	if ( ! did_action( 'wp_head' ) ) {
+		thingamablocks_animation_seen( true );
+		return $content;
+	}
+
+	// Rendered while <head> is being printed (e.g. an SEO plugin building a
+	// description from the content): not part of the page's body.
+	if ( doing_action( 'wp_head' ) ) {
 		return $content;
 	}
 

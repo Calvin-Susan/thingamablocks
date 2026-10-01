@@ -2,8 +2,11 @@
 /**
  * Block patterns: ready-made sections that use the Toggle.
  *
- * Pattern markup lives in /patterns as plain block HTML, exported from the
- * editor, so it stays exactly what GenerateBlocks saves.
+ * Pattern markup lives in /patterns as PHP files: block markup exported from
+ * the editor (so it stays exactly what GenerateBlocks saves), with the visible
+ * text wrapped in translation functions. Patterns are registered with
+ * 'filePath', so WordPress only includes a file when that pattern's content is
+ * actually needed (inserter, editor), not on every request.
  *
  * @package Thingamablocks
  */
@@ -64,7 +67,7 @@ function thingamablocks_register_patterns() {
 	);
 
 	foreach ( $patterns as $slug => $pattern ) {
-		$file = THINGAMABLOCKS_DIR . 'patterns/' . $slug . '.html';
+		$file = THINGAMABLOCKS_DIR . 'patterns/' . $slug . '.php';
 
 		if ( ! is_readable( $file ) ) {
 			continue;
@@ -72,12 +75,20 @@ function thingamablocks_register_patterns() {
 
 		register_block_pattern(
 			'thingamablocks/' . $slug,
-			array_merge(
-				$pattern,
-				array(
-					'content' => file_get_contents( $file ), // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-				)
-			)
+			array_merge( $pattern, array( 'filePath' => $file ) )
 		);
 	}
+}
+
+/**
+ * Encode a string for use inside a JSON string in a block comment, without the
+ * surrounding quotes. Used by the pattern files for translated attribute values
+ * (e.g. "ariaLabel"). JSON_HEX_TAG / JSON_HEX_AMP keep "<", ">" and "&" from
+ * breaking out of the block comment.
+ *
+ * @param string $text Text to encode.
+ * @return string
+ */
+function thingamablocks_pattern_json_string( $text ) {
+	return substr( (string) wp_json_encode( (string) $text, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE ), 1, -1 );
 }

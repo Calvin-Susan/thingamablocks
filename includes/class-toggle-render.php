@@ -58,10 +58,11 @@ class Thingamablocks_Toggle_Render {
 		}
 
 		return sprintf(
-			'%1$s<div %2$s>%3$s</div>',
+			'%1$s<div %2$s>%3$s</div>%4$s',
 			self::initial_visibility_css( $config, $is_on ),
 			get_block_wrapper_attributes( $wrapper ),
-			$content
+			$content,
+			self::restore_state_script( $config, $is_on, (string) ( $attributes['anchor'] ?? '' ) )
 		);
 	}
 
@@ -233,25 +234,32 @@ class Thingamablocks_Toggle_Render {
 	 * @return string
 	 */
 	private static function controls_attribute( $config ) {
-		$selectors = array_merge(
-			$config['showWhenOff'] ?? array(),
-			$config['showWhenOn'] ?? array(),
-			$config['classTargets'] ?? array()
+		return Thingamablocks_Sanitize::ids_attribute(
+			array_merge(
+				$config['showWhenOff'] ?? array(),
+				$config['showWhenOn'] ?? array(),
+				$config['classTargets'] ?? array()
+			)
 		);
+	}
 
-		$ids = array();
-
-		foreach ( $selectors as $selector ) {
-			if ( in_array( $selector, Thingamablocks_Sanitize::TAG_TARGETS, true ) ) {
-				continue;
-			}
-
-			if ( preg_match( '/^#?([A-Za-z][\w\-]*)$/', $selector, $match ) ) {
-				$ids[] = $match[1];
-			}
+	/**
+	 * The targets that start hidden in a given state. An element listed on
+	 * both sides stays visible.
+	 *
+	 * @param array $config Toggle config.
+	 * @param bool  $is_on  State.
+	 * @return array
+	 */
+	private static function hidden_targets( $config, $is_on ) {
+		if ( 'showHide' !== $config['action'] ) {
+			return array();
 		}
 
-		return implode( ' ', array_unique( $ids ) );
+		$hidden = $is_on ? $config['showWhenOff'] : $config['showWhenOn'];
+		$shown  = $is_on ? $config['showWhenOn'] : $config['showWhenOff'];
+
+		return array_diff( $hidden, $shown );
 	}
 
 	/**
@@ -264,44 +272,55 @@ class Thingamablocks_Toggle_Render {
 	 * @return string
 	 */
 	private static function initial_visibility_css( $config, $is_on ) {
-		if ( 'showHide' !== $config['action'] ) {
+		return Thingamablocks_Sanitize::hide_style( self::hidden_targets( $config, $is_on ), 'tmb-toggle-initial' );
+	}
+
+	/**
+	 * For a toggle that remembers the visitor's choice: a tiny script printed
+	 * right after it that applies the saved state before the page is first
+	 * drawn, so the other pricing plan (or the switch's knob) doesn't flash and
+	 * jump when the main script takes over. Only for storage keys the server
+	 * can work out (a group, an HTML anchor, or the colour scheme).
+	 *
+	 * @param array  $config Toggle config.
+	 * @param bool   $is_on  Server-rendered state.
+	 * @param string $anchor HTML anchor.
+	 * @return string
+	 */
+	private static function restore_state_script( $config, $is_on, $anchor ) {
+		if ( 'colorScheme' === $config['action'] ) {
+			$key = ''; // The <head> script has already applied the scheme; read it from <html>.
+		} elseif ( ! $config['persist'] ) {
+			return '';
+		} elseif ( '' !== $config['group'] ) {
+			$key = 'group:' . $config['group'];
+		} elseif ( '' !== $anchor ) {
+			$key = 'id:' . $anchor;
+		} else {
 			return '';
 		}
 
-		$hidden = $is_on ? $config['showWhenOff'] : $config['showWhenOn'];
-		$shown  = $is_on ? $config['showWhenOn'] : $config['showWhenOff'];
+		$args = wp_json_encode(
+			array( $key, $is_on, Thingamablocks_Sanitize::hide_rules( self::hidden_targets( $config, ! $is_on ) ) ),
+			JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES
+		);
 
-		// An element listed on both sides stays visible.
-		$hidden = array_diff( $hidden, $shown );
+		// Mirrors paint() in src/toggle/view.js, which takes over on DOMContentLoaded.
+		$script = '(function(k,o,c){var w=document.currentScript.previousElementSibling,d=document.documentElement,s=null,a;'
+			. 'if(!w||!w.classList.contains("tmb-toggle"))return;'
+			. 'if(k){try{s=localStorage.getItem("tmb-toggle:"+k)}catch(e){}}'
+			. 'else{a=d.getAttribute("data-color-scheme");s=a==="dark"?"on":a==="light"?"off":null}'
+			. 'if(s!=="on"&&s!=="off"||(s==="on")===o)return;'
+			. 'var n=s==="on",t=w.previousElementSibling;'
+			. 'w.classList.toggle("is-on",n);w.classList.toggle("is-off",!n);'
+			. 'w.querySelectorAll("[data-toggle-part]").forEach(function(p){if(p.closest(".tmb-toggle")!==w)return;'
+			. 'var r=p.getAttribute("data-toggle-part"),v;if(r==="switch"){p.setAttribute("aria-checked",n?"true":"false");return}'
+			. 'if(r!=="on"&&r!=="off")return;v=(r==="on")===n?"true":"false";p.setAttribute("data-active",v);'
+			. 'if(p.hasAttribute("aria-pressed"))p.setAttribute("aria-pressed",v)});'
+			. 'if(!t||!t.classList.contains("tmb-toggle-initial")){if(!c)return;t=document.createElement("style");t.className="tmb-toggle-initial";w.before(t)}'
+			. 't.textContent=c})(' . substr( $args, 1, -1 ) . ')';
 
-		if ( empty( $hidden ) ) {
-			return '';
-		}
-
-		/*
-		 * Not passed through esc_html(): <style> content is raw text, so entities
-		 * would break selectors like [data-plan="annual"]. clean_selectors() only
-		 * lets through balanced, plain selector characters (see
-		 * is_safe_selector()), so the rule can't be closed early, extended, or
-		 * turned into an at-rule. One rule per selector, so an invalid selector
-		 * only voids its own rule.
-		 */
-		$rules = '';
-
-		foreach ( $hidden as $selector ) {
-			// "header" could be id="header" or every <header>; only the script can tell, so leave it to the script.
-			if ( in_array( $selector, Thingamablocks_Sanitize::TAG_TARGETS, true ) ) {
-				continue;
-			}
-
-			$rules .= self::to_css_selector( $selector ) . '{display:none!important}';
-		}
-
-		if ( '' === $rules ) {
-			return '';
-		}
-
-		return '<style class="tmb-toggle-initial">' . $rules . '</style>';
+		return wp_get_inline_script_tag( $script );
 	}
 
 	/**

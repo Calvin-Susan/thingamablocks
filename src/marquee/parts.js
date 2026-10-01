@@ -5,11 +5,19 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls, store as blockEditorStore } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	store as blockEditorStore,
+} from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 
-const PART_BLOCKS = [ 'generateblocks/element', 'generateblocks/text', 'generateblocks/shape', 'generateblocks/media' ];
+const PART_BLOCKS = [
+	'generateblocks/element',
+	'generateblocks/text',
+	'generateblocks/shape',
+	'generateblocks/media',
+];
 
 function helpText( value ) {
 	if ( 'items' === value ) {
@@ -38,8 +46,10 @@ const withMarqueePartControl = createHigherOrderComponent(
 			( select ) =>
 				isPartBlock &&
 				isSelected &&
-				select( blockEditorStore ).getBlockParentsByBlockName( clientId, 'thingamablocks/marquee' )
-					.length > 0,
+				select( blockEditorStore ).getBlockParentsByBlockName(
+					clientId,
+					'thingamablocks/marquee'
+				).length > 0,
 			[ clientId, isPartBlock, isSelected ]
 		);
 
@@ -73,9 +83,27 @@ const withMarqueePartControl = createHigherOrderComponent(
 							label={ __( 'This block is', 'thingamablocks' ) }
 							value={ value }
 							options={ [
-								{ value: '', label: __( 'Part of the content', 'thingamablocks' ) },
-								{ value: 'items', label: __( 'The row that scrolls', 'thingamablocks' ) },
-								{ value: 'pause', label: __( 'Pause button', 'thingamablocks' ) },
+								{
+									value: '',
+									label: __(
+										'Part of the content',
+										'thingamablocks'
+									),
+								},
+								{
+									value: 'items',
+									label: __(
+										'The row that scrolls',
+										'thingamablocks'
+									),
+								},
+								{
+									value: 'pause',
+									label: __(
+										'Pause button',
+										'thingamablocks'
+									),
+								},
 							] }
 							help={ helpText( value ) }
 							onChange={ onChange }
@@ -88,4 +116,8 @@ const withMarqueePartControl = createHigherOrderComponent(
 	'withMarqueePartControl'
 );
 
-addFilter( 'editor.BlockEdit', 'thingamablocks/marquee-part-control', withMarqueePartControl );
+addFilter(
+	'editor.BlockEdit',
+	'thingamablocks/marquee-part-control',
+	withMarqueePartControl
+);

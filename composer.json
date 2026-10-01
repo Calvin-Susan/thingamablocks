@@ -1,0 +1,20 @@
+{
+	"name": "ogalweb/thingamablocks",
+	"description": "A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"wp-coding-standards/wpcs": "^3.1"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"lint:php": "phpcs",
+		"fix:php": "phpcbf"
+	}
+}

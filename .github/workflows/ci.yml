@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: Build and lint (JS, CSS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thingamablocks-zip
+          path: dist/thingamablocks.zip
+
+  php:
+    name: PHP (${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['7.4', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+      - name: Syntax check
+        run: find thingamablocks.php uninstall.php includes -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Coding standards
+        if: matrix.php == '8.4'
+        run: |
+          composer install --no-interaction --no-progress
+          composer run lint:php
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    needs: js
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: thingamablocks-zip
+      - run: unzip -q thingamablocks.zip
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: ./thingamablocks

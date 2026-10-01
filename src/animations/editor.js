@@ -7,7 +7,10 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls, store as blockEditorStore } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	store as blockEditorStore,
+} from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import { getBlockType } from '@wordpress/blocks';
 import {
@@ -16,7 +19,9 @@ import {
 	RangeControl,
 	SelectControl,
 	ToggleControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 
@@ -58,10 +63,22 @@ function preview( clientId, settings ) {
 	}
 
 	// Inner blocks are wrapped in the editor; animate each block wrapper.
-	[ ...element.querySelectorAll( ':scope > .block-editor-block-list__block, :scope > * > .block-editor-block-list__block' ) ]
-		.filter( ( child ) => child.parentElement.closest( '[data-block]' ) === element )
+	[
+		...element.querySelectorAll(
+			':scope > .block-editor-block-list__block, :scope > * > .block-editor-block-list__block'
+		),
+	]
+		.filter(
+			( child ) =>
+				child.parentElement.closest( '[data-block]' ) === element
+		)
 		.forEach( ( child, index ) =>
-			animateIn( child, settings.type, index * ( Number( settings.children ) || 0 ), settings.speed )
+			animateIn(
+				child,
+				settings.type,
+				index * ( Number( settings.children ) || 0 ),
+				settings.speed
+			)
 		);
 }
 
@@ -72,7 +89,8 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 		[ clientId ]
 	);
 	// "One by one" only makes sense for a block with blocks inside it.
-	const hasInnerBlocks = blockCount > 1 || null !== ( htmlAttributes[ KEYS.children ] ?? null );
+	const hasInnerBlocks =
+		blockCount > 1 || null !== ( htmlAttributes[ KEYS.children ] ?? null );
 
 	const settings = {
 		type: htmlAttributes[ KEYS.type ] || '',
@@ -121,20 +139,51 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 					value={ settings.type }
 					options={ [
 						{ value: '', label: __( 'None', 'thingamablocks' ) },
-						{ value: 'fade', label: __( 'Fade in', 'thingamablocks' ) },
-						{ value: 'fade-up', label: __( 'Fade up', 'thingamablocks' ) },
-						{ value: 'fade-down', label: __( 'Fade down', 'thingamablocks' ) },
-						{ value: 'fade-left', label: __( 'Slide in from the left', 'thingamablocks' ) },
-						{ value: 'fade-right', label: __( 'Slide in from the right', 'thingamablocks' ) },
-						{ value: 'zoom', label: __( 'Zoom in', 'thingamablocks' ) },
+						{
+							value: 'fade',
+							label: __( 'Fade in', 'thingamablocks' ),
+						},
+						{
+							value: 'fade-up',
+							label: __( 'Fade up', 'thingamablocks' ),
+						},
+						{
+							value: 'fade-down',
+							label: __( 'Fade down', 'thingamablocks' ),
+						},
+						{
+							value: 'fade-left',
+							label: __(
+								'Slide in from the left',
+								'thingamablocks'
+							),
+						},
+						{
+							value: 'fade-right',
+							label: __(
+								'Slide in from the right',
+								'thingamablocks'
+							),
+						},
+						{
+							value: 'zoom',
+							label: __( 'Zoom in', 'thingamablocks' ),
+						},
 					] }
-					help={ __( 'Plays once, when the block scrolls into view.', 'thingamablocks' ) }
+					help={ __(
+						'Plays once, when the block scrolls into view. Best kept off the first thing visitors see (like a hero heading or image): it stays hidden until the script runs, which can slow the page’s loading score (LCP).',
+						'thingamablocks'
+					) }
 					onChange={ ( type ) => {
 						update( { type } );
 
 						if ( type ) {
 							// Show the chosen animation straight away.
-							window.setTimeout( () => preview( clientId, { ...settings, type } ), 50 );
+							window.setTimeout(
+								() =>
+									preview( clientId, { ...settings, type } ),
+								50
+							);
 						}
 					} }
 				/>
@@ -150,9 +199,18 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 								value={ settings.speed }
 								onChange={ ( speed ) => update( { speed } ) }
 							>
-								<ToggleGroupControlOption value="fast" label={ __( 'Fast', 'thingamablocks' ) } />
-								<ToggleGroupControlOption value="normal" label={ __( 'Normal', 'thingamablocks' ) } />
-								<ToggleGroupControlOption value="slow" label={ __( 'Slow', 'thingamablocks' ) } />
+								<ToggleGroupControlOption
+									value="fast"
+									label={ __( 'Fast', 'thingamablocks' ) }
+								/>
+								<ToggleGroupControlOption
+									value="normal"
+									label={ __( 'Normal', 'thingamablocks' ) }
+								/>
+								<ToggleGroupControlOption
+									value="slow"
+									label={ __( 'Slow', 'thingamablocks' ) }
+								/>
 							</ToggleGroupControl>
 						</div>
 						<RangeControl
@@ -163,30 +221,46 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 							max={ 2000 }
 							step={ 100 }
 							value={ settings.delay }
-							onChange={ ( delay ) => update( { delay: delay || 0 } ) }
+							onChange={ ( delay ) =>
+								update( { delay: delay || 0 } )
+							}
 						/>
 						{ hasInnerBlocks && (
 							<div className="tmb-animation-control">
 								<ToggleControl
 									__nextHasNoMarginBottom
-									label={ __( 'Animate the blocks inside one by one', 'thingamablocks' ) }
+									label={ __(
+										'Animate the blocks inside one by one',
+										'thingamablocks'
+									) }
 									help={ __(
 										'The block itself stays put, and each block inside it animates in turn. Great for grids and cards; for a query loop, set it on the Looper.',
 										'thingamablocks'
 									) }
 									checked={ null !== settings.children }
-									onChange={ ( on ) => update( { children: on ? 100 : null } ) }
+									onChange={ ( on ) =>
+										update( { children: on ? 100 : null } )
+									}
 								/>
 								{ null !== settings.children && (
 									<RangeControl
 										__next40pxDefaultSize
 										__nextHasNoMarginBottom
-										label={ __( 'Time between each (ms)', 'thingamablocks' ) }
+										label={ __(
+											'Time between each (ms)',
+											'thingamablocks'
+										) }
 										min={ 50 }
 										max={ 500 }
 										step={ 25 }
-										value={ Number( settings.children ) || 100 }
-										onChange={ ( children ) => update( { children: children || 100 } ) }
+										value={
+											Number( settings.children ) || 100
+										}
+										onChange={ ( children ) =>
+											update( {
+												children: children || 100,
+											} )
+										}
 									/>
 								) }
 							</div>
@@ -225,4 +299,8 @@ const withEntranceAnimation = createHigherOrderComponent(
 	'withEntranceAnimation'
 );
 
-addFilter( 'editor.BlockEdit', 'thingamablocks/entrance-animation', withEntranceAnimation );
+addFilter(
+	'editor.BlockEdit',
+	'thingamablocks/entrance-animation',
+	withEntranceAnimation
+);

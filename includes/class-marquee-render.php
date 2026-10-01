@@ -105,20 +105,22 @@ class Thingamablocks_Marquee_Render {
 			'speed'        => max( 5, min( 1000, (float) ( $attributes['speed'] ?? 50 ) ) ),
 			'direction'    => in_array( $direction, array( 'left', 'right', 'up', 'down' ), true ) ? $direction : 'left',
 			'pauseOnHover' => ! isset( $attributes['pauseOnHover'] ) || ! empty( $attributes['pauseOnHover'] ),
+			// Names the row when reduced motion turns it into a scrollable, focusable area.
+			'scrollLabel'  => sanitize_text_field( $attributes['ariaLabel'] ?? '' ) ?: __( 'Scrolling content', 'thingamablocks' ),
 		);
 	}
 
 	/**
 	 * A CSS length like "10%", "4rem" or "120px"; anything else gets the default.
 	 *
-	 * @param string $value   Length.
-	 * @param string $default Default.
+	 * @param string $value    Length.
+	 * @param string $fallback Default.
 	 * @return string
 	 */
-	public static function length( $value, $default ) {
+	public static function length( $value, $fallback ) {
 		$value = is_string( $value ) ? trim( $value ) : '';
 
-		return preg_match( '/^(\d{1,4}(\.\d+)?|\.\d+)(px|rem|em|%|vw|vh|svh|dvh)$/D', $value ) ? $value : $default;
+		return preg_match( '/^(\d{1,4}(\.\d+)?|\.\d+)(px|rem|em|%|vw|vh|svh|dvh)$/D', $value ) ? $value : $fallback;
 	}
 
 	/**

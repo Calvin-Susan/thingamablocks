@@ -21,7 +21,14 @@ const MAX_STAGGER = 1200;
 
 let observer = null;
 
-function reveal( element ) {
+/**
+ * Work out what to animate. Only reads layout, so a batch of blocks can be
+ * measured together before any of them changes (no layout thrashing).
+ *
+ * @param {Element} element Animated block.
+ * @return {Function} Starts the animation.
+ */
+function prepare( element ) {
 	const type = element.getAttribute( 'data-tmb-animate' );
 	const speed = element.getAttribute( 'data-tmb-speed' ) || 'normal';
 	const delay = Number( element.getAttribute( 'data-tmb-delay' ) ) || 0;
@@ -31,14 +38,25 @@ function reveal( element ) {
 	const targets =
 		null === stagger
 			? [ element ]
-			: [ ...element.children ].filter( ( child ) => child.getClientRects().length );
+			: [ ...element.children ].filter(
+					( child ) => child.getClientRects().length
+			  );
 	const step = Number( stagger ) || 0;
 
-	// Same frame: drop the "hidden" rule and start the animation from hidden.
-	element.classList.add( 'tmb-in' );
-	targets.forEach( ( target, index ) =>
-		animateIn( target, type, delay + Math.min( index * step, MAX_STAGGER ), speed )
-	);
+	return () => {
+		// Same frame: drop the "hidden" rule and start the animation from hidden.
+		element.classList.add( 'tmb-in' );
+		element.tmbAnimations = targets
+			.map( ( target, index ) =>
+				animateIn(
+					target,
+					type,
+					delay + Math.min( index * step, MAX_STAGGER ),
+					speed
+				)
+			)
+			.filter( Boolean );
+	};
 }
 
 function showWithoutAnimating( element ) {
@@ -72,7 +90,9 @@ function init( container = document ) {
 }
 
 function start() {
-	const reduced = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+	const reduced = window.matchMedia(
+		'(prefers-reduced-motion: reduce)'
+	).matches;
 
 	/*
 	 * If the fail-safe has already shown everything (slow connection, or a
@@ -82,19 +102,47 @@ function start() {
 	const late = performance.now() > 3800;
 
 	if ( 'IntersectionObserver' in window && ! reduced && ! late ) {
-		observer = new IntersectionObserver( ( entries ) =>
+		observer = new IntersectionObserver( ( entries ) => {
+			const starts = [];
+
 			entries.forEach( ( entry ) => {
 				if ( entry.isIntersecting ) {
 					observer.unobserve( entry.target );
-					reveal( entry.target );
-				} else if ( entry.boundingClientRect.bottom <= 0 && entry.boundingClientRect.height > 0 ) {
+					starts.push( prepare( entry.target ) );
+				} else if (
+					entry.boundingClientRect.bottom <= 0 &&
+					entry.boundingClientRect.height > 0
+				) {
 					// Already scrolled past (e.g. the visitor arrived via an #anchor
 					// lower down): just show it, there's nothing to watch.
 					observer.unobserve( entry.target );
-					showWithoutAnimating( entry.target );
+					starts.push( () => showWithoutAnimating( entry.target ) );
 				}
-			} )
-		);
+			} );
+
+			// All the measuring is done; now change things.
+			starts.forEach( ( begin ) => begin() );
+		} );
+
+		// Keyboard users can tab into a block before it has scrolled into view or
+		// while it's still waiting out its delay: show it at once, so focus is
+		// never on something invisible.
+		document.addEventListener( 'focusin', ( event ) => {
+			const element = event.target.closest?.( SELECTOR );
+
+			if ( ! element?.tmbAnimate ) {
+				return;
+			}
+
+			if ( element.classList.contains( 'tmb-in' ) ) {
+				( element.tmbAnimations || [] ).forEach( ( animation ) =>
+					animation.finish()
+				);
+			} else {
+				observer.unobserve( element );
+				showWithoutAnimating( element );
+			}
+		} );
 	}
 
 	init();
@@ -108,7 +156,12 @@ function start() {
 		new MutationObserver( ( mutations ) =>
 			mutations.forEach( ( mutation ) =>
 				mutation.addedNodes.forEach( ( node ) => {
-					if ( 1 === node.nodeType ) {
+					// Marquee copies are already shown as animated; skip them.
+					if (
+						1 === node.nodeType &&
+						! node.classList.contains( 'tmb-marquee__track' ) &&
+						! node.parentElement?.closest( '.tmb-marquee__track' )
+					) {
 						init( node );
 					}
 				} )

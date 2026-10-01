@@ -1,17 +1,43 @@
 {
-  "name": "thingamablocks",
-  "version": "0.1.0",
-  "private": true,
-  "description": "A Toggle block for GenerateBlocks: a switch built from native GB blocks that shows/hides elements, flips light/dark mode, or toggles classes.",
-  "scripts": {
-    "build": "wp-scripts build --webpack-copy-php",
-    "start": "wp-scripts start --webpack-copy-php",
-    "zip": "npm run build && node scripts/zip.mjs",
-    "playground": "wp-playground-cli start --no-auto-mount --mount=./:/wordpress/wp-content/plugins/thingamablocks --blueprint=playground/blueprint.json --port=9400",
-    "playground:reset": "npm run playground -- --reset"
-  },
-  "devDependencies": {
-    "@wordpress/scripts": "^31.0.0",
-    "@wp-playground/cli": "^3.0.0"
-  }
+	"name": "thingamablocks",
+	"version": "0.1.0",
+	"private": true,
+	"description": "A completely unnecessary ultimate add-ons power-pack for GenerateBlocks: Toggle, Countdown and Marquee blocks, plus entrance animations.",
+	"author": "OGAL Web Design",
+	"license": "GPL-2.0-or-later",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Calvin-Susan/thingamablocks.git"
+	},
+	"engines": {
+		"node": ">=20",
+		"npm": ">=10"
+	},
+	"scripts": {
+		"build": "wp-scripts build --webpack-copy-php",
+		"start": "wp-scripts start --webpack-copy-php",
+		"lint": "npm run lint:js && npm run lint:css",
+		"lint:js": "wp-scripts lint-js src scripts webpack.config.js .eslintrc.js",
+		"lint:css": "wp-scripts lint-style \"src/**/*.scss\"",
+		"lint:php": "composer run lint:php",
+		"format": "wp-scripts format src scripts webpack.config.js",
+		"zip": "npm run build && node scripts/zip.mjs",
+		"playground": "wp-playground-cli start --no-auto-mount --mount=./:/wordpress/wp-content/plugins/thingamablocks --blueprint=playground/blueprint.json --port=9400",
+		"playground:reset": "npm run playground -- --reset"
+	},
+	"devDependencies": {
+		"@wordpress/block-editor": "^18.0.0",
+		"@wordpress/blocks": "^16.1.0",
+		"@wordpress/components": "^41.0.0",
+		"@wordpress/compose": "^8.9.0",
+		"@wordpress/data": "^10.56.0",
+		"@wordpress/date": "^5.56.0",
+		"@wordpress/element": "^8.8.0",
+		"@wordpress/hooks": "^4.56.0",
+		"@wordpress/i18n": "^6.29.0",
+		"@wordpress/primitives": "^4.56.0",
+		"@wordpress/scripts": "^31.0.0",
+		"@wp-playground/cli": "^3.0.0",
+		"typescript": "~5.6"
+	}
 }

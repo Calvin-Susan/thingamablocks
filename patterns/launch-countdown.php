@@ -1,14 +1,28 @@
+<?php
+/**
+ * Pattern: launch countdown section.
+ *
+ * Block markup exported from the editor, with visible text wrapped for
+ * translation. Registered in includes/patterns.php.
+ *
+ * @package Thingamablocks
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <!-- wp:generateblocks/element {"uniqueId":"3f2e1440","tagName":"section","styles":{"display":"flex","flexDirection":"column","alignItems":"center","rowGap":"1.5rem","paddingTop":"5rem","paddingRight":"1.5rem","paddingBottom":"5rem","paddingLeft":"1.5rem","textAlign":"center"},"css":".gb-element-3f2e1440{align-items:center;display:flex;flex-direction:column;row-gap:1.5rem;text-align:center;padding:5rem 1.5rem}"} -->
 <section class="gb-element-3f2e1440"><!-- wp:generateblocks/text {"uniqueId":"6a01baad","tagName":"p","styles":{"marginBottom":"0","fontSize":"0.8125rem","fontWeight":"600","letterSpacing":"0.12em","textTransform":"uppercase","color":"var(\u002d\u002daccent, #1e73be)"},"css":".gb-text-6a01baad{color:var(\u002d\u002daccent,#1e73be);font-size:0.8125rem;font-weight:600;letter-spacing:0.12em;margin-bottom:0;text-transform:uppercase}"} -->
-<p class="gb-text gb-text-6a01baad">Coming soon</p>
+<p class="gb-text gb-text-6a01baad"><?php echo esc_html__( 'Coming soon', 'thingamablocks' ); ?></p>
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"73dbc9a6","tagName":"h2","styles":{"marginBottom":"0"},"css":".gb-text-73dbc9a6{margin-bottom:0}"} -->
-<h2 class="gb-text gb-text-73dbc9a6">Something new is on the way</h2>
+<h2 class="gb-text gb-text-73dbc9a6"><?php echo esc_html__( 'Something new is on the way', 'thingamablocks' ); ?></h2>
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"ac4785bb","tagName":"p","styles":{"marginBottom":"0.5rem","maxWidth":"36rem","color":"var(\u002d\u002dcontrast-2, #575760)"},"css":".gb-text-ac4785bb{color:var(\u002d\u002dcontrast-2,#575760);margin-bottom:0.5rem;max-width:36rem}"} -->
-<p class="gb-text gb-text-ac4785bb">We’re putting the finishing touches on it. Check back when the clock runs out.</p>
+<p class="gb-text gb-text-ac4785bb"><?php echo esc_html__( 'We’re putting the finishing touches on it. Check back when the clock runs out.', 'thingamablocks' ); ?></p>
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:thingamablocks/countdown {} -->
@@ -19,7 +33,7 @@
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"6215009a","tagName":"span","styles":{"marginTop":"0.5rem","fontSize":"0.75rem","letterSpacing":"0.08em","textTransform":"uppercase","color":"var(\u002d\u002dcontrast-2, #575760)"},"css":".gb-text-6215009a{color:var(\u002d\u002dcontrast-2,#575760);font-size:0.75rem;letter-spacing:0.08em;margin-top:0.5rem;text-transform:uppercase}","htmlAttributes":[]} -->
-<span class="gb-text gb-text-6215009a">Days</span>
+<span class="gb-text gb-text-6215009a"><?php echo esc_html__( 'Days', 'thingamablocks' ); ?></span>
 <!-- /wp:generateblocks/text --></div>
 <!-- /wp:generateblocks/element -->
 
@@ -33,7 +47,7 @@
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"d47bf245","tagName":"span","styles":{"marginTop":"0.5rem","fontSize":"0.75rem","letterSpacing":"0.08em","textTransform":"uppercase","color":"var(\u002d\u002dcontrast-2, #575760)"},"css":".gb-text-d47bf245{color:var(\u002d\u002dcontrast-2,#575760);font-size:0.75rem;letter-spacing:0.08em;margin-top:0.5rem;text-transform:uppercase}","htmlAttributes":[]} -->
-<span class="gb-text gb-text-d47bf245">Hours</span>
+<span class="gb-text gb-text-d47bf245"><?php echo esc_html__( 'Hours', 'thingamablocks' ); ?></span>
 <!-- /wp:generateblocks/text --></div>
 <!-- /wp:generateblocks/element -->
 
@@ -47,7 +61,7 @@
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"d8267fb4","tagName":"span","styles":{"marginTop":"0.5rem","fontSize":"0.75rem","letterSpacing":"0.08em","textTransform":"uppercase","color":"var(\u002d\u002dcontrast-2, #575760)"},"css":".gb-text-d8267fb4{color:var(\u002d\u002dcontrast-2,#575760);font-size:0.75rem;letter-spacing:0.08em;margin-top:0.5rem;text-transform:uppercase}","htmlAttributes":[]} -->
-<span class="gb-text gb-text-d8267fb4">Minutes</span>
+<span class="gb-text gb-text-d8267fb4"><?php echo esc_html__( 'Minutes', 'thingamablocks' ); ?></span>
 <!-- /wp:generateblocks/text --></div>
 <!-- /wp:generateblocks/element -->
 
@@ -61,13 +75,13 @@
 <!-- /wp:generateblocks/text -->
 
 <!-- wp:generateblocks/text {"uniqueId":"5344bba7","tagName":"span","styles":{"marginTop":"0.5rem","fontSize":"0.75rem","letterSpacing":"0.08em","textTransform":"uppercase","color":"var(\u002d\u002dcontrast-2, #575760)"},"css":".gb-text-5344bba7{color:var(\u002d\u002dcontrast-2,#575760);font-size:0.75rem;letter-spacing:0.08em;margin-top:0.5rem;text-transform:uppercase}","htmlAttributes":[]} -->
-<span class="gb-text gb-text-5344bba7">Seconds</span>
+<span class="gb-text gb-text-5344bba7"><?php echo esc_html__( 'Seconds', 'thingamablocks' ); ?></span>
 <!-- /wp:generateblocks/text --></div>
 <!-- /wp:generateblocks/element --></div>
 <!-- /wp:generateblocks/element -->
 
 <!-- wp:generateblocks/text {"uniqueId":"8d628a4f","tagName":"p","styles":{"marginBottom":"0","fontWeight":"600","color":"var(\u002d\u002dcontrast, #222222)"},"css":".gb-text-8d628a4f{color:var(\u002d\u002dcontrast,#222222);font-weight:600;margin-bottom:0}","htmlAttributes":{"data-countdown-part":"ended"}} -->
-<p class="gb-text gb-text-8d628a4f" data-countdown-part="ended">We’re live!</p>
+<p class="gb-text gb-text-8d628a4f" data-countdown-part="ended"><?php echo esc_html__( 'We’re live!', 'thingamablocks' ); ?></p>
 <!-- /wp:generateblocks/text -->
 <!-- /wp:thingamablocks/countdown --></section>
 <!-- /wp:generateblocks/element -->

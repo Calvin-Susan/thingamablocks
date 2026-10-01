@@ -8,7 +8,9 @@ const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 module.exports = {
 	...defaultConfig,
 	entry: () => ( {
-		...( 'function' === typeof defaultConfig.entry ? defaultConfig.entry() : defaultConfig.entry ),
+		...( 'function' === typeof defaultConfig.entry
+			? defaultConfig.entry()
+			: defaultConfig.entry ),
 		'animations/editor': './src/animations/editor.js',
 		'animations/view': './src/animations/view.js',
 	} ),

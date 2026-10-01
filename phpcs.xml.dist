@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<ruleset name="Thingamablocks">
+	<description>WordPress Coding Standards and PHP 7.4+ compatibility for Thingamablocks.</description>
+
+	<file>./thingamablocks.php</file>
+	<file>./uninstall.php</file>
+	<file>./includes</file>
+	<file>./patterns</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+
+	<rule ref="PHPCompatibilityWP"/>
+	<config name="testVersion" value="7.4-"/>
+	<config name="minimum_wp_version" value="6.6"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="thingamablocks"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="thingamablocks"/>
+				<element value="Thingamablocks"/>
+				<element value="THINGAMABLOCKS"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

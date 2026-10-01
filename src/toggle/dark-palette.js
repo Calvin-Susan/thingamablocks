@@ -49,7 +49,9 @@ function readVariable( name ) {
 	const target = doc.body || doc.documentElement;
 
 	// Read the light value: switch off the editor's dark mode preview meanwhile.
-	const previews = [ ...doc.querySelectorAll( 'style[data-tmb-dark-preview]' ) ];
+	const previews = [
+		...doc.querySelectorAll( 'style[data-tmb-dark-preview]' ),
+	];
 	previews.forEach( ( style ) => ( style.disabled = true ) );
 	const value = getComputedStyle( target ).getPropertyValue( name ).trim();
 	previews.forEach( ( style ) => ( style.disabled = false ) );
@@ -79,14 +81,18 @@ function toHex( value ) {
 	const canvas = document.createElement( 'canvas' ).getContext( '2d' );
 	canvas.fillStyle = resolved;
 
-	return /^#[0-9a-f]{6}$/i.test( canvas.fillStyle ) ? canvas.fillStyle : resolved;
+	return /^#[0-9a-f]{6}$/i.test( canvas.fillStyle )
+		? canvas.fillStyle
+		: resolved;
 }
 
+/* eslint-disable no-bitwise -- unpacking the colour's red, green and blue bytes. */
 function hexToHsl( hex ) {
 	const value = parseInt( hex.slice( 1 ), 16 );
 	const r = ( ( value >> 16 ) & 255 ) / 255;
 	const g = ( ( value >> 8 ) & 255 ) / 255;
 	const b = ( value & 255 ) / 255;
+	/* eslint-enable no-bitwise */
 	const max = Math.max( r, g, b );
 	const min = Math.min( r, g, b );
 	const l = ( max + min ) / 2;
@@ -180,7 +186,11 @@ export function suggestDarkPalette( entries ) {
 		if ( s < 0.25 ) {
 			neutrals.push( { name, h, s, l } );
 		} else {
-			result[ name ] = hslToHex( h, Math.min( s, 0.85 ), Math.max( l, 0.62 ) );
+			result[ name ] = hslToHex(
+				h,
+				Math.min( s, 0.85 ),
+				Math.max( l, 0.62 )
+			);
 		}
 	} );
 
@@ -190,7 +200,10 @@ export function suggestDarkPalette( entries ) {
 	let previous = 0.02;
 
 	neutrals.forEach( ( { name, h, s, l } ) => {
-		const target = Math.min( 0.95, Math.max( 1 - l, previous + 0.05, 0.07 ) );
+		const target = Math.min(
+			0.95,
+			Math.max( 1 - l, previous + 0.05, 0.07 )
+		);
 		previous = target;
 		// Keep a hint of the original tint so warm or cool greys stay that way.
 		result[ name ] = hslToHex( h, Math.min( s, 0.12 ), target );
@@ -258,7 +271,11 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 				) }
 			</p>
 			<Flex justify="flex-start" gap={ 2 }>
-				<Button variant="secondary" size="compact" onClick={ suggestAll }>
+				<Button
+					variant="secondary"
+					size="compact"
+					onClick={ suggestAll }
+				>
 					{ __( 'Suggest dark colours', 'thingamablocks' ) }
 				</Button>
 				{ Object.keys( darkPalette ).length > 0 && (
@@ -286,9 +303,21 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
  */
 export function darkPaletteCss( darkPalette, selector ) {
 	const declarations = Object.entries( darkPalette )
-		.filter( ( [ name ] ) => /^--[\w-]+$/.test( name ) )
+		// Same rules as thingamablocks_clean_palette() in PHP: the attribute can
+		// be saved by anyone who can edit the post, so only plain colour values.
+		.filter(
+			( [ name, value ] ) =>
+				/^--[\w-]+$/.test( name ) &&
+				typeof value === 'string' &&
+				( /^#[0-9a-f]{3,8}$/i.test( value ) ||
+					/^(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch)\([0-9.,%\s/+-]+\)$/.test(
+						value
+					) )
+		)
 		.map( ( [ name, value ] ) => `${ name }:${ value };` )
 		.join( '' );
 
-	return declarations ? `${ selector }{${ declarations }color-scheme:dark}` : '';
+	return declarations
+		? `${ selector }{${ declarations }color-scheme:dark}`
+		: '';
 }

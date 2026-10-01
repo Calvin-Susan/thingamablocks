@@ -32,7 +32,17 @@ function writeStorage( key, value ) {
 }
 
 // Bare words that may also mean a tag, mirroring TAG_TARGETS in class-render.php.
-const TAG_TARGETS = [ 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside', 'article', 'section' ];
+const TAG_TARGETS = [
+	'html',
+	'body',
+	'main',
+	'header',
+	'footer',
+	'nav',
+	'aside',
+	'article',
+	'section',
+];
 
 /**
  * A bare word is an element ID ("monthly"). For a few tag names ("body",
@@ -48,7 +58,9 @@ const TAG_TARGETS = [ 'html', 'body', 'main', 'header', 'footer', 'nav', 'aside'
 function resolve( value ) {
 	try {
 		if ( /^[A-Za-z][\w-]*$/.test( value ) ) {
-			const byId = [ ...document.querySelectorAll( `[id="${ value }"]` ) ];
+			const byId = [
+				...document.querySelectorAll( `[id="${ value }"]` ),
+			];
 
 			if ( byId.length || ! TAG_TARGETS.includes( value ) ) {
 				return byId;
@@ -95,7 +107,12 @@ function showElement( element, animation, initial ) {
 		element.style.removeProperty( 'display' );
 	}
 
-	if ( ! wasHidden || initial || 'none' === animation || prefersReducedMotion() ) {
+	if (
+		! wasHidden ||
+		initial ||
+		'none' === animation ||
+		prefersReducedMotion()
+	) {
 		return;
 	}
 
@@ -138,14 +155,16 @@ const actions = {
 		root.setAttribute( 'data-color-scheme', scheme );
 		root.style.colorScheme = scheme;
 
-		( config.htmlClass || '' )
+		String( config.htmlClass || '' )
 			.split( ' ' )
 			.filter( Boolean )
 			.forEach( ( name ) => root.classList.toggle( name, isOn ) );
 	},
 
 	toggleClass( config, isOn ) {
-		const names = ( config.classNames || '' ).split( ' ' ).filter( Boolean );
+		const names = String( config.classNames || '' )
+			.split( ' ' )
+			.filter( Boolean );
 		const add = 'removeWhenOn' === config.classMode ? ! isOn : isOn;
 
 		queryAll( config.classTargets ).forEach( ( element ) =>
@@ -155,6 +174,19 @@ const actions = {
 
 	none() {},
 };
+
+/**
+ * The function for an action name. Own keys only: the config is a data
+ * attribute that could be forged, and "__proto__" mustn't break every toggle.
+ *
+ * @param {string} name Action name.
+ * @return {Function} Action.
+ */
+function actionFor( name ) {
+	return Object.prototype.hasOwnProperty.call( actions, name )
+		? actions[ name ]
+		: actions.none;
+}
 
 /**
  * Update one toggle's own markup to match its state.
@@ -169,9 +201,11 @@ function paint( toggle, isOn ) {
 	element.classList.toggle( 'is-on', isOn );
 	element.classList.toggle( 'is-off', ! isOn );
 
-	toggle.parts( 'switch' ).forEach( ( part ) =>
-		part.setAttribute( 'aria-checked', isOn ? 'true' : 'false' )
-	);
+	toggle
+		.parts( 'switch' )
+		.forEach( ( part ) =>
+			part.setAttribute( 'aria-checked', isOn ? 'true' : 'false' )
+		);
 
 	[ 'on', 'off' ].forEach( ( side ) => {
 		const active = ( 'on' === side ) === isOn;
@@ -199,9 +233,11 @@ function groupMembers( toggle ) {
  * Every member of a group runs its own action, so two toggles in one group can
  * each control their own section of the page.
  *
- * @param {Object}  toggle Toggle record.
- * @param {boolean} isOn   New state.
- * @param {Object}  opts   Options.
+ * @param {Object}  toggle         Toggle record.
+ * @param {boolean} isOn           New state.
+ * @param {Object}  opts           Options.
+ * @param {boolean} [opts.initial] Setting the state on page load.
+ * @param {boolean} [opts.user]    Changed by the visitor.
  */
 function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 	if ( ! initial && toggle.isOn === isOn ) {
@@ -210,6 +246,7 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 
 	const members = groupMembers( toggle );
 	const ran = new Set();
+	const focused = toggle.element.ownerDocument.activeElement;
 
 	members.forEach( ( member ) => {
 		paint( member, isOn );
@@ -219,13 +256,13 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 
 		if ( ! ran.has( signature ) ) {
 			ran.add( signature );
-			( actions[ member.config.action ] || actions.none )(
-				member.config,
-				isOn,
-				initial
-			);
+			actionFor( member.config.action )( member.config, isOn, initial );
 		}
 	} );
+
+	if ( user ) {
+		keepFocus( members, focused );
+	}
 
 	if ( user && members.some( ( member ) => member.config.persist ) ) {
 		writeStorage( toggle.storageKey, isOn ? 'on' : 'off' );
@@ -246,6 +283,39 @@ function setState( toggle, isOn, { initial = false, user = false } = {} ) {
 	);
 }
 
+/**
+ * If the toggle just hid the section it sits in (e.g. a switch inside each
+ * pricing table, synced by group), move focus to the same part of a group
+ * member that's still visible, rather than losing it to the page.
+ *
+ * @param {Array}   members Group members.
+ * @param {Element} focused The element that had focus before the change.
+ */
+function keepFocus( members, focused ) {
+	const visible = ( element ) => element.getClientRects().length > 0;
+	const from = members.find( ( member ) =>
+		member.element.contains( focused )
+	);
+
+	if ( ! from || visible( focused ) ) {
+		return;
+	}
+
+	const part = /^[\w-]+$/.test( focused.getAttribute( PART ) || '' )
+		? focused.getAttribute( PART )
+		: '';
+	const target = members
+		.filter( ( member ) => member !== from && visible( member.element ) )
+		.map( ( member ) =>
+			member.element.querySelector(
+				part ? `[${ PART }="${ part }"]` : `[${ PART }]`
+			)
+		)
+		.find( ( element ) => element && visible( element ) );
+
+	target?.focus();
+}
+
 function initialState( toggle ) {
 	const members = groupMembers( toggle );
 
@@ -264,7 +334,8 @@ function initialState( toggle ) {
 
 	if ( 'colorScheme' === config.action ) {
 		// The <head> script may already have applied the system preference.
-		const applied = document.documentElement.getAttribute( 'data-color-scheme' );
+		const applied =
+			document.documentElement.getAttribute( 'data-color-scheme' );
 
 		if ( 'dark' === applied || 'light' === applied ) {
 			return 'dark' === applied;
@@ -454,7 +525,7 @@ function init( root = document ) {
 
 		if ( leader ) {
 			paint( toggle, leader.isOn );
-			( actions[ toggle.config.action ] || actions.none )(
+			actionFor( toggle.config.action )(
 				toggle.config,
 				leader.isOn,
 				true

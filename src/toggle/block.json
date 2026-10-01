@@ -19,20 +19,12 @@
 		"action": {
 			"type": "string",
 			"default": "showHide",
-			"enum": [
-				"showHide",
-				"colorScheme",
-				"toggleClass",
-				"none"
-			]
+			"enum": [ "showHide", "colorScheme", "toggleClass", "none" ]
 		},
 		"defaultState": {
 			"type": "string",
 			"default": "off",
-			"enum": [
-				"off",
-				"on"
-			]
+			"enum": [ "off", "on" ]
 		},
 		"persist": {
 			"type": "boolean",
@@ -63,11 +55,7 @@
 		"animation": {
 			"type": "string",
 			"default": "fade",
-			"enum": [
-				"none",
-				"fade",
-				"slide"
-			]
+			"enum": [ "none", "fade", "slide" ]
 		},
 		"classTargets": {
 			"type": "array",
@@ -83,10 +71,7 @@
 		"classMode": {
 			"type": "string",
 			"default": "addWhenOn",
-			"enum": [
-				"addWhenOn",
-				"removeWhenOn"
-			]
+			"enum": [ "addWhenOn", "removeWhenOn" ]
 		},
 		"followSystem": {
 			"type": "boolean",
@@ -114,6 +99,6 @@
 	},
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css",
+	"viewStyle": "file:./style-index.css",
 	"viewScript": "file:./view.js"
 }

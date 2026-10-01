@@ -57,6 +57,15 @@ class Thingamablocks_Countdown_Render {
 			$wrapper['id'] = $attributes['anchor'];
 		}
 
+		// A name for the timer region; a fixed date is worth hearing in full.
+		$wrapper['aria-label'] = ( 'date' === $config['mode'] && null !== $end )
+			? sprintf(
+				/* translators: %s: date and time the countdown ends. */
+				__( 'Countdown to %s', 'thingamablocks' ),
+				wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $end )
+			)
+			: __( 'Countdown', 'thingamablocks' );
+
 		if ( $ended && 'hide' === $config['endAction'] ) {
 			// Trailing ";" because WordPress before 7.0 joins block styles with a space.
 			$wrapper['style'] = 'display:none!important;';
@@ -269,10 +278,11 @@ class Thingamablocks_Countdown_Render {
 		 * Replace each number part's text. GenerateBlocks saves a Text block's
 		 * content directly inside its tag, e.g.
 		 * <span class="gb-text gb-text-1a2b" data-countdown-part="days">00</span>.
-		 * Parts already owned by a nested countdown are skipped.
+		 * Parts already owned by a nested countdown are skipped. Quoted
+		 * attribute values are matched whole, so a ">" inside one can't end the tag early.
 		 */
 		$content = preg_replace_callback(
-			'#(<([a-z][a-z0-9]*)\b[^>]*\bdata-countdown-part="(days|hours|minutes|seconds)"[^>]*>)([^<]*)(</\2>)#i',
+			'#(<([a-z][a-z0-9]*)\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*?\sdata-countdown-part="(days|hours|minutes|seconds)"(?:[^>"\']|"[^"]*"|\'[^\']*\')*>)([^<]*)(</\2>)#i',
 			function ( $match ) use ( $values, $config ) {
 				if ( false !== strpos( $match[1], self::OWNED ) ) {
 					return $match[0];

@@ -21,8 +21,11 @@ import {
 	ToggleControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControl as ToggleGroupControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalUnitControl as UnitControl,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
@@ -36,7 +39,8 @@ const isVertical = ( direction ) => 'up' === direction || 'down' === direction;
 /**
  * The wrapper's clipping, edge fade and height, matching the front end.
  *
- * @param {Object} attributes Block attributes.
+ * @param {Object}  attributes Block attributes.
+ * @param {boolean} previewing Whether the editor's motion preview is on.
  * @return {Object} Style object.
  */
 function wrapperStyle( attributes, previewing ) {
@@ -50,7 +54,9 @@ function wrapperStyle( attributes, previewing ) {
 	// The fade only shows while previewing, so the first and last blocks stay editable.
 	if ( attributes.fadeEdges && previewing ) {
 		const fade = attributes.fadeWidth || '10%';
-		const mask = `linear-gradient(${ vertical ? 'to bottom' : 'to right' },transparent,#000 ${ fade },#000 calc(100% - ${ fade }),transparent)`;
+		const mask = `linear-gradient(${
+			vertical ? 'to bottom' : 'to right'
+		},transparent,#000 ${ fade },#000 calc(100% - ${ fade }),transparent)`;
 		style.WebkitMaskImage = mask;
 		style.maskImage = mask;
 	}
@@ -85,8 +91,15 @@ function usePreview( wrapperRef, playing, attributes ) {
 		const offset = forwards ? -size : size;
 
 		const animation = row.animate(
-			[ { transform: `translate${ axis }(0)` }, { transform: `translate${ axis }(${ offset }px)` } ],
-			{ duration: ( size / Math.max( 1, speed ) ) * 1000, iterations: Infinity, easing: 'linear' }
+			[
+				{ transform: `translate${ axis }(0)` },
+				{ transform: `translate${ axis }(${ offset }px)` },
+			],
+			{
+				duration: ( size / Math.max( 1, speed ) ) * 1000,
+				iterations: Infinity,
+				easing: 'linear',
+			}
 		);
 
 		return () => animation.cancel();
@@ -104,13 +117,18 @@ function MotionSettings( { attributes, setAttributes } ) {
 				label={ __( 'Speed', 'thingamablocks' ) }
 				help={ sprintf(
 					/* translators: %d: speed in pixels per second. */
-					__( '%d pixels per second. The same speed whatever the length of the row.', 'thingamablocks' ),
+					__(
+						'%d pixels per second. The same speed whatever the length of the row.',
+						'thingamablocks'
+					),
 					speed
 				) }
 				min={ 5 }
 				max={ 300 }
 				value={ speed }
-				onChange={ ( value ) => setAttributes( { speed: value || 50 } ) }
+				onChange={ ( value ) =>
+					setAttributes( { speed: value || 50 } )
+				}
 			/>
 			<ToggleGroupControl
 				__next40pxDefaultSize
@@ -120,33 +138,55 @@ function MotionSettings( { attributes, setAttributes } ) {
 				value={ direction }
 				onChange={ ( value ) => setAttributes( { direction: value } ) }
 			>
-				<ToggleGroupControlOption value="left" label={ __( 'Left', 'thingamablocks' ) } />
-				<ToggleGroupControlOption value="right" label={ __( 'Right', 'thingamablocks' ) } />
-				<ToggleGroupControlOption value="up" label={ __( 'Up', 'thingamablocks' ) } />
-				<ToggleGroupControlOption value="down" label={ __( 'Down', 'thingamablocks' ) } />
+				<ToggleGroupControlOption
+					value="left"
+					label={ __( 'Left', 'thingamablocks' ) }
+				/>
+				<ToggleGroupControlOption
+					value="right"
+					label={ __( 'Right', 'thingamablocks' ) }
+				/>
+				<ToggleGroupControlOption
+					value="up"
+					label={ __( 'Up', 'thingamablocks' ) }
+				/>
+				<ToggleGroupControlOption
+					value="down"
+					label={ __( 'Down', 'thingamablocks' ) }
+				/>
 			</ToggleGroupControl>
 			{ isVertical( direction ) && (
 				<div className="tmb-marquee-control">
 					<UnitControl
 						__next40pxDefaultSize
 						label={ __( 'Height', 'thingamablocks' ) }
-						help={ __( 'An up/down marquee needs a fixed height to scroll within.', 'thingamablocks' ) }
+						help={ __(
+							'An up/down marquee needs a fixed height to scroll within.',
+							'thingamablocks'
+						) }
 						value={ height }
 						units={ [
 							{ value: 'rem', label: 'rem' },
 							{ value: 'px', label: 'px' },
 							{ value: 'vh', label: 'vh' },
 						] }
-						onChange={ ( value ) => setAttributes( { height: value || '20rem' } ) }
+						onChange={ ( value ) =>
+							setAttributes( { height: value || '20rem' } )
+						}
 					/>
 				</div>
 			) }
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Pause on hover', 'thingamablocks' ) }
-				help={ __( 'Also pauses while a link inside it has keyboard focus.', 'thingamablocks' ) }
+				help={ __(
+					'It always pauses while a link inside it has keyboard focus, whatever this is set to.',
+					'thingamablocks'
+				) }
 				checked={ pauseOnHover }
-				onChange={ ( value ) => setAttributes( { pauseOnHover: value } ) }
+				onChange={ ( value ) =>
+					setAttributes( { pauseOnHover: value } )
+				}
 			/>
 		</PanelBody>
 	);
@@ -154,11 +194,17 @@ function MotionSettings( { attributes, setAttributes } ) {
 
 function EdgeSettings( { attributes, setAttributes } ) {
 	return (
-		<PanelBody title={ __( 'Edges', 'thingamablocks' ) } initialOpen={ false }>
+		<PanelBody
+			title={ __( 'Edges', 'thingamablocks' ) }
+			initialOpen={ false }
+		>
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Fade the edges', 'thingamablocks' ) }
-				help={ __( 'Items fade in and out at the ends instead of being cut off.', 'thingamablocks' ) }
+				help={ __(
+					'Items fade in and out at the ends instead of being cut off.',
+					'thingamablocks'
+				) }
 				checked={ attributes.fadeEdges }
 				onChange={ ( value ) => setAttributes( { fadeEdges: value } ) }
 			/>
@@ -173,7 +219,9 @@ function EdgeSettings( { attributes, setAttributes } ) {
 							{ value: 'rem', label: 'rem' },
 							{ value: 'px', label: 'px' },
 						] }
-						onChange={ ( value ) => setAttributes( { fadeWidth: value || '10%' } ) }
+						onChange={ ( value ) =>
+							setAttributes( { fadeWidth: value || '10%' } )
+						}
 					/>
 				</div>
 			) }
@@ -183,7 +231,10 @@ function EdgeSettings( { attributes, setAttributes } ) {
 
 function AccessibilitySettings( { attributes, setAttributes, hasPause } ) {
 	return (
-		<PanelBody title={ __( 'Accessibility', 'thingamablocks' ) } initialOpen={ ! hasPause }>
+		<PanelBody
+			title={ __( 'Accessibility', 'thingamablocks' ) }
+			initialOpen={ ! hasPause }
+		>
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
@@ -222,7 +273,10 @@ function MarqueeEdit( { attributes, setAttributes, clientId } ) {
 						return;
 					}
 
-					const part = block.attributes?.htmlAttributes?.[ 'data-marquee-part' ];
+					const part =
+						block.attributes?.htmlAttributes?.[
+							'data-marquee-part'
+						];
 
 					if ( part ) {
 						found.add( part );
@@ -261,7 +315,9 @@ function MarqueeEdit( { attributes, setAttributes, clientId } ) {
 						}
 						onClick={ () => setPreviewing( ! previewing ) }
 					>
-						{ previewing ? __( 'Stop', 'thingamablocks' ) : __( 'Preview', 'thingamablocks' ) }
+						{ previewing
+							? __( 'Stop', 'thingamablocks' )
+							: __( 'Preview', 'thingamablocks' ) }
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
@@ -277,8 +333,14 @@ function MarqueeEdit( { attributes, setAttributes, clientId } ) {
 						</Notice>
 					</div>
 				) }
-				<MotionSettings attributes={ attributes } setAttributes={ setAttributes } />
-				<EdgeSettings attributes={ attributes } setAttributes={ setAttributes } />
+				<MotionSettings
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+				/>
+				<EdgeSettings
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+				/>
 				<AccessibilitySettings
 					attributes={ attributes }
 					setAttributes={ setAttributes }
@@ -293,7 +355,8 @@ function MarqueeEdit( { attributes, setAttributes, clientId } ) {
 
 export default function Edit( props ) {
 	const hasInnerBlocks = useSelect(
-		( select ) => select( blockEditorStore ).getBlockCount( props.clientId ) > 0,
+		( select ) =>
+			select( blockEditorStore ).getBlockCount( props.clientId ) > 0,
 		[ props.clientId ]
 	);
 

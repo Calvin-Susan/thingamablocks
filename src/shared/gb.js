@@ -18,7 +18,7 @@ export const toBlockObjects = ( template = [] ) =>
 		innerBlocks: toBlockObjects( innerBlocks ),
 	} ) );
 
-/**
+/*
  * GenerateBlocks style helpers: GB stores longhand properties.
  */
 export const radius = ( value ) => ( {
@@ -59,4 +59,17 @@ export const color = {
 	surface: 'var(--base-2, #f7f8f9)',
 	border: 'var(--base, #f0f0f0)',
 	background: 'var(--base-3, #ffffff)',
+};
+
+/**
+ * GenerateBlocks styles that hide text visually but keep it for screen
+ * readers (the usual "screen-reader-text" technique).
+ */
+export const visuallyHidden = {
+	position: 'absolute',
+	width: '1px',
+	height: '1px',
+	overflow: 'hidden',
+	clipPath: 'inset(50%)',
+	whiteSpace: 'nowrap',
 };

@@ -32,7 +32,9 @@ registerBlockType( metadata.name, {
 			down: __( 'Down', 'thingamablocks' ),
 		};
 
-		return `${ __( 'Marquee', 'thingamablocks' ) } · ${ labels[ attributes.direction ] || labels.left }`;
+		return `${ __( 'Marquee', 'thingamablocks' ) } · ${
+			labels[ attributes.direction ] || labels.left
+		}`;
 	},
 	example: {
 		attributes: { fadeEdges: true },

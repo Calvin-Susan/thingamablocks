@@ -31,7 +31,9 @@ registerBlockType( metadata.name, {
 			recurring: __( 'Recurring', 'thingamablocks' ),
 		};
 
-		return `${ __( 'Countdown', 'thingamablocks' ) } · ${ labels[ attributes.mode ] || labels.date }`;
+		return `${ __( 'Countdown', 'thingamablocks' ) } · ${
+			labels[ attributes.mode ] || labels.date
+		}`;
 	},
 	example: {
 		innerBlocks: toBlockObjects( variations[ 0 ].innerBlocks ),

@@ -37,8 +37,9 @@ the essentials:
   assigns unique IDs itself. GB nested selectors must start with `&` (no
   ancestor selectors), so state styling is on the part: `&[aria-checked="true"]`,
   `&[data-active="true"]`, `&[aria-pressed="true"]`.
-- **Patterns** live in `patterns/*.html` (exported from the editor, so they're
-  exactly what GB saves) and are registered in `includes/patterns.php`.
+- **Patterns** live in `patterns/*.php` (markup exported from the editor, so
+  it's exactly what GB saves, with visible strings wrapped for translation) and
+  are registered in `includes/patterns.php` with `filePath`.
 
 ## Commands
 

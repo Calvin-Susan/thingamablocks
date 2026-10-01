@@ -35,14 +35,15 @@ export function usePageIds() {
 
 /**
  * Mirrors Thingamablocks_Sanitize::is_safe_selector(): plain selector characters
- * only, with balanced brackets and quotes. Anything else is dropped on save.
+ * only (no { } ; @, comments or url(), even in quotes), with balanced brackets
+ * and quotes. Anything else is dropped on save.
  *
  * @param {string} value Selector.
  * @return {boolean} Whether the server will keep it.
  */
 export function isSafeSelector( value ) {
 	// eslint-disable-next-line no-control-regex
-	if ( /[<\\\x00-\x1f\x7f]/.test( value ) ) {
+	if ( /[<\\{};@\x00-\x1f\x7f]|\/\*|url\s*\(/i.test( value ) ) {
 		return false;
 	}
 
@@ -55,7 +56,10 @@ export function isSafeSelector( value ) {
 			continue;
 		}
 
-		if ( char.charCodeAt( 0 ) < 128 && ! /[A-Za-z0-9_\-#.[\]="'~^$*|:(), >+]/.test( char ) ) {
+		if (
+			char.charCodeAt( 0 ) < 128 &&
+			! /[A-Za-z0-9_\-#.[\]="'~^$*|:(), >+]/.test( char )
+		) {
 			return false;
 		}
 
@@ -63,7 +67,10 @@ export function isSafeSelector( value ) {
 			quote = char;
 		} else if ( '(' === char || '[' === char ) {
 			stack.push( char );
-		} else if ( ( ')' === char && stack.pop() !== '(' ) || ( ']' === char && stack.pop() !== '[' ) ) {
+		} else if (
+			( ')' === char && stack.pop() !== '(' ) ||
+			( ']' === char && stack.pop() !== '[' )
+		) {
 			return false;
 		}
 	}
@@ -74,12 +81,18 @@ export function isSafeSelector( value ) {
 const isPlainId = ( value ) => /^#?[A-Za-z][\w-]*$/.test( value );
 const stripHash = ( value ) => value.replace( /^#/, '' );
 
-export default function TargetsControl( { label, help, value = [], onChange } ) {
+export default function TargetsControl( {
+	label,
+	help,
+	value = [],
+	onChange,
+} ) {
 	const pageIds = usePageIds();
 
 	const unsafe = value.filter( ( target ) => ! isSafeSelector( target ) );
 	const missing = value.filter(
-		( target ) => isPlainId( target ) && ! pageIds.includes( stripHash( target ) )
+		( target ) =>
+			isPlainId( target ) && ! pageIds.includes( stripHash( target ) )
 	);
 
 	return (
@@ -89,15 +102,22 @@ export default function TargetsControl( { label, help, value = [], onChange } ) 
 				__nextHasNoMarginBottom
 				label={ label }
 				value={ value }
-				suggestions={ pageIds.filter( ( id ) => ! value.includes( id ) ) }
+				suggestions={ pageIds.filter(
+					( id ) => ! value.includes( id )
+				) }
 				onChange={ ( tokens ) =>
 					onChange(
 						tokens
 							.map( ( token ) =>
-								( 'string' === typeof token ? token : token.value ).trim()
+								( 'string' === typeof token
+									? token
+									: token.value
+								).trim()
 							)
 							// "#pricing" and "pricing" mean the same thing; store the bare ID.
-							.map( ( token ) => ( isPlainId( token ) ? stripHash( token ) : token ) )
+							.map( ( token ) =>
+								isPlainId( token ) ? stripHash( token ) : token
+							)
 							.filter( Boolean )
 					)
 				}

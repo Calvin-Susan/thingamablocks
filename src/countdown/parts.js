@@ -8,32 +8,57 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls, store as blockEditorStore } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	store as blockEditorStore,
+} from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 
-const PART_BLOCKS = [ 'generateblocks/element', 'generateblocks/text', 'generateblocks/shape' ];
+const PART_BLOCKS = [
+	'generateblocks/element',
+	'generateblocks/text',
+	'generateblocks/shape',
+];
 
 export function partOptions( blockName ) {
 	const options = [
-		{ value: '', label: __( 'None (decoration or label)', 'thingamablocks' ) },
+		{
+			value: '',
+			label: __( 'None (decoration or label)', 'thingamablocks' ),
+		},
 		{ value: 'part:days', label: __( 'Days number', 'thingamablocks' ) },
 		{ value: 'part:hours', label: __( 'Hours number', 'thingamablocks' ) },
-		{ value: 'part:minutes', label: __( 'Minutes number', 'thingamablocks' ) },
-		{ value: 'part:seconds', label: __( 'Seconds number', 'thingamablocks' ) },
+		{
+			value: 'part:minutes',
+			label: __( 'Minutes number', 'thingamablocks' ),
+		},
+		{
+			value: 'part:seconds',
+			label: __( 'Seconds number', 'thingamablocks' ),
+		},
 		{ value: 'unit:days', label: __( 'Days box', 'thingamablocks' ) },
 		{ value: 'unit:hours', label: __( 'Hours box', 'thingamablocks' ) },
 		{ value: 'unit:minutes', label: __( 'Minutes box', 'thingamablocks' ) },
 		{ value: 'unit:seconds', label: __( 'Seconds box', 'thingamablocks' ) },
-		{ value: 'part:timer', label: __( 'Timer (hidden when it ends)', 'thingamablocks' ) },
-		{ value: 'part:ended', label: __( 'Ended message (shown when it ends)', 'thingamablocks' ) },
+		{
+			value: 'part:timer',
+			label: __( 'Timer (hidden when it ends)', 'thingamablocks' ),
+		},
+		{
+			value: 'part:ended',
+			label: __( 'Ended message (shown when it ends)', 'thingamablocks' ),
+		},
 		{ value: 'part:separator', label: __( 'Separator', 'thingamablocks' ) },
 	];
 
 	// Numbers replace the block's text, so only Text blocks can be numbers.
 	return 'generateblocks/text' === blockName
 		? options
-		: options.filter( ( option ) => ! /^part:(days|hours|minutes|seconds)$/.test( option.value ) );
+		: options.filter(
+				( option ) =>
+					! /^part:(days|hours|minutes|seconds)$/.test( option.value )
+		  );
 }
 
 /**
@@ -70,7 +95,10 @@ function helpText( value ) {
 	}
 
 	if ( 'part:separator' === value ) {
-		return __( 'Hidden from screen readers, e.g. a colon between numbers.', 'thingamablocks' );
+		return __(
+			'Hidden from screen readers, e.g. a colon between numbers.',
+			'thingamablocks'
+		);
 	}
 
 	return __( 'What this block is in the countdown.', 'thingamablocks' );
@@ -85,8 +113,10 @@ const withCountdownPartControl = createHigherOrderComponent(
 			( select ) =>
 				isPartBlock &&
 				isSelected &&
-				select( blockEditorStore ).getBlockParentsByBlockName( clientId, 'thingamablocks/countdown' )
-					.length > 0,
+				select( blockEditorStore ).getBlockParentsByBlockName(
+					clientId,
+					'thingamablocks/countdown'
+				).length > 0,
 			[ clientId, isPartBlock, isSelected ]
 		);
 
@@ -105,7 +135,11 @@ const withCountdownPartControl = createHigherOrderComponent(
 
 			if ( next ) {
 				const [ kind, part ] = next.split( ':' );
-				updated[ 'part' === kind ? 'data-countdown-part' : 'data-countdown-unit' ] = part;
+				updated[
+					'part' === kind
+						? 'data-countdown-part'
+						: 'data-countdown-unit'
+				] = part;
 			}
 
 			setAttributes( { htmlAttributes: updated } );
@@ -115,7 +149,9 @@ const withCountdownPartControl = createHigherOrderComponent(
 			<>
 				<BlockEdit { ...props } />
 				<InspectorControls>
-					<PanelBody title={ __( 'Countdown part', 'thingamablocks' ) }>
+					<PanelBody
+						title={ __( 'Countdown part', 'thingamablocks' ) }
+					>
 						<SelectControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
@@ -133,4 +169,8 @@ const withCountdownPartControl = createHigherOrderComponent(
 	'withCountdownPartControl'
 );
 
-addFilter( 'editor.BlockEdit', 'thingamablocks/countdown-part-control', withCountdownPartControl );
+addFilter(
+	'editor.BlockEdit',
+	'thingamablocks/countdown-part-control',
+	withCountdownPartControl
+);

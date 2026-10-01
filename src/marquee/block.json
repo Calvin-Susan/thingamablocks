@@ -6,7 +6,15 @@
 	"title": "Marquee",
 	"category": "generateblocks",
 	"description": "A smooth, endless scrolling strip of logos, images or messages, built from GenerateBlocks elements.",
-	"keywords": [ "marquee", "ticker", "logos", "scroll", "carousel", "slider", "clients" ],
+	"keywords": [
+		"marquee",
+		"ticker",
+		"logos",
+		"scroll",
+		"carousel",
+		"slider",
+		"clients"
+	],
 	"textdomain": "thingamablocks",
 	"attributes": {
 		"speed": {

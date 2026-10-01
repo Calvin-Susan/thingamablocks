@@ -14,7 +14,10 @@ import { __ } from '@wordpress/i18n';
 import { border, color, padding, radius } from '../shared/gb';
 import { variationIcons } from './icon';
 
-const shape = ( html, styles = {} ) => [ 'generateblocks/shape', { html, styles } ];
+const shape = ( html, styles = {} ) => [
+	'generateblocks/shape',
+	{ html, styles },
+];
 
 const text = ( content, styles, tagName = 'span' ) => [
 	'generateblocks/text',
@@ -90,18 +93,24 @@ const logoMarks = [
 	'<rect x="4" y="8" width="10" height="16" rx="2"></rect><rect x="18" y="4" width="10" height="24" rx="2"></rect><rect x="36" y="11" width="60" height="10" rx="5"></rect>',
 ];
 
+// The pause button comes first in each layout, so keyboard users reach it
+// before the links in the row. It's absolutely positioned, so the order
+// doesn't change the look.
 const logos = () => [
+	pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
 	items(
 		{ columnGap: '4rem', ...padding( '1.5rem', '0' ) },
 		logoMarks.map( ( mark ) =>
-			shape( `<svg aria-hidden="true" viewBox="0 0 112 32" fill="currentColor">${ mark }</svg>`, {
-				display: 'flex',
-				color: color.subtle,
-				svg: { width: 'auto', height: '2rem' },
-			} )
+			shape(
+				`<svg aria-hidden="true" viewBox="0 0 112 32" fill="currentColor">${ mark }</svg>`,
+				{
+					display: 'flex',
+					color: color.subtle,
+					svg: { width: 'auto', height: '2rem' },
+				}
+			)
 		)
 	),
-	pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
 ];
 
 const star =
@@ -122,28 +131,33 @@ const messages = () => {
 				whiteSpace: 'nowrap',
 				fontSize: '1rem',
 				fontWeight: '600',
-				color: '#ffffff',
+				// base-3 is white normally and dark in dark mode, so the text stays readable on the accent.
+				color: 'var(--base-3, #ffffff)',
 			} )
 		);
 		children.push(
 			shape( star, {
 				display: 'flex',
-				color: 'rgba(255, 255, 255, 0.6)',
+				color: 'var(--base-3, #ffffff)',
+				opacity: '0.6',
 				svg: { width: '0.875rem', height: '0.875rem' },
 			} )
 		);
 	} );
 
 	return [
+		pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
 		[
 			'generateblocks/element',
 			{
 				tagName: 'div',
-				styles: { backgroundColor: color.accent, ...padding( '0.875rem', '0' ) },
+				styles: {
+					backgroundColor: color.accent,
+					...padding( '0.875rem', '0' ),
+				},
 			},
 			[ items( { columnGap: '2rem' }, children ) ],
 		],
-		pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
 	];
 };
 
@@ -162,30 +176,61 @@ const headline = () => {
 				fontWeight: '800',
 				lineHeight: '1.1',
 				letterSpacing: '-0.03em',
-				color: index % 2 ? color.subtle : color.text,
+				color: index % 2 ? color.muted : color.text,
 			} )
 		);
 		children.push(
 			shape( star, {
 				display: 'flex',
 				color: color.accent,
-				svg: { width: 'clamp(1.5rem, 3vw, 2.5rem)', height: 'clamp(1.5rem, 3vw, 2.5rem)' },
+				svg: {
+					width: 'clamp(1.5rem, 3vw, 2.5rem)',
+					height: 'clamp(1.5rem, 3vw, 2.5rem)',
+				},
 			} )
 		);
 	} );
 
-	return [ items( { columnGap: '2.5rem', ...padding( '1rem', '0' ) }, children ), pauseButton() ];
+	return [
+		pauseButton(),
+		items( { columnGap: '2.5rem', ...padding( '1rem', '0' ) }, children ),
+	];
 };
 
 const quotes = () => {
 	const cards = [
-		[ __( '“Fast, friendly, and the site looks incredible.”', 'thingamablocks' ), __( 'Sam R.', 'thingamablocks' ) ],
-		[ __( '“They took the stress out of the whole project.”', 'thingamablocks' ), __( 'Priya K.', 'thingamablocks' ) ],
-		[ __( '“Our enquiries doubled in the first month.”', 'thingamablocks' ), __( 'Jordan T.', 'thingamablocks' ) ],
-		[ __( '“Clear, honest and on time. Would hire again.”', 'thingamablocks' ), __( 'Alex M.', 'thingamablocks' ) ],
+		[
+			__(
+				'“Fast, friendly, and the site looks incredible.”',
+				'thingamablocks'
+			),
+			__( 'Sam R.', 'thingamablocks' ),
+		],
+		[
+			__(
+				'“They took the stress out of the whole project.”',
+				'thingamablocks'
+			),
+			__( 'Priya K.', 'thingamablocks' ),
+		],
+		[
+			__(
+				'“Our enquiries doubled in the first month.”',
+				'thingamablocks'
+			),
+			__( 'Jordan T.', 'thingamablocks' ),
+		],
+		[
+			__(
+				'“Clear, honest and on time. Would hire again.”',
+				'thingamablocks'
+			),
+			__( 'Alex M.', 'thingamablocks' ),
+		],
 	];
 
 	return [
+		pauseButton(),
 		items(
 			{ flexDirection: 'column', alignItems: 'stretch', rowGap: '1rem' },
 			cards.map( ( [ quote, name ] ) => [
@@ -204,12 +249,23 @@ const quotes = () => {
 					},
 				},
 				[
-					text( quote, { marginBottom: '0.5rem', color: color.text }, 'p' ),
-					text( name, { fontSize: '0.875rem', fontWeight: '600', color: color.muted }, 'figcaption' ),
+					text(
+						quote,
+						{ marginBottom: '0.5rem', color: color.text },
+						'p'
+					),
+					text(
+						name,
+						{
+							fontSize: '0.875rem',
+							fontWeight: '600',
+							color: color.muted,
+						},
+						'figcaption'
+					),
 				],
 			] )
 		),
-		pauseButton(),
 	];
 };
 
@@ -217,17 +273,26 @@ export const variations = [
 	{
 		name: 'logos',
 		title: __( 'Logo strip', 'thingamablocks' ),
-		description: __( 'Client or partner logos. Swap the placeholders for your images.', 'thingamablocks' ),
+		description: __(
+			'Client or partner logos. Swap the placeholders for your images.',
+			'thingamablocks'
+		),
 		icon: variationIcons.logos,
 		isDefault: true,
-		attributes: { speed: 40, ariaLabel: __( 'Our clients', 'thingamablocks' ) },
+		attributes: {
+			speed: 40,
+			ariaLabel: __( 'Our clients', 'thingamablocks' ),
+		},
 		innerBlocks: logos(),
 		scope: [ 'block' ],
 	},
 	{
 		name: 'messages',
 		title: __( 'Message ticker', 'thingamablocks' ),
-		description: __( 'A coloured band of short messages, like an announcement bar.', 'thingamablocks' ),
+		description: __(
+			'A coloured band of short messages, like an announcement bar.',
+			'thingamablocks'
+		),
 		icon: variationIcons.messages,
 		attributes: { speed: 60, fadeEdges: false },
 		innerBlocks: messages(),
@@ -236,7 +301,10 @@ export const variations = [
 	{
 		name: 'headline',
 		title: __( 'Big scrolling headline', 'thingamablocks' ),
-		description: __( 'Large words drifting across the page.', 'thingamablocks' ),
+		description: __(
+			'Large words drifting across the page.',
+			'thingamablocks'
+		),
 		icon: variationIcons.headline,
 		attributes: { speed: 45, fadeWidth: '15%' },
 		innerBlocks: headline(),
@@ -245,7 +313,10 @@ export const variations = [
 	{
 		name: 'quotes',
 		title: __( 'Vertical quotes', 'thingamablocks' ),
-		description: __( 'Cards scrolling upwards, e.g. testimonials.', 'thingamablocks' ),
+		description: __(
+			'Cards scrolling upwards, e.g. testimonials.',
+			'thingamablocks'
+		),
 		icon: variationIcons.quotes,
 		attributes: { speed: 30, direction: 'up', height: '22rem' },
 		innerBlocks: quotes(),

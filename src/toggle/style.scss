@@ -1,15 +1,18 @@
-// Front-end and editor base styles. Deliberately minimal: the Toggle's look
+// Front-end base styles (block.json "viewStyle": loaded only on pages with a
+// Toggle). Deliberately minimal: the Toggle's look
 // lives in the GenerateBlocks styles of its inner blocks, not here.
 
 // Front end only: in the editor the parts must stay selectable and editable.
 body:not(.editor-styles-wrapper) .tmb-toggle {
+
 	[data-toggle-part] {
 		cursor: pointer;
 		user-select: none;
 		-webkit-tap-highlight-color: transparent;
 	}
 
-	// Clicks on the knob or an icon inside the switch count as clicks on the switch.
+	// Clicks on the knob or an icon inside the switch count as clicks on
+	// the switch.
 	[data-toggle-part="switch"] > * {
 		pointer-events: none;
 	}
@@ -22,6 +25,7 @@ body:not(.editor-styles-wrapper) .tmb-toggle {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
 	.tmb-toggle,
 	.tmb-toggle * {
 		transition-duration: 0.01ms !important;

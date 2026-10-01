@@ -26,10 +26,15 @@ import {
 	ToggleControl,
 	ToolbarButton,
 	ToolbarGroup,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
-import { dateI18n, getSettings as getDateSettings, date as formatDate } from '@wordpress/date';
+import {
+	dateI18n,
+	getSettings as getDateSettings,
+	date as formatDate,
+} from '@wordpress/date';
 import { useEffect, useState } from '@wordpress/element';
 
 import TargetsControl from '../shared/targets-control';
@@ -66,9 +71,10 @@ function siteTimeZone() {
 	const sign = offset < 0 ? '-' : '+';
 	const minutes = Math.round( Math.abs( offset ) * 60 );
 
-	return `${ sign }${ String( Math.floor( minutes / 60 ) ).padStart( 2, '0' ) }:${ String(
-		minutes % 60
-	).padStart( 2, '0' ) }`;
+	return `${ sign }${ String( Math.floor( minutes / 60 ) ).padStart(
+		2,
+		'0'
+	) }:${ String( minutes % 60 ).padStart( 2, '0' ) }`;
 }
 
 /**
@@ -78,7 +84,9 @@ function siteTimeZone() {
  * @return {number|null} ms since the epoch.
  */
 function endDateToUtc( value ) {
-	const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec( value || '' );
+	const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(
+		value || ''
+	);
 
 	if ( ! match ) {
 		return null;
@@ -109,25 +117,43 @@ function relative( ms ) {
 	const parts = [];
 
 	if ( days ) {
-		/* translators: %d: number of days. */
-		parts.push( sprintf( _n( '%d day', '%d days', days, 'thingamablocks' ), days ) );
+		parts.push(
+			/* translators: %d: number of days. */
+			sprintf( _n( '%d day', '%d days', days, 'thingamablocks' ), days )
+		);
 	}
 
 	if ( hours || days ) {
-		/* translators: %d: number of hours. */
-		parts.push( sprintf( _n( '%d hour', '%d hours', hours, 'thingamablocks' ), hours ) );
+		parts.push(
+			sprintf(
+				/* translators: %d: number of hours. */
+				_n( '%d hour', '%d hours', hours, 'thingamablocks' ),
+				hours
+			)
+		);
 	}
 
 	if ( ! days ) {
-		/* translators: %d: number of minutes. */
-		parts.push( sprintf( _n( '%d minute', '%d minutes', minutes, 'thingamablocks' ), minutes ) );
+		parts.push(
+			sprintf(
+				/* translators: %d: number of minutes. */
+				_n( '%d minute', '%d minutes', minutes, 'thingamablocks' ),
+				minutes
+			)
+		);
 	}
 
 	const span = parts.join( ', ' );
 
 	return ms >= 0
-		? /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( 'in %s', 'thingamablocks' ), span )
-		: /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf( __( '%s ago', 'thingamablocks' ), span );
+		? /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf(
+				__( 'in %s', 'thingamablocks' ),
+				span
+		  )
+		: /* translators: %s: a duration, e.g. "2 days, 4 hours". */ sprintf(
+				__( '%s ago', 'thingamablocks' ),
+				span
+		  );
 }
 
 function formatMoment( ms ) {
@@ -154,7 +180,9 @@ function DateSettings( { endDate, setAttributes } ) {
 						__next40pxDefaultSize
 						className="tmb-countdown-date-button"
 					>
-						{ end ? formatMoment( end ) : __( 'Pick a date', 'thingamablocks' ) }
+						{ end
+							? formatMoment( end )
+							: __( 'Pick a date', 'thingamablocks' ) }
 					</Button>
 				) }
 				renderContent={ () => (
@@ -163,7 +191,9 @@ function DateSettings( { endDate, setAttributes } ) {
 							currentDate={ endDate || undefined }
 							is12Hour={ is12Hour }
 							onChange={ ( value ) =>
-								setAttributes( { endDate: ( value || '' ).slice( 0, 19 ) } )
+								setAttributes( {
+									endDate: ( value || '' ).slice( 0, 19 ),
+								} )
 							}
 						/>
 					</div>
@@ -172,8 +202,14 @@ function DateSettings( { endDate, setAttributes } ) {
 			{ end && (
 				<p className="tmb-countdown-help">
 					{ end > Date.now()
-						? /* translators: %s: e.g. "in 2 days, 4 hours". */ sprintf( __( 'Ends %s.', 'thingamablocks' ), relative( end - Date.now() ) )
-						: /* translators: %s: e.g. "3 hours ago". */ sprintf( __( 'Ended %s.', 'thingamablocks' ), relative( end - Date.now() ) ) }
+						? /* translators: %s: e.g. "in 2 days, 4 hours". */ sprintf(
+								__( 'Ends %s.', 'thingamablocks' ),
+								relative( end - Date.now() )
+						  )
+						: /* translators: %s: e.g. "3 hours ago". */ sprintf(
+								__( 'Ended %s.', 'thingamablocks' ),
+								relative( end - Date.now() )
+						  ) }
 				</p>
 			) }
 		</>
@@ -239,7 +275,9 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 				__nextHasNoMarginBottom
 				label={ __( 'Start again when it ends', 'thingamablocks' ) }
 				checked={ attributes.evergreenRestart }
-				onChange={ ( value ) => setAttributes( { evergreenRestart: value } ) }
+				onChange={ ( value ) =>
+					setAttributes( { evergreenRestart: value } )
+				}
 			/>
 		</>
 	);
@@ -248,7 +286,12 @@ function EvergreenSettings( { attributes, setAttributes } ) {
 function RecurringSettings( { attributes, setAttributes } ) {
 	const { recurringTime, recurringDays } = attributes;
 	const timeZone = siteTimeZone();
-	const next = nextRecurring( Date.now(), recurringTime, recurringDays, timeZone );
+	const next = nextRecurring(
+		Date.now(),
+		recurringTime,
+		recurringDays,
+		timeZone
+	);
 
 	const toggleDay = ( day, checked ) => {
 		const days = checked
@@ -256,7 +299,9 @@ function RecurringSettings( { attributes, setAttributes } ) {
 			: recurringDays.filter( ( item ) => item !== day );
 
 		// Every day ticked is the same as none: store it as "every day".
-		setAttributes( { recurringDays: 7 === days.length ? [] : days.sort() } );
+		setAttributes( {
+			recurringDays: 7 === days.length ? [] : days.sort(),
+		} );
 	};
 
 	const allDays = ! recurringDays.length;
@@ -270,7 +315,9 @@ function RecurringSettings( { attributes, setAttributes } ) {
 				label={ __( 'Ends at', 'thingamablocks' ) }
 				value={ recurringTime }
 				// An emptied field keeps the last time rather than saving nothing.
-				onChange={ ( value ) => value && setAttributes( { recurringTime: value } ) }
+				onChange={ ( value ) =>
+					value && setAttributes( { recurringTime: value } )
+				}
 			/>
 			<fieldset className="tmb-countdown-weekdays">
 				<legend>{ __( 'On', 'thingamablocks' ) }</legend>
@@ -297,7 +344,10 @@ function RecurringSettings( { attributes, setAttributes } ) {
 				{ next
 					? sprintf(
 							/* translators: %s: date and time. */
-							__( 'Next: %s. Then it starts over for the next one.', 'thingamablocks' ),
+							__(
+								'Next: %s. Then it starts over for the next one.',
+								'thingamablocks'
+							),
 							formatMoment( next )
 					  )
 					: __( 'Pick at least one day.', 'thingamablocks' ) }
@@ -311,7 +361,8 @@ function TimingSettings( { attributes, setAttributes } ) {
 	const { timezone } = getDateSettings();
 	const offsetName = siteTimeZone();
 	const zoneName =
-		timezone?.string || ( '+00:00' === offsetName ? 'UTC' : `UTC${ offsetName }` );
+		timezone?.string ||
+		( '+00:00' === offsetName ? 'UTC' : `UTC${ offsetName }` );
 
 	return (
 		<PanelBody title={ __( 'Countdown', 'thingamablocks' ) }>
@@ -321,28 +372,52 @@ function TimingSettings( { attributes, setAttributes } ) {
 				label={ __( 'Count down to', 'thingamablocks' ) }
 				value={ mode }
 				options={ [
-					{ value: 'date', label: __( 'A date and time', 'thingamablocks' ) },
-					{ value: 'evergreen', label: __( 'A deadline per visitor (evergreen)', 'thingamablocks' ) },
-					{ value: 'recurring', label: __( 'A time that repeats', 'thingamablocks' ) },
+					{
+						value: 'date',
+						label: __( 'A date and time', 'thingamablocks' ),
+					},
+					{
+						value: 'evergreen',
+						label: __(
+							'A deadline per visitor (evergreen)',
+							'thingamablocks'
+						),
+					},
+					{
+						value: 'recurring',
+						label: __( 'A time that repeats', 'thingamablocks' ),
+					},
 				] }
 				onChange={ ( value ) => setAttributes( { mode: value } ) }
 			/>
 			<div className="tmb-countdown-mode">
 				{ 'date' === mode && (
-					<DateSettings endDate={ attributes.endDate } setAttributes={ setAttributes } />
+					<DateSettings
+						endDate={ attributes.endDate }
+						setAttributes={ setAttributes }
+					/>
 				) }
 				{ 'evergreen' === mode && (
-					<EvergreenSettings attributes={ attributes } setAttributes={ setAttributes } />
+					<EvergreenSettings
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+					/>
 				) }
 				{ 'recurring' === mode && (
-					<RecurringSettings attributes={ attributes } setAttributes={ setAttributes } />
+					<RecurringSettings
+						attributes={ attributes }
+						setAttributes={ setAttributes }
+					/>
 				) }
 			</div>
 			{ 'evergreen' !== mode && (
 				<p className="tmb-countdown-help">
 					{ sprintf(
 						/* translators: %s: time zone name. */
-						__( 'Times are in the site’s time zone (%s), set in Settings → General.', 'thingamablocks' ),
+						__(
+							'Times are in the site’s time zone (%s), set in Settings → General.',
+							'thingamablocks'
+						),
 						zoneName
 					) }
 				</p>
@@ -353,7 +428,10 @@ function TimingSettings( { attributes, setAttributes } ) {
 
 function DisplaySettings( { attributes, setAttributes } ) {
 	return (
-		<PanelBody title={ __( 'Display', 'thingamablocks' ) } initialOpen={ false }>
+		<PanelBody
+			title={ __( 'Display', 'thingamablocks' ) }
+			initialOpen={ false }
+		>
 			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Two-digit numbers', 'thingamablocks' ) }
@@ -369,7 +447,9 @@ function DisplaySettings( { attributes, setAttributes } ) {
 					'thingamablocks'
 				) }
 				checked={ attributes.hideEmptyUnits }
-				onChange={ ( value ) => setAttributes( { hideEmptyUnits: value } ) }
+				onChange={ ( value ) =>
+					setAttributes( { hideEmptyUnits: value } )
+				}
 			/>
 			<p className="tmb-countdown-help">
 				{ __(
@@ -387,7 +467,10 @@ function EndSettings( { attributes, setAttributes } ) {
 		( 'evergreen' === attributes.mode && attributes.evergreenRestart );
 
 	return (
-		<PanelBody title={ __( 'When it ends', 'thingamablocks' ) } initialOpen={ false }>
+		<PanelBody
+			title={ __( 'When it ends', 'thingamablocks' ) }
+			initialOpen={ false }
+		>
 			{ neverEnds && (
 				<Notice status="info" isDismissible={ false }>
 					{ __(
@@ -402,9 +485,21 @@ function EndSettings( { attributes, setAttributes } ) {
 				label={ __( 'The countdown', 'thingamablocks' ) }
 				value={ attributes.endAction }
 				options={ [
-					{ value: 'message', label: __( 'Shows its “ended” message', 'thingamablocks' ) },
-					{ value: 'zeros', label: __( 'Stays at zero', 'thingamablocks' ) },
-					{ value: 'hide', label: __( 'Disappears', 'thingamablocks' ) },
+					{
+						value: 'message',
+						label: __(
+							'Shows its “ended” message',
+							'thingamablocks'
+						),
+					},
+					{
+						value: 'zeros',
+						label: __( 'Stays at zero', 'thingamablocks' ),
+					},
+					{
+						value: 'hide',
+						label: __( 'Disappears', 'thingamablocks' ),
+					},
 				] }
 				onChange={ ( value ) => setAttributes( { endAction: value } ) }
 			/>
@@ -412,22 +507,33 @@ function EndSettings( { attributes, setAttributes } ) {
 				label={ __( 'Also hide', 'thingamablocks' ) }
 				value={ attributes.hideOnEnd }
 				onChange={ ( value ) => setAttributes( { hideOnEnd: value } ) }
-				help={ __( 'Element IDs or CSS selectors, e.g. a sale banner or a “Buy now” button.', 'thingamablocks' ) }
+				help={ __(
+					'Element IDs or CSS selectors, e.g. a sale banner or a “Buy now” button.',
+					'thingamablocks'
+				) }
 			/>
 			<TargetsControl
 				label={ __( 'Also show', 'thingamablocks' ) }
 				value={ attributes.showOnEnd }
 				onChange={ ( value ) => setAttributes( { showOnEnd: value } ) }
-				help={ __( 'Hidden until it ends, e.g. a “Sold out” notice.', 'thingamablocks' ) }
+				help={ __(
+					'Hidden until it ends, e.g. a “Sold out” notice.',
+					'thingamablocks'
+				) }
 			/>
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				type="url"
 				label={ __( 'Then go to (optional)', 'thingamablocks' ) }
-				help={ __( 'Send visitors to another page when it ends.', 'thingamablocks' ) }
+				help={ __(
+					'Send visitors to another page when it ends.',
+					'thingamablocks'
+				) }
 				value={ attributes.redirectUrl }
-				onChange={ ( value ) => setAttributes( { redirectUrl: value } ) }
+				onChange={ ( value ) =>
+					setAttributes( { redirectUrl: value } )
+				}
 			/>
 		</PanelBody>
 	);
@@ -466,16 +572,22 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 	useEffect( () => {
 		if ( 'date' === attributes.mode && ! attributes.endDate ) {
 			const inAWeek = new Date( Date.now() + 7 * 86400000 );
-			setAttributes( { endDate: `${ formatDate( 'Y-m-d', inAWeek ) }T23:59:00` } );
+			setAttributes( {
+				endDate: `${ formatDate( 'Y-m-d', inAWeek ) }T23:59:00`,
+			} );
 		}
 	}, [] ); // eslint-disable-line react-hooks/exhaustive-deps
 
-	const hasNumbers = UNITS.some( ( [ unit ] ) => parts.includes( `part:${ unit }` ) );
+	const hasNumbers = UNITS.some( ( [ unit ] ) =>
+		parts.includes( `part:${ unit }` )
+	);
 	const hasEnded = parts.includes( 'part:ended' );
 
 	const blockProps = useBlockProps( {
 		ref: canvasRef,
-		className: `tmb-countdown ${ previewEnded ? 'is-ended' : 'is-running' }`,
+		className: `tmb-countdown ${
+			previewEnded ? 'is-ended' : 'is-running'
+		}`,
 	} );
 	const innerBlocksProps = useInnerBlocksProps( blockProps );
 
@@ -483,7 +595,9 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 	const scope = `[data-block="${ clientId }"]`;
 	let previewCss = previewEnded
 		? `${ scope } [data-countdown-part="timer"]{${
-				'message' === attributes.endAction ? 'display:none!important' : ''
+				'message' === attributes.endAction
+					? 'display:none!important'
+					: ''
 		  }}`
 		: `${ scope } [data-countdown-part="ended"]{display:none!important}`;
 
@@ -500,8 +614,14 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 						isPressed={ previewEnded }
 						label={
 							previewEnded
-								? __( 'Previewing the ended state. Click to preview it running.', 'thingamablocks' )
-								: __( 'Previewing it running. Click to preview the ended state.', 'thingamablocks' )
+								? __(
+										'Previewing the ended state. Click to preview it running.',
+										'thingamablocks'
+								  )
+								: __(
+										'Previewing it running. Click to preview the ended state.',
+										'thingamablocks'
+								  )
 						}
 						onClick={ () => setPreviewEnded( ! previewEnded ) }
 					>
@@ -523,9 +643,18 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 						</Notice>
 					</div>
 				) }
-				<TimingSettings attributes={ attributes } setAttributes={ setAttributes } />
-				<DisplaySettings attributes={ attributes } setAttributes={ setAttributes } />
-				<EndSettings attributes={ attributes } setAttributes={ setAttributes } />
+				<TimingSettings
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+				/>
+				<DisplaySettings
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+				/>
+				<EndSettings
+					attributes={ attributes }
+					setAttributes={ setAttributes }
+				/>
 				{ 'message' === attributes.endAction && ! hasEnded && (
 					<div className="tmb-countdown-notice">
 						<Notice status="info" isDismissible={ false }>
@@ -546,7 +675,8 @@ function CountdownEdit( { attributes, setAttributes, clientId } ) {
 
 export default function Edit( props ) {
 	const hasInnerBlocks = useSelect(
-		( select ) => select( blockEditorStore ).getBlockCount( props.clientId ) > 0,
+		( select ) =>
+			select( blockEditorStore ).getBlockCount( props.clientId ) > 0,
 		[ props.clientId ]
 	);
 

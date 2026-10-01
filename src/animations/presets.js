@@ -35,7 +35,10 @@ export const EASING = 'cubic-bezier(0.2, 0.65, 0.3, 1)';
  * @return {Animation|null} The animation.
  */
 export function animateIn( element, type, delay = 0, speed = 'normal' ) {
-	const from = ANIMATIONS[ type ];
+	// Own keys only: the names come from data attributes, so "constructor" etc. mustn't match.
+	const has = ( map, key ) =>
+		Object.prototype.hasOwnProperty.call( map, key );
+	const from = has( ANIMATIONS, type ) ? ANIMATIONS[ type ] : null;
 
 	if ( ! from || ! element.animate ) {
 		return null;
@@ -45,7 +48,7 @@ export function animateIn( element, type, delay = 0, speed = 'normal' ) {
 	// own styles. (Without the offset a lone keyframe counts as the *end*.)
 	// fill "backwards" keeps it hidden during the delay.
 	return element.animate( [ { ...from, offset: 0 } ], {
-		duration: SPEEDS[ speed ] || SPEEDS.normal,
+		duration: has( SPEEDS, speed ) ? SPEEDS[ speed ] : SPEEDS.normal,
 		delay,
 		easing: EASING,
 		fill: 'backwards',

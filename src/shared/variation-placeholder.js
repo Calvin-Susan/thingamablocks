@@ -5,6 +5,7 @@
 import {
 	useBlockProps,
 	store as blockEditorStore,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
 	__experimentalBlockVariationPicker as BlockVariationPicker,
 } from '@wordpress/block-editor';
 import {
@@ -29,7 +30,10 @@ export default function VariationPlaceholder( {
 
 			return {
 				variations: getBlockVariations( blockName, 'block' ),
-				defaultVariation: getDefaultBlockVariation( blockName, 'block' ),
+				defaultVariation: getDefaultBlockVariation(
+					blockName,
+					'block'
+				),
 			};
 		},
 		[ blockName ]
@@ -52,7 +56,9 @@ export default function VariationPlaceholder( {
 					if ( variation.innerBlocks ) {
 						replaceInnerBlocks(
 							clientId,
-							createBlocksFromInnerBlocksTemplate( variation.innerBlocks ),
+							createBlocksFromInnerBlocksTemplate(
+								variation.innerBlocks
+							),
 							// Keep the parent selected, so its settings are what you see next.
 							false
 						);

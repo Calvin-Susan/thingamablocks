@@ -9,7 +9,10 @@
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 import { createHigherOrderComponent } from '@wordpress/compose';
-import { InspectorControls, store as blockEditorStore } from '@wordpress/block-editor';
+import {
+	InspectorControls,
+	store as blockEditorStore,
+} from '@wordpress/block-editor';
 import { PanelBody, SelectControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 
@@ -21,7 +24,11 @@ const PART_BLOCKS = [
 ];
 
 // Attributes the Toggle manages on its parts; cleared when a block stops being one.
-export const STATE_ATTRIBUTES = [ 'aria-checked', 'aria-pressed', 'data-active' ];
+export const STATE_ATTRIBUTES = [
+	'aria-checked',
+	'aria-pressed',
+	'data-active',
+];
 
 /**
  * The state attributes a part should carry, mirroring what the server and the
@@ -61,7 +68,9 @@ const withTogglePartControl = createHigherOrderComponent(
 					return null;
 				}
 
-				const parents = select( blockEditorStore ).getBlockParentsByBlockName(
+				const parents = select(
+					blockEditorStore
+				).getBlockParentsByBlockName(
 					clientId,
 					'thingamablocks/toggle',
 					true
@@ -104,24 +113,39 @@ const withTogglePartControl = createHigherOrderComponent(
 						<SelectControl
 							__next40pxDefaultSize
 							__nextHasNoMarginBottom
-							label={ __( 'Clicking this block', 'thingamablocks' ) }
+							label={ __(
+								'Clicking this block',
+								'thingamablocks'
+							) }
 							value={ value }
 							options={ [
 								{
 									value: '',
-									label: __( 'Does nothing (decoration)', 'thingamablocks' ),
+									label: __(
+										'Does nothing (decoration)',
+										'thingamablocks'
+									),
 								},
 								{
 									value: 'switch',
-									label: __( 'Flips the toggle (switch)', 'thingamablocks' ),
+									label: __(
+										'Flips the toggle (switch)',
+										'thingamablocks'
+									),
 								},
 								{
 									value: 'off',
-									label: __( 'Turns it off', 'thingamablocks' ),
+									label: __(
+										'Turns it off',
+										'thingamablocks'
+									),
 								},
 								{
 									value: 'on',
-									label: __( 'Turns it on', 'thingamablocks' ),
+									label: __(
+										'Turns it on',
+										'thingamablocks'
+									),
 								},
 							] }
 							help={ helpText( value ) }
