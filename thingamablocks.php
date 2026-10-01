@@ -28,6 +28,7 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-countdown-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-marquee-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
+require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 
 add_action( 'init', 'thingamablocks_register_blocks' );
 /**
