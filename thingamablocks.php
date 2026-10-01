@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Thingamablocks
- * Description:       Add-on blocks for GenerateBlocks, built from native GB blocks so you style them with the GB Styles panel: a Toggle (show/hide, light/dark mode, classes) and a Countdown (date, evergreen, recurring).
+ * Description:       Add-on blocks for GenerateBlocks, built from native GB blocks so you style them with the GB Styles panel: a Toggle (show/hide, light/dark mode, classes), a Countdown (date, evergreen, recurring) and a Marquee (smooth scrolling logos and messages).
  * Version:           0.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
@@ -25,6 +25,7 @@ define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 require_once THINGAMABLOCKS_DIR . 'includes/class-sanitize.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-toggle-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-countdown-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-marquee-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 
@@ -36,6 +37,7 @@ function thingamablocks_register_blocks() {
 	$blocks = array(
 		'toggle'    => array( 'Thingamablocks_Toggle_Render', 'render' ),
 		'countdown' => array( 'Thingamablocks_Countdown_Render', 'render' ),
+		'marquee'   => array( 'Thingamablocks_Marquee_Render', 'render' ),
 	);
 
 	foreach ( $blocks as $folder => $render ) {
