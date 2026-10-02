@@ -95,6 +95,10 @@ The editor shows the toggle in its starting state. Use the On/Off button in the 
 * **Inline text** – "Ends in 2d 5h 12m 9s", for banners and buttons.
 * **Large numbers** – big numbers with colons, for launches.
 
+The layouts are styled with shared GenerateBlocks Pro Global Styles (`tmb-countdown__timer`, `__unit`, `__number`, `__label`, `__intro`, `__suffix`, `__separator`, `__ended`, plus a modifier per layout such as `tmb-countdown__number--boxes`), so every countdown on the site looks the same. Edit a class in the GenerateBlocks Styles panel to restyle them all; remove or swap a class on one block (or add local styles) for a one-off look.
+
+The plugin creates these classes, in a "Thingamablocks" Global Styles category, the first time an administrator opens wp-admin after installing or updating. After that they're yours: the plugin never overwrites them, so your edits are safe (but improved defaults in later versions won't change existing classes). Without GenerateBlocks Pro the countdown still works, but the layouts are unstyled. Countdowns inserted with an older version, and the countdown patterns, keep their own per-block styles.
+
 = Countdown: what it counts to =
 
 * **A date and time** – e.g. "Sale ends Friday at 5 pm". Times are in the site's time zone (Settings → General), so it ends at the same moment for everyone. New countdowns start a week out, at 23:59.
@@ -404,7 +408,7 @@ An honest note: since August 2023 Google only shows FAQ rich results for well-kn
 
 * WordPress 6.6 or newer (tested up to 7.1)
 * PHP 7.4 or newer
-* GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block)
+* GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block, and the Countdown's starting layouts get their look from GenerateBlocks Pro Global Styles)
 
 Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 
@@ -424,7 +428,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 
 = Does it need GenerateBlocks Pro? =
 
-No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The one exception is FAQ schema, which adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x. The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
+No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The exceptions: FAQ schema adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x; and the Countdown's starting layouts are styled with GenerateBlocks Pro Global Styles, so with free GenerateBlocks the countdown works but its layouts are unstyled (style the parts yourself). The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
 
 = Why does nothing happen when I click the toggle in the editor? =
 

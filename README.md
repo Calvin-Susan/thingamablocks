@@ -23,9 +23,9 @@ And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an
 
 All six blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
-**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site); everything else works with free GenerateBlocks.
+**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site). The Countdown's starting layouts get their look from GenerateBlocks Pro Global Styles (see [Countdown styling](#styling)): with free GenerateBlocks the countdown works, but the layouts are unstyled. Everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The Countdown layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add about 1.8 KB to it.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, masks or video backgrounds? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -368,7 +368,7 @@ When you insert a Countdown you pick a starting layout:
 | **Inline text** | "Ends in 2d 5h 12m 9s", for banners and buttons. Starts with two-digit numbers off and "Hide units that reach zero" on, so it reads like a sentence. The short letters are visual only: screen readers hear "days", "hours" and so on from a visually hidden full word. | "This offer has ended." |
 | **Large numbers** | Big numbers with colons between them, for launches | "We're live!" |
 
-Like the Toggle layouts, they use the GeneratePress global colour variables with fallbacks.
+The layouts are styled with shared **GenerateBlocks Pro Global Styles** (classes like `tmb-countdown__number`), so every countdown on the site looks the same and you restyle them all in one place. See [Styling](#styling) below. Without GenerateBlocks Pro the layouts insert unstyled.
 
 **New countdowns start a week out**, at 23:59 that day (site time). Change it in the **Countdown** panel.
 
@@ -437,7 +437,32 @@ The sidebar warns you if the countdown has **no number parts**, and (when it's s
 
 #### Styling
 
-Style the parts in the GB Styles panel like any other block. The layouts give numbers `font-variant-numeric: tabular-nums`, so they don't jiggle as digits change. For state-based styles use global CSS: the wrapper is `.tmb-countdown` with `.is-running` or `.is-ended`.
+The starting layouts don't put styles on each block. Instead each block gets shared **GenerateBlocks Pro Global Styles** classes: a base class for its part, plus a modifier for the layout (the same naming idea as BEM, `block__part--modifier`):
+
+| Class | Modifiers | On |
+| --- | --- | --- |
+| `tmb-countdown__timer` | `--inline`, `--large` | The timer (the row of units) |
+| `tmb-countdown__unit` | `--boxes`, `--inline`, `--large` | Each unit's box |
+| `tmb-countdown__number` | `--boxes`, `--inline`, `--large` | The numbers (with `tabular-nums`, so they don't jiggle as digits change) |
+| `tmb-countdown__label` | `--large` | "Days", "Hours"… |
+| `tmb-countdown__intro` | | "Ends in" (Inline text) |
+| `tmb-countdown__suffix` | | The short d / h / m / s (Inline text) |
+| `tmb-countdown__separator` | | The colons (Large numbers) |
+| `tmb-countdown__ended` | | The ended message |
+
+So:
+
+- **Restyle every countdown on the site** by editing a class in GB's Styles panel (or under the **Thingamablocks** category of your Global Styles).
+- **One countdown looks different?** Remove or swap a class on that block, or add local styles on top in the Styles panel as usual.
+- The Inline text layout's visually hidden full unit name ("days") keeps its own local styles rather than a class, so restyling the classes can never make it visible.
+
+**Where the classes come from.** The plugin creates them as ordinary Global Styles, in a **Thingamablocks** category, the first time an administrator (anyone who can manage GB styles) opens wp-admin after installing or updating to a version that adds a class. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so if you delete one it stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.) The default colours are plain hex values for now.
+
+**Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks the countdown works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the countdown classes add about 1.8 KB to it (well under 1 KB gzipped).
+
+Countdowns inserted with an older version keep the styles they were inserted with, and the countdown patterns still use per-block styles for now.
+
+For state-based styles use global CSS: the wrapper is `.tmb-countdown` with `.is-running` or `.is-ended`.
 
 The Countdown has no front-end CSS of its own.
 
@@ -1528,7 +1553,7 @@ For Kyle, and anyone new to block plugins.
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
 - The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, and so on.
-- Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled. Once inserted, they're yours to edit like any other GB block.
+- Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled (the Countdown's use shared GB Pro Global Styles classes instead, created by `includes/class-thingamablocks-global-styles.php`; see [Countdown styling](#styling)). Once inserted, they're yours to edit like any other GB block.
 - A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
@@ -1723,6 +1748,7 @@ includes/
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
   class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
   class-thingamablocks-video-background.php  Video backgrounds: checks sources (Bunny/Vimeo) and settings, renders the poster, overlay and pause button, the Bunny hostnames option, loads the panel and front-end assets
+  class-thingamablocks-global-styles.php  Default GB Pro Global Styles for the starting layouts (tmb-countdown__*): created once for admins, never overwritten
   settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, the Bunny hostnames field, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
@@ -1745,7 +1771,7 @@ src/countdown/
   index.js                      Registers the block, variations, List View label and inserter example
   edit.js                       Editor UI: layout picker, sidebar settings, Running/Ended preview, warnings
   parts.js                      "Countdown part" panel added to GB Element/Text/Shape blocks
-  templates.js                  The three starting layouts (Boxes, Inline text, Large numbers)
+  templates.js                  The three starting layouts (Boxes, Inline text, Large numbers), using the tmb-countdown__* Global Styles classes
   time.js                       Time maths shared by editor and front end: time zones, recurring, splitting units
   view.js                       Front-end ticking, end actions, events, window.tmbCountdown
   icon.js                       Block and layout icons

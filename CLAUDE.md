@@ -40,6 +40,23 @@ the essentials:
   assigns unique IDs itself. GB nested selectors must start with `&` (no
   ancestor selectors), so state styling is on the part: `&[aria-checked="true"]`,
   `&[data-active="true"]`, `&[aria-pressed="true"]`.
+- **Global Styles for layouts (in progress, Countdown first)**: instead of
+  per-block `styles`, a block's starting layouts give parts GB Pro Global
+  Style classes via `globalClasses`: a base class per part plus a layout
+  modifier, named `tmb-<block>__<part>--<modifier>` (e.g.
+  `tmb-countdown__number` + `tmb-countdown__number--boxes`). The defaults live
+  in `Thingamablocks_Global_Styles::defaults()`
+  (`includes/class-thingamablocks-global-styles.php`), keyed by feature switch,
+  base classes before modifiers; they're created as `gblocks_styles` posts in a
+  "Thingamablocks" category on `admin_init` for users who can manage GB styles,
+  once per class name (the `thingamablocks_global_styles` option lists the
+  names already handled, so a class the site deletes stays deleted). **Never
+  overwrite** an existing
+  class (it's the site's now), so changing a default only reaches new sites;
+  add a new class rather than relying on an edit. Needs GB Pro (free GB: the
+  block works, layouts unstyled). Keep screen-reader-only styles local, not in
+  a class. Converting the other blocks the same way is the plan; patterns
+  still use per-block styles.
 - **Patterns** live in `patterns/*.php` (markup exported from the editor, so
   it's exactly what GB saves, with visible strings wrapped for translation) and
   are registered in `includes/patterns.php` with `filePath`.

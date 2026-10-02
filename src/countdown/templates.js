@@ -13,7 +13,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-import { border, color, padding, radius, visuallyHidden } from '../shared/gb';
+import { visuallyHidden } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const UNIT_LABELS = () => ( {
@@ -32,22 +32,47 @@ const SHORT_LABELS = () => ( {
 
 const UNITS = [ 'days', 'hours', 'minutes', 'seconds' ];
 
-// Numbers keep the same width as they change, so the layout doesn't jiggle.
-const tabular = { fontVariantNumeric: 'tabular-nums' };
+/*
+ * The look comes from GenerateBlocks Pro Global Styles the plugin creates
+ * (includes/class-thingamablocks-global-styles.php): a base class for each
+ * part, plus a modifier for the layout, e.g. tmb-countdown__number and
+ * tmb-countdown__number--boxes. Edit a class to restyle every countdown.
+ */
+const classes = ( part, modifier ) => {
+	const base = `tmb-countdown__${ part }`;
 
-const number = ( unit, styles ) => [
+	return modifier ? [ base, `${ base }--${ modifier }` ] : [ base ];
+};
+
+const number = ( unit, modifier ) => [
 	'generateblocks/text',
 	{
 		tagName: 'span',
 		content: '00',
 		htmlAttributes: { 'data-countdown-part': unit },
-		styles: { display: 'block', ...tabular, ...styles },
+		globalClasses: classes( 'number', modifier ),
 	},
 ];
 
-const text = ( content, styles, tagName = 'span', htmlAttributes = {} ) => [
+const text = (
+	content,
+	globalClasses,
+	tagName = 'span',
+	htmlAttributes = {}
+) => [
 	'generateblocks/text',
-	{ tagName, content, styles, htmlAttributes },
+	{ tagName, content, globalClasses, htmlAttributes },
+];
+
+const unitBox = ( unit, modifier, children ) => [
+	'generateblocks/element',
+	{
+		// GB Elements can't be a <span>; an inline-flex <div> does the same job.
+		tagName: 'div',
+		htmlAttributes: { 'data-countdown-unit': unit },
+		globalClasses: classes( 'unit', modifier ),
+	},
+	children,
 ];
 
 const ended = ( message ) => [
@@ -56,20 +81,16 @@ const ended = ( message ) => [
 		tagName: 'p',
 		content: message,
 		htmlAttributes: { 'data-countdown-part': 'ended' },
-		styles: {
-			marginBottom: '0',
-			fontWeight: '600',
-			color: color.text,
-		},
+		globalClasses: classes( 'ended' ),
 	},
 ];
 
-const timer = ( styles, children ) => [
+const timer = ( modifier, children ) => [
 	'generateblocks/element',
 	{
 		tagName: 'div',
 		htmlAttributes: { 'data-countdown-part': 'timer' },
-		styles,
+		globalClasses: classes( 'timer', modifier ),
 	},
 	children,
 ];
@@ -79,45 +100,13 @@ const boxes = () => {
 
 	return [
 		timer(
-			{
-				display: 'flex',
-				flexWrap: 'wrap',
-				columnGap: '0.75rem',
-				rowGap: '0.75rem',
-			},
-			UNITS.map( ( unit ) => [
-				'generateblocks/element',
-				{
-					tagName: 'div',
-					htmlAttributes: { 'data-countdown-unit': unit },
-					styles: {
-						display: 'flex',
-						flexDirection: 'column',
-						alignItems: 'center',
-						minWidth: '4.75rem',
-						...padding( '1rem', '0.75rem' ),
-						...radius( '0.5rem' ),
-						...border( '1px', 'solid', color.border ),
-						backgroundColor: color.surface,
-					},
-				},
-				[
-					number( unit, {
-						fontSize: '2.25rem',
-						fontWeight: '700',
-						lineHeight: '1',
-						color: color.text,
-					} ),
-					text( labels[ unit ], {
-						marginTop: '0.375rem',
-						fontSize: '0.75rem',
-						fontWeight: '600',
-						letterSpacing: '0.08em',
-						textTransform: 'uppercase',
-						color: color.muted,
-					} ),
-				],
-			] )
+			'',
+			UNITS.map( ( unit ) =>
+				unitBox( unit, 'boxes', [
+					number( unit, 'boxes' ),
+					text( labels[ unit ], classes( 'label' ) ),
+				] )
+			)
 		),
 		ended( __( 'This offer has ended.', 'thingamablocks' ) ),
 	];
@@ -128,45 +117,29 @@ const inline = () => {
 	const fullLabels = UNIT_LABELS();
 
 	return [
-		timer(
-			{
-				display: 'inline-flex',
-				flexWrap: 'wrap',
-				alignItems: 'baseline',
-				columnGap: '0.5rem',
-				color: color.text,
-			},
-			[
-				text( __( 'Ends in', 'thingamablocks' ), {
-					color: color.muted,
-				} ),
-				...UNITS.map( ( unit ) => [
-					'generateblocks/element',
-					{
-						// GB Elements can't be a <span>; an inline-flex <div> does the same job.
-						tagName: 'div',
-						htmlAttributes: { 'data-countdown-unit': unit },
-						styles: {
-							display: 'inline-flex',
-							alignItems: 'baseline',
-							columnGap: '0.125rem',
-						},
-					},
+		timer( 'inline', [
+			text( __( 'Ends in', 'thingamablocks' ), classes( 'intro' ) ),
+			...UNITS.map( ( unit ) =>
+				unitBox( unit, 'inline', [
+					number( unit, 'inline' ),
+					// Screen readers would read "m" as a letter (or "metres"), so
+					// the short label is visual only and the full word is read instead.
+					text( labels[ unit ], classes( 'suffix' ), 'span', {
+						'aria-hidden': 'true',
+					} ),
+					// Hidden by local styles, not a class: it must stay hidden even if
+					// the classes are restyled.
 					[
-						number( unit, {
-							display: 'inline',
-							fontWeight: '700',
-						} ),
-						// Screen readers would read "m" as a letter (or "metres"), so
-						// the short label is visual only and the full word is read instead.
-						text( labels[ unit ], { color: color.muted }, 'span', {
-							'aria-hidden': 'true',
-						} ),
-						text( fullLabels[ unit ], visuallyHidden ),
+						'generateblocks/text',
+						{
+							tagName: 'span',
+							content: fullLabels[ unit ],
+							styles: visuallyHidden,
+						},
 					],
-				] ),
-			]
-		),
+				] )
+			),
+		] ),
 		ended( __( 'This offer has ended.', 'thingamablocks' ) ),
 	];
 };
@@ -178,62 +151,22 @@ const colons = () => {
 	UNITS.forEach( ( unit, index ) => {
 		if ( index > 0 ) {
 			children.push(
-				text(
-					':',
-					{
-						fontSize: '3rem',
-						fontWeight: '300',
-						lineHeight: '1',
-						color: color.subtle,
-					},
-					'span',
-					{ 'data-countdown-part': 'separator' }
-				)
+				text( ':', classes( 'separator' ), 'span', {
+					'data-countdown-part': 'separator',
+				} )
 			);
 		}
 
-		children.push( [
-			'generateblocks/element',
-			{
-				tagName: 'div',
-				htmlAttributes: { 'data-countdown-unit': unit },
-				styles: {
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-					minWidth: '4.5rem',
-				},
-			},
-			[
-				number( unit, {
-					fontSize: '3rem',
-					fontWeight: '700',
-					lineHeight: '1',
-					letterSpacing: '-0.02em',
-					color: color.text,
-				} ),
-				text( labels[ unit ], {
-					marginTop: '0.5rem',
-					fontSize: '0.75rem',
-					letterSpacing: '0.08em',
-					textTransform: 'uppercase',
-					color: color.muted,
-				} ),
-			],
-		] );
+		children.push(
+			unitBox( unit, 'large', [
+				number( unit, 'large' ),
+				text( labels[ unit ], classes( 'label', 'large' ) ),
+			] )
+		);
 	} );
 
 	return [
-		timer(
-			{
-				display: 'flex',
-				flexWrap: 'wrap',
-				alignItems: 'flex-start',
-				columnGap: '0.5rem',
-				rowGap: '1rem',
-			},
-			children
-		),
+		timer( 'large', children ),
 		ended( __( 'We’re live!', 'thingamablocks' ) ),
 	];
 };

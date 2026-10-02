@@ -4,6 +4,13 @@ All notable changes to Thingamablocks are listed here.
 
 ## Unreleased
 
+### Changed
+
+- **Countdown layouts use shared GenerateBlocks Pro Global Styles** instead of styles on each block. Boxes, Inline text and Large numbers now give each block a base class per part plus a layout modifier: `tmb-countdown__timer` (`--inline`, `--large`), `__unit` (`--boxes`, `--inline`, `--large`), `__number` (`--boxes`, `--inline`, `--large`), `__label` (`--large`), `__intro`, `__suffix`, `__separator` and `__ended`. Every countdown on a site looks the same; edit a class in GB's Styles panel to restyle them all, or remove/swap a class (or add local styles) on one block for a one-off look. The inline layout's screen-reader-only full unit name keeps local styles, so restyling the classes can't un-hide it.
+- The classes are created automatically (`includes/class-thingamablocks-global-styles.php`, `Thingamablocks_Global_Styles`) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles loads wp-admin after the plugin adds a class. After that they belong to the site: the plugin never overwrites them (edits are safe; improved defaults in later versions don't reach existing classes). Each class is created once: the `thingamablocks_global_styles` option lists the names already handled, so a class you delete stays deleted (a failed create is retried; a short lock stops two admin requests creating duplicates). Skipped for switched-off features (created when switched on). The category shows in GB Pro 2.8+; older versions list the classes ungrouped. Default colours are plain hex values for now.
+- **The layouts' look now needs GenerateBlocks Pro.** With free GenerateBlocks the countdown still works, but the layouts are unstyled. GB Pro loads Global Styles as one stylesheet on every page; the countdown classes add about 1.8 KB (under 1 KB gzipped).
+- Existing countdowns keep their per-block styles, and the countdown patterns are unchanged for now. The Countdown is the first block converted; the others are planned to follow.
+
 ### Removed
 
 - The Toggle's **Dark mode colours** panel (and "Suggest dark colours"). A dark mode toggle now only switches `color-scheme` / `data-color-scheme` on `<html>`; write your colours with `light-dark()` (or override variables under `[data-color-scheme="dark"]`). The `darkPalette` attribute and the `<style id="tmb-toggle-dark-palette">` head output are gone: sites that had picked dark colours there need to move them into their own CSS. The editor preview ("Starts as: On") now switches the canvas to `color-scheme: dark`.

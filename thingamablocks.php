@@ -39,6 +39,7 @@ require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 require_once THINGAMABLOCKS_DIR . 'includes/mask.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-faq-schema.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-video-background.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-global-styles.php';
 
 add_action( 'init', 'thingamablocks_register_blocks' );
 /**
