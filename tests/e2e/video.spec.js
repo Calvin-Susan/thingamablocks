@@ -819,9 +819,24 @@ test.describe( 'Video background', () => {
 		await field.fill(
 			'https://iframe.mediadelivery.net/play/123456/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f'
 		);
-		await expect( panel ).toContainText(
-			'https://YOUR-CDN-HOSTNAME.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/play_720p.mp4'
+		await expect( panel ).toContainText( 'copy the HLS Playlist URL' );
+
+		// Bunny's HLS Playlist / Thumbnail links become the MP4 file.
+		await field.fill(
+			'https://vz-abc123.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/playlist.m3u8'
 		);
+		await expect( field ).toHaveValue(
+			'https://vz-abc123.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/play_720p.mp4'
+		);
+		await expect( panel ).toContainText( 'Turned that Bunny link' );
+		await field.fill(
+			'https://vz-abc123.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/thumbnail.jpg'
+		);
+		await expect( field ).toHaveValue(
+			'https://vz-abc123.b-cdn.net/8f7e6d5c-1a2b-4c3d-9e8f-0a1b2c3d4e5f/play_720p.mp4'
+		);
+
+		// Any other playlist is still refused.
 		await field.fill( 'https://vz-x.b-cdn.net/a/playlist.m3u8' );
 		await expect( panel ).toContainText( 'HLS streams' );
 		await field.fill( BUNNY );

@@ -97,3 +97,40 @@ export function classify( url, hosts = [] ) {
 
 	return { type: 'file' };
 }
+
+/**
+ * Turn any link from a Bunny Stream video's "Video and asset links" that
+ * carries the library's hostname (HLS playlist, thumbnail, preview animation,
+ * another MP4 size) into the MP4 address the background plays:
+ * https://{library hostname}/{video ID}/play_{size}p.mp4. Needs "MP4
+ * fallback" switched on for the library.
+ *
+ * @param {string}   url   Pasted URL.
+ * @param {string[]} hosts Extra Bunny hostnames from Settings.
+ * @param {number}   size  720 for the main video, 480 for phones.
+ * @return {string} The MP4 address, or '' if it isn't such a link.
+ */
+export function bunnyMp4( url, hosts = [], size = 720 ) {
+	let parsed;
+
+	try {
+		parsed = new URL( String( url || '' ).trim() );
+	} catch {
+		return '';
+	}
+
+	const host = parsed.hostname.toLowerCase();
+	const match = parsed.pathname.match(
+		/^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(?:playlist\.m3u8|thumbnail[\w.-]*\.(?:jpg|jpeg|webp|png)|preview\.webp|play_\d+p\.mp4)$/i
+	);
+
+	if (
+		'https:' !== parsed.protocol ||
+		! match ||
+		! ( host.endsWith( '.b-cdn.net' ) || hosts.includes( host ) )
+	) {
+		return '';
+	}
+
+	return `https://${ host }/${ match[ 1 ].toLowerCase() }/play_${ size }p.mp4`;
+}

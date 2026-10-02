@@ -374,7 +374,7 @@ How it works:
 
 Select a GenerateBlocks Element block (a container) and open the **Video background** panel. Paste a **Video address**:
 
-* **Bunny** – an .mp4 or .webm address on *.b-cdn.net. With Bunny Stream, turn on "MP4 Fallback" in the library's Encoding settings, then use https://(the library's CDN hostname, from its API tab)/(the video ID)/play_720p.mp4. Paste the video's Direct Play URL into the panel and it shows that address with the ID filled in. HLS streams (.m3u8) and Bunny's player page aren't accepted; the panel explains why. A Bunny pull zone on your own hostname works once an administrator adds the hostname under Settings → Thingamablocks → **Your own Bunny hostnames**.
+* **Bunny** – an .mp4 or .webm address on *.b-cdn.net. With Bunny Stream, turn on "MP4 Fallback" in the library's Encoding settings, then paste the video's HLS Playlist URL (or Thumbnail URL) from its "Video and asset links": the panel turns it into the MP4 file (play_720p.mp4, or play_480p.mp4 for phones). Other HLS streams and Bunny's player page aren't accepted; the panel explains why. A Bunny pull zone on your own hostname works once an administrator adds the hostname under Settings → Thingamablocks → **Your own Bunny hostnames**.
 * **Vimeo** – a video file link (on paid Vimeo plans; plays straight in the page, the lightest option), or the video's normal address (vimeo.com/123456789, or vimeo.com/123456789/abcdef for an unlisted video), which plays with Vimeo's background player (needs a paid Vimeo plan for background embeds). Vimeo's player loads only when it's time to play, with `dnt=1`, so Vimeo sets no tracking cookies.
 
 YouTube and Media Library uploads aren't supported (see the FAQ). Then:

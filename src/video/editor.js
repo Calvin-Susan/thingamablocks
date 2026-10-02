@@ -19,6 +19,7 @@ import {
 	store as blockEditorStore,
 } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
+import { useState } from '@wordpress/element';
 import {
 	BaseControl,
 	Button,
@@ -36,7 +37,7 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 
-import { classify } from './source';
+import { bunnyMp4, classify } from './source';
 import { useColorPalette } from '../shared/color-palette';
 import './editor.scss';
 
@@ -81,16 +82,10 @@ const MESSAGES = {
 			'Only Bunny (*.b-cdn.net, or a hostname added in Settings → Thingamablocks) and Vimeo videos can be used.',
 			'thingamablocks'
 		),
-	'bunny-embed': ( result ) =>
-		sprintf(
-			/* translators: %s: the address to use, with the video ID filled in. */
-			__(
-				'That’s Bunny’s player page, not the video file. In Bunny Stream: turn on “MP4 Fallback” in the library’s Encoding settings (then re-encode or re-upload the video), find the library’s CDN hostname on its API tab, and use: %s',
-				'thingamablocks'
-			),
-			`https://YOUR-CDN-HOSTNAME.b-cdn.net/${
-				result?.id || 'VIDEO-ID'
-			}/play_720p.mp4`
+	'bunny-embed': () =>
+		__(
+			'That’s Bunny’s player link, which doesn’t include your library’s address. From the same “Video and asset links” panel, copy the HLS Playlist URL (or the Thumbnail URL) and paste it here instead: it’s turned into the video file automatically.',
+			'thingamablocks'
 		),
 	hls: () =>
 		__(
@@ -125,8 +120,17 @@ const describe = ( result ) => {
 		  );
 };
 
-function SourceField( { label, help, value, onChange } ) {
+function SourceField( { label, help, value, onChange, size = 720 } ) {
 	const result = value ? classify( value, hosts() ) : null;
+	// Whether the last paste was a Bunny link turned into its MP4 address.
+	const [ converted, setConverted ] = useState( false );
+
+	const change = ( next ) => {
+		const mp4 = bunnyMp4( next, hosts(), size );
+
+		setConverted( !! mp4 && mp4 !== next.trim() );
+		onChange( mp4 || next );
+	};
 
 	return (
 		<div className="tmb-video-control">
@@ -137,9 +141,21 @@ function SourceField( { label, help, value, onChange } ) {
 				label={ label }
 				help={ result ? describe( result ) : help }
 				value={ value || '' }
-				onChange={ onChange }
+				onChange={ change }
 				placeholder="https://"
 			/>
+			{ converted && ! result?.error && (
+				<Notice status="info" isDismissible={ false }>
+					{ sprintf(
+						/* translators: %s: video size, e.g. 720p. */
+						__(
+							'Turned that Bunny link into its video file (%s). If it doesn’t play, switch on “MP4 Fallback” in the library’s Encoding settings.',
+							'thingamablocks'
+						),
+						`${ size }p`
+					) }
+				</Notice>
+			) }
 			{ result?.error && (
 				<Notice status="warning" isDismissible={ false }>
 					{ __(
@@ -223,7 +239,7 @@ function VideoPanel( { attributes, setAttributes } ) {
 				<SourceField
 					label={ __( 'Video address', 'thingamablocks' ) }
 					help={ __(
-						'A Bunny video (an .mp4 address) or a Vimeo video. Always muted.',
+						'Bunny: paste the video’s HLS Playlist URL (or any link from its “Video and asset links”). Vimeo: the video’s address. Always muted.',
 						'thingamablocks'
 					) }
 					value={ settings.src }
@@ -466,10 +482,11 @@ function VideoPanel( { attributes, setAttributes } ) {
 									'thingamablocks'
 								) }
 								help={ __(
-									'Screens under 768px wide play this instead, e.g. Bunny’s play_480p.mp4. Saves visitors’ data.',
+									'Screens under 768px wide play this instead. Paste the same Bunny link and you get the 480p version. Saves visitors’ data.',
 									'thingamablocks'
 								) }
 								value={ settings.mobile }
+								size={ 480 }
 								onChange={ ( mobile ) =>
 									update( { mobile: mobile.trim() } )
 								}
