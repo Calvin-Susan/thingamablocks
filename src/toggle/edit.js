@@ -36,7 +36,6 @@ import { useEffect, useMemo } from '@wordpress/element';
 import TargetsControl from '../shared/targets-control';
 import VariationPlaceholder from '../shared/variation-placeholder';
 import { CanvasContext, CanvasStyle, useCanvas } from '../shared/canvas-style';
-import DarkPaletteSettings, { darkPaletteCss } from './dark-palette';
 import { toggleIcon } from './icon';
 import { stateAttributes, STATE_ATTRIBUTES } from './parts';
 
@@ -216,7 +215,7 @@ function BehaviourSettings( { attributes, setAttributes } ) {
 					/>
 					<p className="tmb-toggle-help">
 						{ __(
-							'Pick the dark version of each theme colour in “Dark mode colours” below. The visitor’s choice is remembered, and every dark mode toggle on the site stays in sync. For anything else, style [data-color-scheme="dark"] in your CSS.',
+							'The toggle sets the CSS color-scheme on <html>, so colours written with light-dark() switch on their own. For anything else, style [data-color-scheme="dark"] in your CSS. The visitor’s choice is remembered, and every dark mode toggle on the site stays in sync.',
 							'thingamablocks'
 						) }
 					</p>
@@ -641,12 +640,6 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 					attributes={ attributes }
 					setAttributes={ setAttributes }
 				/>
-				{ 'colorScheme' === attributes.action && (
-					<DarkPaletteSettings
-						darkPalette={ attributes.darkPalette }
-						setAttributes={ setAttributes }
-					/>
-				) }
 				<StateSettings
 					attributes={ attributes }
 					setAttributes={ setAttributes }
@@ -676,7 +669,7 @@ function ToggleEdit( { attributes, setAttributes, clientId } ) {
 			{ 'colorScheme' === attributes.action && isOn && (
 				// Preview dark mode in the editor while the toggle shows its "on" state.
 				<CanvasStyle data-tmb-dark-preview="">
-					{ darkPaletteCss( attributes.darkPalette, ':root:root' ) }
+					{ ':root:root{color-scheme:dark}' }
 				</CanvasStyle>
 			) }
 			<TargetPreview

@@ -179,13 +179,12 @@ On the front end the hidden set is hidden by a small inline `<style>` from the s
    - **Match the visitor's system setting**: on by default. Until the visitor uses the switch, they get dark mode if their device is set to dark.
    - **Also add a class to `<html>`**: optional, e.g. `is-dark`, if other CSS needs a class.
    - **Accessibility → Switch label**: "Dark mode" (already filled in).
-3. **Pick the dark colours.** Open the **Dark mode colours** panel. It lists your theme's colours (the GeneratePress global colours, or a block theme's palette), each with a "… in dark mode" colour picker.
-   - Click **Suggest dark colours** to fill them all in: light backgrounds become dark, dark text becomes light (keeping the order of Base / Base 2 / Base 3 and so on), and brand colours keep their hue but get lighter so they stay readable.
-   - Adjust any colour by hand. Leave one empty to keep it the same in dark mode. **Clear** empties them all.
-   - To preview, set **State → Starts as** to *On* (or use the toolbar **On/Off** button): the editor then shows the page in its dark colours. Set it back to *Off* before publishing unless you want dark to be the default.
-4. **Publish** the post, page or Element that contains the switch. From then on every page on the site gets the dark colours and the no-flash `<head>` script (see [The dark mode head output](#the-dark-mode-head-output)).
+3. **Write your colours with `light-dark()`.** The toggle doesn't store any colours: it sets the CSS `color-scheme` property on `<html>` to `light` or `dark`, and colours written as `light-dark( light value, dark value )` follow it. Put them in your GeneratePress global colours or GB Pro design tokens, e.g. `--base-3: light-dark(#ffffff, #16161a)`. Browser-drawn things (form controls, scrollbars) follow along too.
+   - So the site matches the visitor's device before they touch the switch, also add `:root { color-scheme: light dark; }` to your CSS (or keep **Match the visitor's system setting** on).
+   - To preview, set **State → Starts as** to *On* (or use the toolbar **On/Off** button): the editor canvas then switches to `color-scheme: dark`. Set it back to *Off* before publishing unless you want dark to be the default.
+4. **Publish** the post, page or Element that contains the switch. From then on every page on the site gets the no-flash `<head>` script (see [The dark mode head output](#the-dark-mode-head-output)).
 
-Anything styled with your theme's colours (including GenerateBlocks blocks that use them) switches automatically. The toggle also sets the CSS `color-scheme` property on `<html>`, so browser-drawn things (form controls, scrollbars) follow along. All dark mode toggles on a site share one state, and the choice is always remembered.
+All dark mode toggles on a site share one state, and the choice is always remembered.
 
 **Other elements (advanced).** Images, logos, or anything with a hard-coded colour won't change on their own. Style them with the `data-color-scheme` attribute the toggle sets on `<html>`, e.g. in **Appearance → Customize → Additional CSS**:
 
@@ -195,7 +194,7 @@ Anything styled with your theme's colours (including GenerateBlocks blocks that 
 }
 ```
 
-You can also skip the panel entirely and override the variables yourself:
+If your colours are plain values rather than `light-dark()`, override the variables instead:
 
 ```css
 [data-color-scheme="dark"] {
@@ -295,7 +294,6 @@ Select the Toggle block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | Match the visitor's system setting | `followSystem` | `true` | Uses `prefers-color-scheme` until the visitor chooses. Also follows live OS changes while they haven't chosen. |
 | Also add a class to `<html>` | `htmlClass` | `""` | Optional, space-separated. |
-| Dark mode colours | `darkPalette` | `{}` | Map of CSS variable → dark colour, e.g. `{ "--base-3": "#16161a" }`. Saved as hex. Only shown when the theme provides a colour palette. |
 
 A colour-scheme toggle always remembers the choice and always shares one state with every other colour-scheme toggle (its group is `color-scheme`), so the Remember / Sync group settings are hidden for it.
 
@@ -1197,7 +1195,7 @@ Select a GenerateBlocks Element block. The panel opens by itself on containers t
 | On phones | `phones` | Video | **Video** or **Poster only** (`poster`): screens under 768 px wide get just the poster, with no video loaded and no button. |
 | Smaller video for phones (optional) | `mobile` | – | Shown when On phones is Video. Screens under 768 px wide play this instead, e.g. Bunny's `play_480p.mp4`. Checked like the Video address. |
 | Vimeo video shape | `ratio` | `16:9` | Shown for a Vimeo address (not a Vimeo file link). `16:9`, `21:9`, `4:3`, `1:1` or `9:16`. Vimeo's player can't crop itself, so the script scales it to cover the section using this shape. |
-| Overlay | `overlay` | None | A colour from the theme palette (GeneratePress global colours included) over the video, so text on it stays readable. |
+| Overlay | `overlay` | None | A colour from your GB Pro design tokens, or the theme palette (GeneratePress global colours included) without them, over the video, so text on it stays readable. |
 | Overlay opacity (%) | `opacity` | `40` | Shown once there's an overlay colour. 0–90. |
 | Pause button position | `button` | Bottom right | `bottom-right`, `bottom-left`, `top-right` or `top-left`. Ignored when the container has its own [pause/play button](#use-your-own-pause-button). |
 | **Remove video background** | – | – | Removes the setting from the container. |
@@ -1475,8 +1473,8 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 
 - Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `animations`, `masks`, `video`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
-- Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (both the script and the dark colours).
-- Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `palette`, `modified`).
+- Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (the no-flash script).
+- Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `modified`).
 - Option `thingamablocks_video_hosts` – the extra Bunny hostnames allowed for video backgrounds (**Your own Bunny hostnames**), as a list of lower-case hostnames. `Thingamablocks_Video_Background::hosts()` returns them cleaned.
 - Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
 - Filter `thingamablocks_breadcrumbs_trail` – change the breadcrumb trail. Receives `$trail`, a list of steps (`array( 'label' => 'Recipes', 'url' => 'https://…' )`, the last being the current page; a step with an empty `url` isn't a link), and `$options`, the block's cleaned settings. It runs after the trail is built (or taken from the SEO plugin). Labels are stripped of HTML and escaped afterwards, and steps without a label are dropped.
@@ -1545,7 +1543,7 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 - For show/hide, PHP also prints a tiny `<style class="tmb-toggle-initial">` that hides whichever targets start hidden, so there's no flash of both. The front-end script removes it once it's taken over.
 - For a toggle that remembers the visitor's choice and has a storage key the server can work out (a sync group or HTML anchor, or any dark mode toggle), PHP prints a tiny inline script right after the wrapper. It runs as the page is parsed, reads the saved choice, and flips the wrapper's classes, the parts' ARIA state and the no-flash `<style>` before the first paint. The main script then takes over as usual.
 - The front-end script (`src/toggle/view.js`, loaded only on pages with a Toggle) reads the config, restores any saved choice, and handles clicks, keys, sync groups, the event and `window.tmbToggle`. Hiding sets an inline `display: none !important` as well as the class, and reveal animations use the Web Animations API rather than CSS keyframes, so "remove unused CSS" optimisations can't break them.
-- In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; previews the dark colours when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
+- In the editor (`src/toggle/edit.js`), the Toggle keeps its parts' `aria-checked` / `data-active` in step with **Starts as**, so the canvas shows the state you're styling; switches the canvas to `color-scheme: dark` when a dark mode toggle is set to *On*; and dims show/hide targets that are hidden in the current state.
 
 **Countdown**
 
@@ -1650,13 +1648,12 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 
 Dark mode needs to be applied before the page paints, or visitors who chose dark see a white flash on every page load. `includes/color-scheme.php` handles this:
 
-- When a post (including GeneratePress Elements and template parts) is saved, the plugin records whether it's **published** and contains a dark mode toggle, and if so that toggle's settings and dark colours. Each post is tracked separately.
+- When a post (including GeneratePress Elements and template parts) is saved, the plugin records whether it's **published** and contains a dark mode toggle, and if so that toggle's settings. Each post is tracked separately.
 - While at least one such post exists, every front-end page gets, at the top of `<head>` (this is the one thing the plugin prints on pages without its blocks, because the visitor's choice has to apply on every page, not just the one with the switch):
-  - `<style id="tmb-toggle-dark-palette">:root[data-color-scheme="dark"]{--base-3:…}</style>` with the dark colours, and
-  - a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` on `<html>` straight away.
+  a small inline script that reads the saved choice (or the system setting) and sets `data-color-scheme` and `color-scheme` on `<html>` straight away.
 - If several posts have a dark mode toggle, the most recently saved one's settings are used.
-- Only users who can change the site's appearance (`edit_theme_options`, i.e. administrators) update these site-wide settings when they save. A dark mode toggle saved by an Editor or Author still works on its page, but doesn't change the site's dark colours.
-- Only posts are scanned. A dark mode toggle placed in a **block widget**, or in a theme template part that has never been edited in the Site Editor, still switches `data-color-scheme`, but gets no dark colours or no-flash script until a post containing a dark mode toggle is saved. The simplest setup: put the switch in a GeneratePress Element (a post type, so it's tracked).
+- Only users who can change the site's appearance (`edit_theme_options`, i.e. administrators) update these site-wide settings when they save. A dark mode toggle saved by an Editor or Author still works on its page, but doesn't change the site-wide head script.
+- Only posts are scanned. A dark mode toggle placed in a **block widget**, or in a theme template part that has never been edited in the Site Editor, still switches `data-color-scheme`, but gets no no-flash script until a post containing a dark mode toggle is saved. The simplest setup: put the switch in a GeneratePress Element (a post type, so it's tracked).
 - Removing the toggle from the post, unpublishing it, trashing or deleting it switches the head output off again (once no other post has one).
 
 ### Shared code
@@ -1720,7 +1717,7 @@ includes/
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
   class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, video backgrounds)
-  color-scheme.php              Dark mode: tracks settings per post, prints the dark colours and no-flash <head> script
+  color-scheme.php              Dark mode: tracks settings per post, prints the no-flash <head> script
   patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
@@ -1737,7 +1734,6 @@ src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
   edit.js                       Editor UI: layout picker, sidebar settings, toolbar On/Off, part state sync, previews
-  dark-palette.js               "Dark mode colours" panel and the colour suggestions
   parts.js                      "Toggle part" panel added to GB Element/Text/Shape/Media blocks
   templates.js                  The four starting layouts (block variations) built from GB blocks
   view.js                       Front-end behaviour, tmb-toggle:change event, window.tmbToggle

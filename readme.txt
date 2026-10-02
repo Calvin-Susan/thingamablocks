@@ -53,7 +53,7 @@ In the inserter's Patterns tab, the **Toggles** category has a **Pricing table w
 = Toggle: what it can do =
 
 * **Show / hide elements** – list element IDs, tag names (like `body`) or CSS selectors to show when the toggle is off and when it's on. The classic example is monthly and annual pricing. Optional fade or fade-and-slide reveal. In the editor, the elements hidden in the current preview state are dimmed with a dashed outline while the toggle is selected.
-* **Light / dark mode** – pick a dark version of each theme colour (GeneratePress global colours, or a block theme's palette) in the **Dark mode colours** panel, or let **Suggest dark colours** fill them in. The toggle sets `data-color-scheme="dark"` or `"light"` (and the CSS `color-scheme` property) on `<html>`, optionally adds a class too, can follow the visitor's system setting, and remembers their choice. The dark colours and a small script are printed in `<head>`, so there's no flash of the wrong colours. Set the toggle to start "On" to preview dark mode in the editor.
+* **Light / dark mode** – the toggle sets the CSS `color-scheme` property (and `data-color-scheme="dark"` or `"light"`) on `<html>`, so colours written with `light-dark()` switch on their own. It optionally adds a class too, can follow the visitor's system setting, and remembers their choice. A small script in `<head>` applies the choice before the page paints, so there's no flash of the wrong colours. Set the toggle to start "On" to preview dark mode in the editor.
 * **Add / remove a class** – add (or remove) one or more classes on any elements when the toggle is on.
 * **Nothing (custom code)** – the toggle only changes its own state. Your code listens for the `tmb-toggle:change` event or uses `window.tmbToggle`.
 
@@ -369,7 +369,7 @@ YouTube and Media Library uploads aren't supported (see the FAQ). Then:
 * **Speed** – half, 0.75×, normal or 1.25×.
 * **On phones** – Video (with an optional **Smaller video for phones**, e.g. play_480p.mp4, for screens under 768px) or Poster only.
 * **Vimeo video shape** – 16:9, 21:9, 4:3, 1:1 or 9:16, so Vimeo's player can be scaled to fill the section.
-* **Overlay** – a colour from your palette and its opacity (0–90%), so text on the video stays readable.
+* **Overlay** – a colour from your palette (or GB Pro design tokens) and its opacity (0–90%), so text on the video stays readable.
 * **Pause button position** – any corner. Or use your own: add a GenerateBlocks Text block set to Button inside the container, and turn on **Video pause/play button** in its Video background panel. Style it with `&[data-state="playing"]` and `&[data-state="paused"]`.
 * **Remove video background**.
 
@@ -436,9 +436,9 @@ Select the element (for example the Element block wrapping your monthly prices),
 
 = Where do the dark mode colours come from? =
 
-From the toggle's **Dark mode colours** panel: pick a dark version of each theme colour, or click **Suggest dark colours**. Once the post, page or GeneratePress Element containing the toggle is published, they're printed site-wide as CSS variable overrides under `:root[data-color-scheme="dark"]`, so anything using your theme colours switches automatically. If several posts have a dark mode toggle, the most recently saved one's settings are used; removing the toggle or trashing the post switches this off again.
+From your own CSS. Write your colours (GeneratePress global colours, GB Pro design tokens) with `light-dark()`, e.g. `--base-3: light-dark(#ffffff, #16161a)`, and they follow the `color-scheme` the toggle sets. Add `:root { color-scheme: light dark; }` so the site matches the visitor's device until they choose. Once the post, page or GeneratePress Element containing the toggle is published, the no-flash script is printed site-wide; removing the toggle or trashing the post switches it off again.
 
-For anything else (images, hard-coded colours), use CSS, for example `[data-color-scheme="dark"] .site-logo img { filter: invert(1); }`. You can also skip the panel and override the variables yourself, e.g. `[data-color-scheme="dark"] { --base-3: #16161a; --contrast: #f2f2f5; }`.
+For anything else (images, hard-coded colours), use CSS, for example `[data-color-scheme="dark"] .site-logo img { filter: invert(1); }`, or override plain variables: `[data-color-scheme="dark"] { --base-3: #16161a; }`.
 
 = Can I use two toggles for the same pricing table? =
 

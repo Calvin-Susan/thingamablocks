@@ -4,10 +4,10 @@
  *
  * A colour-scheme toggle saves the visitor's choice in localStorage. To avoid
  * a flash of the wrong scheme on the next page load, a tiny script in <head>
- * applies the saved choice before the page paints, and the toggle's dark mode
- * colours are printed as CSS variable overrides.
+ * applies the saved choice before the page paints. The site's own CSS does the
+ * rest: colours written with light-dark() follow the color-scheme it sets.
  *
- * Both are only printed while a published post (page, GeneratePress Element,
+ * It's only printed while a published post (page, GeneratePress Element,
  * template part…) contains a colour-scheme toggle. Each such post's settings
  * are tracked separately, so removing the toggle or trashing the post turns
  * them off again.
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Option storing colour-scheme settings per post:
- * array( post_id => array( 'followSystem', 'htmlClass', 'palette', 'modified' ) ).
+ * array( post_id => array( 'followSystem', 'htmlClass', 'modified' ) ).
  */
 const THINGAMABLOCKS_COLOR_SCHEME_OPTION = 'thingamablocks_color_scheme';
 
@@ -38,7 +38,7 @@ function thingamablocks_track_color_scheme_toggle( $post_id, $post ) {
 	}
 
 	/*
-	 * The dark palette and <html> class affect every page, so only people who
+	 * The <head> script and <html> class affect every page, so only people who
 	 * can change the site's appearance can set them. A dark mode toggle saved
 	 * by anyone else still works on its page; it just doesn't change the
 	 * site-wide settings.
@@ -135,7 +135,6 @@ function thingamablocks_find_color_scheme_settings( $blocks ) {
 			return array(
 				'followSystem' => $config['followSystem'],
 				'htmlClass'    => $config['htmlClass'],
-				'palette'      => thingamablocks_clean_palette( $block['attrs']['darkPalette'] ?? array() ),
 			);
 		}
 
@@ -151,61 +150,15 @@ function thingamablocks_find_color_scheme_settings( $blocks ) {
 	return null;
 }
 
-/**
- * Keep only custom property names and plain colour values.
- *
- * @param mixed $palette Map of custom property => colour.
- * @return array
- */
-function thingamablocks_clean_palette( $palette ) {
-	if ( ! is_array( $palette ) ) {
-		return array();
-	}
-
-	$clean = array();
-
-	foreach ( $palette as $name => $value ) {
-		if ( ! is_string( $name ) || ! is_string( $value ) || ! preg_match( '/^--[A-Za-z0-9_-]+$/D', $name ) ) {
-			continue;
-		}
-
-		$value = trim( $value );
-
-		// Hex, or rgb()/hsl()/oklch() and friends with plain numeric arguments.
-		if ( preg_match( '/^#[0-9a-fA-F]{3,8}$/D', $value ) || preg_match( '/^(rgb|rgba|hsl|hsla|oklch|oklab|lab|lch)\([0-9.,%\s\/+-]+\)$/D', $value ) ) {
-			$clean[ $name ] = $value;
-		}
-	}
-
-	return $clean;
-}
-
 add_action( 'wp_head', 'thingamablocks_print_color_scheme_head', 1 );
 /**
- * Apply the saved (or system) colour scheme before the page paints, and print
- * the dark mode colours.
+ * Apply the saved (or system) colour scheme before the page paints.
  */
 function thingamablocks_print_color_scheme_head() {
 	$settings = thingamablocks_get_color_scheme_settings();
 
 	if ( ! $settings || ! apply_filters( 'thingamablocks_print_color_scheme_script', true ) ) {
 		return;
-	}
-
-	$palette = thingamablocks_clean_palette( $settings['palette'] ?? array() );
-
-	if ( $palette ) {
-		$declarations = '';
-
-		foreach ( $palette as $name => $value ) {
-			$declarations .= $name . ':' . $value . ';';
-		}
-
-		// Both values are pattern-matched above, so they can't break out of the rule.
-		printf(
-			'<style id="tmb-toggle-dark-palette">:root[data-color-scheme="dark"]{%s}</style>' . "\n",
-			$declarations // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		);
 	}
 
 	$follow_system = ! empty( $settings['followSystem'] );

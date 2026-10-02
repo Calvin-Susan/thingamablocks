@@ -81,10 +81,6 @@
 			"type": "string",
 			"default": ""
 		},
-		"darkPalette": {
-			"type": "object",
-			"default": {}
-		},
 		"anchor": {
 			"type": "string"
 		}
