@@ -4,9 +4,9 @@
  *
  * "Off" keeps the workspace tidy without breaking anything: a switched-off
  * block stays registered (so content already using it still works and can
- * still be edited) but leaves the block inserter, and its patterns leave the
- * Patterns tab. A switched-off feature's panel (Entrance animation, Mask) no
- * longer loads in the editor; content already using it is untouched.
+ * still be edited) but leaves the block inserter. A switched-off feature's
+ * panel (Entrance animation, Mask) no longer loads in the editor; content
+ * already using it is untouched.
  *
  * @package Thingamablocks
  */

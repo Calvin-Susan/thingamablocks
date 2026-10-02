@@ -70,11 +70,11 @@ the essentials:
   unstyled). The Playground blueprint's mu-plugin defines
   `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`, so the test site prints the compiled
   defaults itself (`thingamablocks-default-styles`); tests that build layouts
-  wait for each part's `uniqueId`, not its CSS. Patterns still use per-block
-  styles.
-- **Patterns** live in `patterns/*.php` (markup exported from the editor, so
-  it's exactly what GB saves, with visible strings wrapped for translation) and
-  are registered in `includes/patterns.php` with `filePath`.
+  wait for each part's `uniqueId`, not its CSS.
+- **No block patterns**: Kyle doesn't want them; the starting layouts are the
+  way to start. `playground/demo/*.php` holds demo sections (markup exported
+  from the editor) rendered into the test site's demo page by the blueprint;
+  they're not part of the plugin or its zip.
 
 ## Commands
 
@@ -82,8 +82,8 @@ the essentials:
   adds the animation entries, which have no block.json).
 - `npm run playground` — local WordPress (Playground) on http://127.0.0.1:9400
   with free GenerateBlocks + GeneratePress, auto-login, and a
-  "Thingamablocks demo" page built from the patterns. `npm run playground:reset`
-  starts fresh. GB Pro can't be tested locally.
+  "Thingamablocks demo" page built from demo sections in `playground/demo/`.
+  `npm run playground:reset` starts fresh. GB Pro can't be tested locally.
 - `npm run zip` — `dist/thingamablocks.zip` for uploading to a real site.
 - `npm run lint` — ESLint + Stylelint (WordPress rules). `npm run format` fixes
   formatting.
@@ -126,7 +126,7 @@ with Kyle:
 
 Then while building: add browser tests for the new block in `tests/e2e/` (its
 asset loading, behaviour, keyboard, forged settings, editor validity, and add
-it to the demo page/patterns so the axe scan covers it). `npm run lint` and
+it to the demo page in `playground/demo/` so the axe scan covers it). `npm run lint` and
 `npm run test:e2e` must pass before committing; CI must be green after
 pushing.
 

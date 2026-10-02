@@ -32,7 +32,6 @@ const required = [
 	'readme.txt',
 	'uninstall.php',
 	'includes',
-	'patterns',
 	'build',
 ];
 const optional = [ 'LICENSE' ];

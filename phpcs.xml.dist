@@ -5,7 +5,6 @@
 	<file>./thingamablocks.php</file>
 	<file>./uninstall.php</file>
 	<file>./includes</file>
-	<file>./patterns</file>
 
 	<arg name="extensions" value="php"/>
 	<arg name="colors"/>

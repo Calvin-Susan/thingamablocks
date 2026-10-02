@@ -33,7 +33,7 @@ Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settin
 
 Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block (the Search block has no script at all unless it uses the expanding style), image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), FAQ schema adds only the structured data itself, on pages with an FAQ accordion, and video backgrounds load their small script and CSS only on pages with one. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
-Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy: each has an on/off switch, with a short description and how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
+Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy: each has an on/off switch, with a short description and how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter, or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
 
 = Starting layouts and Global Styles =
 
@@ -41,7 +41,7 @@ Each block's starting layouts are styled with shared GenerateBlocks Pro Global S
 
 The plugin creates the classes (about 75), in a "Thingamablocks" Global Styles category, the first time someone who can manage GenerateBlocks styles opens wp-admin after installing or updating. After that they're yours: the plugin never overwrites them, so your edits are safe (but improved defaults in later versions won't change existing classes), and a class you delete stays deleted. GenerateBlocks Pro loads Global Styles as one stylesheet on every page; these add around 18 KB (under 3 KB gzipped).
 
-Without GenerateBlocks Pro every block still works, but the layouts are unstyled. Blocks inserted with an older version, and the patterns, keep their own per-block styles.
+Without GenerateBlocks Pro every block still works, but the layouts are unstyled. Blocks inserted with an older version keep their own per-block styles.
 
 = Toggle: starting layouts =
 
@@ -53,10 +53,6 @@ When you insert a Toggle you pick one of four layouts. Each is fully editable af
 * **Dark mode switch** – a switch with a sun/moon icon in the knob.
 
 Classes: `tmb-toggle__row`, `__label`, `__switch` (`--dark-mode`), `__knob`, `__icon` (`--on`), `__segments` and `__segment`. The dark mode switch's sun/moon swap spans two: `tmb-toggle__icon--on` hides the moon, and `tmb-toggle__switch--dark-mode` swaps them while on. The switch's "off" track is a fixed grey with enough contrast in both light and dark mode.
-
-= Toggle: ready-made pricing pattern =
-
-In the inserter's Patterns tab, the **Toggles** category has a **Pricing table with monthly/annual toggle** pattern: a segmented Monthly / Annual toggle and three plans, already wired up (the plan sets have the IDs `pricing-monthly` and `pricing-annual`, and the toggle uses the sync group `billing`). Insert it, change the text and prices, and publish.
 
 = Toggle: what it can do =
 
@@ -135,13 +131,6 @@ Select a GenerateBlocks block inside a Countdown and use the **Countdown part** 
 
 The server writes the real numbers and the ended state into the page, so it's right before any JavaScript runs. In the editor, use the **Running / Ended** toolbar button to preview the ended message. In List View the block shows what it counts to, e.g. "Countdown · Evergreen".
 
-= Countdown: ready-made patterns =
-
-Under Patterns → **Countdowns**:
-
-* **Sale banner with countdown** – a slim banner with an inline countdown. The banner (ID `sale-banner`) hides itself when the sale ends.
-* **Launch countdown** – a "coming soon" section with large numbers and a "We're live!" message for when it ends.
-
 = Countdown: for developers =
 
 The Countdown fires `tmb-countdown:end` (and `tmb-countdown:restart` for repeating ones) on its wrapper, and has `window.tmbCountdown.init()` and `window.tmbCountdown.reset()`. See the README for details.
@@ -160,10 +149,6 @@ Client logos, short messages, big headlines, or testimonials scrolling upwards. 
 Each has a small pause button in the corner. It comes first in the block, so keyboard users reach it before any links in the row.
 
 Classes: `tmb-marquee__pause` (`--middle`; it also holds the pause/play icon swap), `__items` (`--logos`, `--messages`, `--headline`, `--quotes`), `__logo`, `__band`, `__message`, `__headline` (`--muted`), `__star` (`--messages`, `--headline`), `__card`, `__quote` and `__author`. The row's `display: flex` (and `flex-direction: column` for vertical quotes) stays a local style, since the loop needs it.
-
-= Marquee: ready-made pattern =
-
-Under Patterns → **Marquees**, **Logo strip: "Trusted by…"** is a small "Trusted by teams at" heading above a scrolling row of placeholder logos. Swap in your clients' logos (GenerateBlocks Media blocks inside the scrolling row, all the same height) and publish.
 
 = Marquee: parts and settings =
 
@@ -195,10 +180,6 @@ A button that opens a drawer underneath it: a downloads menu, a short list of li
 The button is a GenerateBlocks Button with a chevron that turns over while it's open. The links start as `#`: point them at your files or pages.
 
 Classes: `tmb-dropdown__button`, `__drawer` (`--panel`, which sets the panel's 18rem width), `__item`, `__link` (`--downloads`, `--simple`), `__file-name`, `__file-meta`, `__title`, `__text` and `__cta`.
-
-= Dropdown: ready-made pattern =
-
-Under Patterns → **Dropdowns**, **Product resources with a Downloads dropdown** is a short section with a heading, a line of text and a Downloads dropdown with three files. Change the file names and links, and publish.
 
 = Dropdown: parts and settings =
 
@@ -433,7 +414,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category, or the ready-made sections under Patterns → Toggles, Patterns → Countdowns, Patterns → Marquees and Patterns → Dropdowns. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category; each offers a choice of starting layouts. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need, set what Fast / Normal / Slow mean for dropdowns and entrance animations (Speeds), and add your own Bunny hostnames for video backgrounds.
 
 == Frequently Asked Questions ==
@@ -522,7 +503,7 @@ Only if your SEO plugin adds breadcrumb structured data too. Slim SEO does, so s
 
 = Can I hide blocks I don't use? =
 
-Yes. Go to **Settings → Thingamablocks** (administrators only), turn off the switch for any block or feature, and save. A switched-off block leaves the inserter and its patterns leave the Patterns tab; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks, video backgrounds and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
+Yes. Go to **Settings → Thingamablocks** (administrators only), turn off the switch for any block or feature, and save. A switched-off block leaves the inserter; a switched-off feature's panel no longer appears in the sidebar. It only hides them: pages already using a block keep working and can still be edited (WordPress may not let you duplicate or paste it until it's switched back on), and existing animations, masks, video backgrounds and FAQ schema stay. The page shows how many items use each one, so you can see what's safe to hide. Everything is on by default.
 
 = Will animations slow my site down? =
 

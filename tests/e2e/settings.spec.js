@@ -99,7 +99,7 @@ test.describe( 'Settings page', () => {
 		);
 	} );
 
-	test( 'switched off: gone from the inserter, patterns and panels', async ( {
+	test( 'switched off: gone from the inserter and panels', async ( {
 		page,
 	} ) => {
 		await setSwitches( page, {
@@ -115,13 +115,10 @@ test.describe( 'Settings page', () => {
 		await newPost( page );
 
 		const editor = await page.evaluate( async () => {
-			const { select, resolveSelect, dispatch } = window.wp.data;
+			const { select, dispatch } = window.wp.data;
 			const items = select( 'core/block-editor' )
 				.getInserterItems()
 				.map( ( item ) => item.name );
-			const patterns = (
-				await resolveSelect( 'core' ).getBlockPatterns()
-			).map( ( pattern ) => pattern.name );
 			const media = window.wp.blocks.createBlock(
 				'generateblocks/media',
 				{
@@ -138,12 +135,6 @@ test.describe( 'Settings page', () => {
 				dropdownRegistered: !! window.wp.blocks.getBlockType(
 					'thingamablocks/dropdown'
 				),
-				dropdownPattern: patterns.includes(
-					'thingamablocks/downloads-dropdown'
-				),
-				togglePattern: patterns.includes(
-					'thingamablocks/pricing-toggle'
-				),
 			};
 		} );
 
@@ -152,8 +143,6 @@ test.describe( 'Settings page', () => {
 			toggle: true,
 			// Still registered, so existing dropdowns keep working.
 			dropdownRegistered: true,
-			dropdownPattern: false,
-			togglePattern: true,
 		} );
 
 		await expect(

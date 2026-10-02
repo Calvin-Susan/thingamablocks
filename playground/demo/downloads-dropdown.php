@@ -1,9 +1,9 @@
 <?php
 /**
- * Pattern: a "Product resources" section with a Downloads dropdown.
+ * Demo section: a "Product resources" section with a Downloads dropdown.
  *
- * Block markup exported from the editor, with visible text wrapped for
- * translation. Registered in includes/patterns.php.
+ * Demo content for the local test site (rendered by playground/blueprint.json),
+ * not part of the plugin: block markup exported from the editor.
  *
  * @package Thingamablocks
  */

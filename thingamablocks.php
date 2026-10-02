@@ -35,7 +35,6 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-ren
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-html.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
-require_once THINGAMABLOCKS_DIR . 'includes/patterns.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 require_once THINGAMABLOCKS_DIR . 'includes/mask.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-faq-schema.php';

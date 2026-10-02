@@ -90,7 +90,7 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; ready-made sections are under **Patterns → Toggles**, **Patterns → Countdowns**, **Patterns → Marquees** and **Patterns → Dropdowns**. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; each offers a choice of starting layouts when inserted. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
@@ -107,7 +107,7 @@ The switches are ordinary checkboxes styled as switches (with `role="switch"`, s
 
 **Switching off only hides things.** Nothing on your site changes:
 
-- A switched-off **block** leaves the inserter, and its patterns leave the Patterns tab. It stays registered, so pages already using it keep working on the site and can still be edited. WordPress may not let you duplicate or paste it while it's switched off (a block that's out of the inserter can't always be added again by other routes); switch it back on for that.
+- A switched-off **block** leaves the inserter. It stays registered, so pages already using it keep working on the site and can still be edited. WordPress may not let you duplicate or paste it while it's switched off (a block that's out of the inserter can't always be added again by other routes); switch it back on for that.
 - A switched-off **feature**'s sidebar panel (Entrance animation, Mask, Video background, FAQ schema) no longer loads in the editor. Existing animations keep animating, existing masks stay, existing video backgrounds keep playing, and accordions that already have FAQ schema keep printing it.
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
@@ -133,7 +133,7 @@ Behind the scenes: they're only created on an ordinary admin page load, never in
 
 **Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks every block works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the plugin's classes add around 18 KB to it (under 3 KB gzipped).
 
-Blocks inserted with an older version keep the styles they were inserted with, and the patterns still use per-block styles.
+Blocks inserted with an older version keep the styles they were inserted with.
 
 ---
 
@@ -160,17 +160,6 @@ When you insert a Toggle you're asked to pick a starting layout:
 The layouts are styled with shared Global Styles classes (see [Toggle classes](#toggle-classes)). The switch's "off" track is a mid grey (`#767680`) with enough contrast against both light and dark backgrounds, and the knob is white with a grey icon, so the switch reads the same in light and dark mode.
 
 > **In the editor, clicking the switch doesn't flip it.** Clicking selects blocks so you can edit them. To see the other state, use the **On/Off** button in the Toggle's block toolbar. The actual toggling happens on the front end.
-
-#### Fastest: the pricing pattern
-
-The plugin registers a block pattern, **Pricing table with monthly/annual toggle**, in a **Toggles** pattern category (only while GenerateBlocks is active).
-
-1. Open the inserter → **Patterns** tab → **Toggles**.
-2. Insert **Pricing table with monthly/annual toggle**: a heading, a segmented Monthly / Annual toggle, and three plans (Starter, Pro, Business) in two versions.
-3. It's already wired up: the monthly plans are in an Element with ID `pricing-monthly`, the annual plans in one with ID `pricing-annual`, and the toggle shows one or the other. Its sync group is `billing`, so a second toggle with the same group (say, at the bottom of the page) stays in step.
-4. Edit the text and prices, restyle with the GB Styles panel, and publish.
-
-Like all patterns, once inserted it's ordinary blocks – nothing links back to the pattern. The recipe below builds the same thing from scratch.
 
 #### Recipe: monthly / annual pricing
 
@@ -318,7 +307,7 @@ Select the Toggle block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | When toggled | `action` | `showHide` | `showHide`, `colorScheme`, `toggleClass`, `none` |
 
-**Targets** (Show when off / on, Elements – and the Countdown's Also hide / Also show): a bare word is an element ID (`monthly-prices`). The exceptions are `html`, `body`, `main`, `header`, `footer`, `nav`, `aside`, `article` and `section`: those mean the tag, unless the page has an element with that ID. Anything else (`.card`, `#site-header`, `[data-plan="annual"]`) is a CSS selector. Selectors can't contain `<`, `\`, `{`, `}`, `;`, `@`, CSS comments or `url(` anywhere, even inside quotes; the field warns about any it will ignore. If several elements share an ID (e.g. a pattern inserted twice), all of them are switched. A leading `#` on a plain ID is dropped when saved.
+**Targets** (Show when off / on, Elements – and the Countdown's Also hide / Also show): a bare word is an element ID (`monthly-prices`). The exceptions are `html`, `body`, `main`, `header`, `footer`, `nav`, `aside`, `article` and `section`: those mean the tag, unless the page has an element with that ID. Anything else (`.card`, `#site-header`, `[data-plan="annual"]`) is a CSS selector. Selectors can't contain `<`, `\`, `{`, `}`, `;`, `@`, CSS comments or `url(` anywhere, even inside quotes; the field warns about any it will ignore. If several elements share an ID (e.g. a section duplicated), all of them are switched. A leading `#` on a plain ID is dropped when saved.
 
 **Show / hide elements**
 
@@ -414,19 +403,10 @@ The layouts are styled with shared **GenerateBlocks Pro Global Styles** (classes
 
 > **The numbers show 00 in the editor.** That's placeholder text: the editor doesn't run the clock. The sidebar tells you when it ends ("Ends in 4 days, 6 hours"), and the real numbers appear on the front end. Use the **Running / Ended** button in the block toolbar to preview the ended state while you style the message. Unlike the Toggle's On/Off button, it's only a preview – it doesn't change any setting.
 
-#### Fastest: the countdown patterns
-
-Two patterns are registered in a **Countdowns** pattern category (only while GenerateBlocks is active):
-
-- **Sale banner with countdown** – a slim accent-coloured banner: "Flash sale: 20% off everything", an inline "Ends in 2d 5h 12m 9s" countdown and a "Shop the sale" button. The banner Element has the ID `sale-banner`, and the countdown is set to disappear and to **also hide** `sale-banner`, so the whole banner goes away when the sale ends.
-- **Launch countdown** – a "Coming soon" section with a heading, intro text, large numbers with labels, and a "We're live!" message that replaces the numbers when it ends.
-
-After inserting either one, select the Countdown block (via List View, where it's labelled **Countdown · Date**) and set the end date – it starts a week out.
-
 #### Recipe: Sale ends Friday at 5 pm
 
 1. **Check the site's time zone** under **Settings → General**. The countdown ends at 5 pm *there*, wherever the visitor is.
-2. **Insert a Countdown** where you want it and choose a layout (**Boxes** for a section, **Inline text** for a banner). Or insert the **Sale banner with countdown** pattern.
+2. **Insert a Countdown** where you want it and choose a layout (**Boxes** for a section, **Inline text** for a banner).
 3. **Select the Countdown block** (breadcrumb or List View) and open the **Countdown** panel:
    - Count down to: **A date and time**
    - Click the date button and pick Friday, 5:00 PM. Below it you'll see "Ends in …" so you can check it.
@@ -554,7 +534,7 @@ A recurring countdown rolls straight on to the next end time, so the "When it en
 
 - The wrapper has `role="timer"`, which screen readers don't announce every second, and an `aria-label`: "Countdown to {date and time}" for a date countdown (in the site's date and time formats), otherwise "Countdown".
 - Separators get `aria-hidden="true"`.
-- In the Inline text layout and the sale banner pattern, the short unit letters (d, h, m, s) are hidden from screen readers and a visually hidden full word is read instead.
+- In the Inline text layout, the short unit letters (d, h, m, s) are hidden from screen readers and a visually hidden full word is read instead.
 - The numbers and the timer/ended state are rendered on the server, so the page makes sense before (and without) JavaScript.
 
 ---
@@ -583,15 +563,11 @@ When you insert a Marquee you pick a starting layout:
 
 Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. It comes first inside the Marquee (it's positioned in the corner, so this doesn't change the look), so keyboard users reach it before any links in the row; keep it first if you build your own. The layouts are styled with shared Global Styles classes (see [Marquee classes](#marquee-classes)).
 
-#### Fastest: the logo strip pattern
-
-The plugin registers **Logo strip: "Trusted by…"** in a **Marquees** pattern category (only while GenerateBlocks is active): a small centred "Trusted by teams at" heading above a Logo strip marquee with placeholder logos and a pause button. Insert it from **Patterns → Marquees**, then swap the placeholders for your logos as in the recipe below.
-
 > **The marquee stands still in the editor.** That's on purpose, so you can click into it and edit the content. Use the **Preview** button in the block toolbar to see the speed and direction (press **Stop** to edit again). The preview just slides the row by its own length; the seamless copies are only added on the front end.
 
 #### Recipe: Client logo strip with your own logos
 
-1. **Insert a Marquee** and choose **Logo strip** (or insert the pattern above).
+1. **Insert a Marquee** and choose **Logo strip**.
 2. **Open List View** and expand the Marquee. Inside it there's an Element marked as the row that scrolls (its sidebar shows **Marquee part: The row that scrolls**) holding six Shape blocks – the placeholder logos.
 3. **Replace the placeholders.** Delete the Shape blocks and add a GenerateBlocks **Media** (image) block inside the row for each logo. Give each one alt text with the company name.
 4. **Keep logos the same height.** In each image's Styles set a height (e.g. `2rem` or `2.5rem`) and width `auto`, so wide and tall logos sit evenly. Using a global style for this saves repeating it.
@@ -701,7 +677,7 @@ Select the Marquee block (the wrapper) to see these in the sidebar. In List View
 
 - **Copies are hidden from screen readers and the keyboard** (`aria-hidden="true"` and `inert`, links and buttons in them get `tabindex="-1"`, and IDs are removed). Only the original row is read out or tabbed to, so each logo or link exists once.
 - **A pause button.** WCAG 2.2.2 asks that anything moving for more than 5 seconds can be paused. Every layout has one; the sidebar warns you if it's removed. The server makes it work from the keyboard (`type="button"` on a `<button>`, otherwise `role="button"` and `tabindex="0"`), adds `aria-pressed`, and gives it `aria-label="Pause the scrolling"` unless it already has a label.
-- **The pause button comes first** in every layout and pattern, so it's reached before the links in the row.
+- **The pause button comes first** in every layout, so it's reached before the links in the row.
 - **Keyboard focus always pauses it** (whatever **Pause on hover** is set to), so someone tabbing through links in the row isn't chasing a moving target. A focused link that's partly off the edge or under the fade is moved fully into view, and the edge fade is removed while focus is inside.
 - **Reduced motion:** visitors who prefer reduced motion get a still row. The copies are removed, the pause button is hidden, and the strip becomes scrollable so they can still see everything. If it overflows, the scrollable area can be focused with Tab (so it scrolls with the arrow keys) and is named for screen readers with the **Accessibility → Label**, or "Scrolling content" if there isn't one.
 
@@ -733,13 +709,9 @@ Every layout's button is a GenerateBlocks Button (`<button>` tag) with a chevron
 
 > **In the editor, the drawer shows while the dropdown or anything inside it is selected**, sitting in the page flow under the button so you can edit it. Click elsewhere and it hides again. The **Preview** button in the block toolbar plays the reveal animation.
 
-#### Fastest: the downloads pattern
-
-The plugin registers **Product resources with a Downloads dropdown** in a **Dropdowns** pattern category (only while GenerateBlocks is active): a light grey section with a "Product resources" heading, a line of text, and a Downloads dropdown with three files. Insert it from **Patterns → Dropdowns**, change the file names and links, and publish. It's also on the Playground demo page.
-
 #### Recipe: a downloads menu for a product page
 
-1. **Insert a Dropdown** and choose **Downloads** (or insert the pattern above).
+1. **Insert a Dropdown** and choose **Downloads**.
 2. **Rename the button.** Click its text and type, e.g. "Spec sheets".
 3. **Edit the files.** Open List View and expand the drawer (its sidebar shows **Dropdown part: The drawer**). Each list item holds a link with two lines of text: the file name and its type and size. Change the text, and set each link's `href` to the file's URL in **HTML Attributes**. Duplicate a list item to add another file.
 4. **Optional:** make the drawer wider than the button by giving it a **width** in its Styles (e.g. `16rem`), and choose **Line up with the button's → End** if the button sits at the right of the page.
@@ -1750,7 +1722,6 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 `includes/settings.php`. The page uses the WordPress Settings API (`register_setting`, `options.php`), under **Settings** with `manage_options`. The rule is "hide, never break": nothing is unregistered.
 
 - **Blocks.** Every block stays registered in PHP, so its render callback still runs and existing content renders exactly as before. In the editor, a tiny inline script (registered before the blocks, in `enqueue_block_editor_assets`) adds a `blocks.registerBlockType` filter that sets `supports.inserter` to `false` for the switched-off blocks. That's WordPress's own way to hide a block from the inserter while existing copies still load and edit normally.
-- **Patterns.** `includes/patterns.php` tags each pattern with its block and skips registering the ones whose block is switched off.
 - **Features.** The editor scripts for the Entrance animation, Mask, Video background and FAQ schema panels simply aren't enqueued. The front end doesn't depend on them: animations run from the `data-tmb-*` attributes already saved in the content, masks are plain GenerateBlocks CSS, video backgrounds are rendered from `data-tmb-video`, and FAQ schema is built on the server from `data-tmb-faq`.
 - **Usage counts** are one `LIKE` query per switch on `wp_posts` (any post type, skipping trash, auto-drafts and revisions), run only when the settings page is opened. Blocks are found by their block comment (`<!-- wp:thingamablocks/marquee`), animations by `data-tmb-animate`, masks by `"maskImage":"url(` in a block's saved GB styles, video backgrounds by `"data-tmb-video":` in a container's saved attributes, FAQ schema by `"data-tmb-faq":"true"` in an accordion's saved attributes.
 - **The page.** Each group (Blocks, Features) is a card, and each item a row with its name (a `<label>`), description and usage count (linked to the switch with `aria-describedby`) and the switch. A switch is a real checkbox with `role="switch"` and a `tmb-switch` class, styled as a sliding switch by a small inline stylesheet that's enqueued only on this page (`admin_enqueue_scripts`, checking the page's hook). The "on" colour and focus ring use `--wp-admin-theme-color`, so they follow the user's admin colour scheme; the "off" track is dark enough to see against white (3:1), and the slide is switched off for reduced motion.
@@ -1807,8 +1778,8 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
-- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
-- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
+- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the demo sections in `playground/demo/` (block markup exported from the editor; `functions.php` holds a helper for their JSON strings). They're test content for the local site only, not part of the plugin, and the browser tests use that page. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
+- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
 ---
@@ -1831,7 +1802,6 @@ includes/
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
   class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, video backgrounds)
   color-scheme.php              Dark mode: tracks settings per post, prints the no-flash <head> script
-  patterns.php                  Registers the "Toggles", "Countdowns", "Marquees" and "Dropdowns" pattern categories and the patterns in patterns/ (skipping those of switched-off blocks)
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
   class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
@@ -1839,12 +1809,6 @@ includes/
   class-thingamablocks-global-styles.php  Creates the starting layouts' GB Pro Global Styles (tmb-*__*) once for admins, never overwritten; prints them itself on the test site
   global-styles/{block}.php     Each block's default classes (base before modifiers), loaded by Thingamablocks_Global_Styles::defaults()
   settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, the Bunny hostnames field, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
-patterns/
-  pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
-  sale-banner.php               "Sale banner with countdown" pattern
-  launch-countdown.php          "Launch countdown" pattern
-  logo-marquee.php              "Logo strip: Trusted by…" pattern
-  downloads-dropdown.php        "Product resources with a Downloads dropdown" pattern
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
@@ -1929,6 +1893,7 @@ src/shared/
   gb.js                         GenerateBlocks helpers (icon class, style shorthands, inserter previews)
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
+playground/demo/                Demo sections for the test site's "Thingamablocks demo" page (not in the plugin zip)
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
 webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/, src/video/ and src/search/expand.js entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version

@@ -1,9 +1,9 @@
 <?php
 /**
- * Pattern: "Trusted by…" logo strip marquee.
+ * Demo section: "Trusted by…" logo strip marquee.
  *
- * Block markup exported from the editor, with visible text wrapped for
- * translation. Registered in includes/patterns.php.
+ * Demo content for the local test site (rendered by playground/blueprint.json),
+ * not part of the plugin: block markup exported from the editor.
  *
  * @package Thingamablocks
  */

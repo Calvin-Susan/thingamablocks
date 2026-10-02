@@ -1,5 +1,5 @@
 /**
- * The editor: blocks and patterns load as valid blocks.
+ * The editor: blocks load as valid blocks.
  *
  * The demo page is created by the Playground blueprint without a logged-in
  * user, so WordPress's content filter (kses) runs on it just as it does for
@@ -24,40 +24,6 @@ test.describe( 'Editor', () => {
 
 		expect( await invalidBlocks( page ) ).toEqual( [] );
 		expect( errors ).toEqual( [] );
-	} );
-
-	test( 'every pattern is registered and parses as valid blocks', async ( {
-		page,
-	} ) => {
-		await page.goto( '/wp-admin/post-new.php?post_type=page' );
-		await page.waitForFunction(
-			() => window.wp?.blocks && window.wp?.data,
-			null,
-			{ timeout: 60_000 }
-		);
-
-		const patterns = await page.evaluate( async () =>
-			( await window.wp.data.resolveSelect( 'core' ).getBlockPatterns() )
-				.filter( ( pattern ) =>
-					pattern.name.startsWith( 'thingamablocks/' )
-				)
-				.map( ( { name, content } ) => ( { name, content } ) )
-		);
-
-		expect( patterns.map( ( pattern ) => pattern.name ).sort() ).toEqual( [
-			'thingamablocks/downloads-dropdown',
-			'thingamablocks/launch-countdown',
-			'thingamablocks/logo-marquee',
-			'thingamablocks/pricing-toggle',
-			'thingamablocks/sale-banner',
-		] );
-
-		for ( const pattern of patterns ) {
-			expect(
-				await invalidBlocks( page, pattern.content ),
-				pattern.name
-			).toEqual( [] );
-		}
 	} );
 
 	test( 'each block can be inserted from the inserter', async ( {
