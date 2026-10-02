@@ -74,7 +74,7 @@ Each block's starting layouts are styled with shared GenerateBlocks Pro Global S
 * PHP 7.4 or newer
 * GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block, and the blocks' starting layouts get their look from GenerateBlocks Pro Global Styles)
 
-Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
+Tested with GenerateBlocks 2.4.1 (free) and GenerateBlocks Pro 2.x on a live site (and Pro 2.8 locally).
 
 = Source code =
 
@@ -92,7 +92,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 
 = Does it need GenerateBlocks Pro? =
 
-No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The exceptions: FAQ schema adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x; and the blocks' starting layouts are styled with GenerateBlocks Pro Global Styles, so with free GenerateBlocks every block works but the layouts are unstyled (style the parts yourself). The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
+No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The exceptions: FAQ schema adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x; and the blocks' starting layouts are styled with GenerateBlocks Pro Global Styles, so with free GenerateBlocks every block works but the layouts are unstyled (style the parts yourself).
 
 = Why does nothing happen when I click the toggle in the editor? =
 
