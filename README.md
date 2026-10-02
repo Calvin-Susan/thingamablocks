@@ -4,6 +4,8 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, by [OGAL Web Design](https://ogalweb.com) (Kyle Van Deusen).
 
+> **Installing:** download **`thingamablocks-1.0.0.zip`** from the [latest release](https://github.com/Calvin-Susan/thingamablocks/releases/latest) and upload it under **Plugins → Add New Plugin → Upload Plugin**. Don't use GitHub's green **Code → Download ZIP** button: that's the source code, without the built files WordPress needs, so the blocks won't work.
+
 | Block | Name | What it does |
 | --- | --- | --- |
 | [**Toggle**](#toggle-block) | `thingamablocks/toggle` | A switch or pair of buttons that shows/hides elements, switches light/dark mode, or toggles classes. |
