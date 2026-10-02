@@ -17,9 +17,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 // A function, so these helpers stay local (PHP files included at the top
 // level would otherwise make them globals).
 return static function () {
+	// $subtle is dark enough for the field's edge to show (3:1 on white, WCAG 1.4.11).
 	$accent     = '#1e73be';
 	$text       = '#222222';
-	// Dark enough for the field's edge to show (3:1 on white, WCAG 1.4.11).
 	$subtle     = '#767680';
 	$surface    = '#f7f8f9';
 	$border     = '#f0f0f0';
