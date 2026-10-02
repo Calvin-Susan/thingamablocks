@@ -11,9 +11,9 @@
  * Delete a unit's box to drop that unit: with no Days, the hours keep counting
  * past 24.
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
-import { visuallyHidden } from '../shared/gb';
+import { nameBlocks, partOf, visuallyHidden } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const UNIT_LABELS = () => ( {
@@ -171,7 +171,7 @@ const colons = () => {
 	];
 };
 
-export const variations = [
+const layouts = [
 	{
 		name: 'boxes',
 		title: __( 'Boxes', 'thingamablocks' ),
@@ -206,3 +206,42 @@ export const variations = [
 		scope: [ 'block' ],
 	},
 ];
+
+// Names shown in List View, e.g. "Days number".
+const blockName = ( attributes, blockType, index, parent ) => {
+	const unit =
+		UNIT_LABELS()[
+			attributes.htmlAttributes?.[ 'data-countdown-unit' ] ||
+				attributes.htmlAttributes?.[ 'data-countdown-part' ]
+		];
+
+	switch ( partOf( attributes, 'countdown' ) ) {
+		case 'timer':
+			return __( 'Timer', 'thingamablocks' );
+		case 'unit':
+			/* translators: %s: unit, e.g. "Days". */
+			return sprintf( __( '%s box', 'thingamablocks' ), unit );
+		case 'number':
+			/* translators: %s: unit, e.g. "Days". */
+			return sprintf( __( '%s number', 'thingamablocks' ), unit );
+		case 'label':
+		case 'suffix':
+			return __( 'Label', 'thingamablocks' );
+		case 'intro':
+			return __( 'Intro text', 'thingamablocks' );
+		case 'separator':
+			return __( 'Separator', 'thingamablocks' );
+		case 'ended':
+			return __( 'Message when it ends', 'thingamablocks' );
+	}
+
+	// The hidden full unit name in the inline layout.
+	return parent && attributes.styles
+		? __( 'Label for screen readers', 'thingamablocks' )
+		: '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

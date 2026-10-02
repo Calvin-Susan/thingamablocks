@@ -12,6 +12,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { nameBlocks, partOf } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const magnifier =
@@ -82,7 +83,7 @@ const button = ( name, label, modifier ) =>
 		globalClasses: classes( 'button', modifier ),
 	} );
 
-export const variations = [
+const layouts = [
 	{
 		name: 'bar',
 		title: __( 'Bar with button', 'thingamablocks' ),
@@ -153,3 +154,31 @@ export const variations = [
 		scope: [ 'block' ],
 	},
 ];
+
+// Names shown in List View.
+const blockName = ( attributes ) => {
+	const searchPart = attributes.htmlAttributes?.[ 'data-search-part' ];
+
+	switch ( searchPart ) {
+		case 'field':
+			return __( 'Field', 'thingamablocks' );
+		case 'input':
+			return __(
+				'Input (its text is the placeholder)',
+				'thingamablocks'
+			);
+		case 'submit':
+			return __( 'Search button', 'thingamablocks' );
+		case 'toggle':
+			return __( 'Open button', 'thingamablocks' );
+	}
+
+	return 'wrapper' === partOf( attributes, 'search' )
+		? __( 'Wrapper', 'thingamablocks' )
+		: '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

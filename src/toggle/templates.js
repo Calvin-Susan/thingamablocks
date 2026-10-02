@@ -15,6 +15,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { nameBlocks, partOf } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const classes = ( part, modifier ) => {
@@ -111,7 +112,7 @@ const moon =
 const darkModeSwitch = () =>
 	switchTrack( [ icon( sun, false ), icon( moon, true ) ], 'dark-mode' );
 
-export const variations = [
+const layouts = [
 	{
 		name: 'switch-labels',
 		icon: variationIcons[ 'switch-labels' ],
@@ -180,3 +181,35 @@ export const variations = [
 		keywords: [ 'dark', 'light', 'theme', 'color scheme' ],
 	},
 ];
+
+// Names shown in List View.
+const blockName = ( attributes, blockType, index ) => {
+	const side = attributes.htmlAttributes?.[ 'data-toggle-part' ];
+
+	switch ( partOf( attributes, 'toggle' ) ) {
+		case 'switch':
+			return __( 'Switch', 'thingamablocks' );
+		case 'knob':
+			return __( 'Knob', 'thingamablocks' );
+		case 'icon':
+			return index
+				? __( 'Moon icon (on)', 'thingamablocks' )
+				: __( 'Sun icon (off)', 'thingamablocks' );
+		case 'row':
+			return __( 'Row', 'thingamablocks' );
+		case 'segments':
+			return __( 'Buttons', 'thingamablocks' );
+		case 'label':
+		case 'segment':
+			return 'on' === side
+				? __( 'Turns on', 'thingamablocks' )
+				: __( 'Turns off', 'thingamablocks' );
+	}
+
+	return '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

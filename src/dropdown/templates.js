@@ -12,6 +12,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { nameBlocks, partOf } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const chevron =
@@ -168,7 +169,7 @@ const panel = () => [
 	),
 ];
 
-export const variations = [
+const layouts = [
 	{
 		name: 'downloads',
 		title: __( 'Downloads', 'thingamablocks' ),
@@ -204,3 +205,34 @@ export const variations = [
 		scope: [ 'block' ],
 	},
 ];
+
+// Names shown in List View.
+const blockName = ( attributes ) => {
+	switch ( partOf( attributes, 'dropdown' ) ) {
+		case 'button':
+			return __( 'Button', 'thingamablocks' );
+		case 'drawer':
+			return __( 'Drawer', 'thingamablocks' );
+		case 'item':
+			return __( 'List item', 'thingamablocks' );
+		case 'link':
+			return __( 'Link', 'thingamablocks' );
+		case 'file-name':
+			return __( 'File name', 'thingamablocks' );
+		case 'file-meta':
+			return __( 'File type and size', 'thingamablocks' );
+		case 'title':
+			return __( 'Title', 'thingamablocks' );
+		case 'text':
+			return __( 'Text', 'thingamablocks' );
+		case 'cta':
+			return __( 'Button link', 'thingamablocks' );
+	}
+
+	return '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

@@ -12,6 +12,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { nameBlocks, partOf } from '../shared/gb';
 import { variationIcons } from './icon';
 
 /*
@@ -58,7 +59,7 @@ const current = ( modifier ) =>
 		classes( 'current', modifier )
 	);
 
-export const variations = [
+const layouts = [
 	{
 		name: 'chevrons',
 		title: __( 'Chevrons', 'thingamablocks' ),
@@ -88,3 +89,22 @@ export const variations = [
 		scope: [ 'block' ],
 	},
 ];
+
+// Names shown in List View.
+const blockName = ( attributes ) => {
+	switch ( partOf( attributes, 'breadcrumbs' ) ) {
+		case 'item':
+			return __( 'Link (each page)', 'thingamablocks' );
+		case 'divider':
+			return __( 'Separator', 'thingamablocks' );
+		case 'current':
+			return __( 'Current page', 'thingamablocks' );
+	}
+
+	return '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

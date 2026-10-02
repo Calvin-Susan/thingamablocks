@@ -11,6 +11,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
+import { nameBlocks, partOf } from '../shared/gb';
 import { variationIcons } from './icon';
 
 /*
@@ -192,7 +193,7 @@ const quotes = () => {
 	];
 };
 
-export const variations = [
+const layouts = [
 	{
 		name: 'logos',
 		title: __( 'Logo strip', 'thingamablocks' ),
@@ -246,3 +247,43 @@ export const variations = [
 		scope: [ 'block' ],
 	},
 ];
+
+// Names shown in List View.
+const blockName = ( attributes, blockType, index, parent ) => {
+	switch ( partOf( attributes, 'marquee' ) ) {
+		case 'pause':
+			return __( 'Pause button', 'thingamablocks' );
+		case 'items':
+			return __( 'Scrolling row', 'thingamablocks' );
+		case 'logo':
+			return __( 'Logo', 'thingamablocks' );
+		case 'band':
+			return __( 'Band', 'thingamablocks' );
+		case 'message':
+			return __( 'Message', 'thingamablocks' );
+		case 'headline':
+			return __( 'Headline', 'thingamablocks' );
+		case 'star':
+			return __( 'Star', 'thingamablocks' );
+		case 'card':
+			return __( 'Quote card', 'thingamablocks' );
+		case 'quote':
+			return __( 'Quote', 'thingamablocks' );
+		case 'author':
+			return __( 'Author', 'thingamablocks' );
+	}
+
+	// The two icons in the pause button.
+	if ( 'generateblocks/shape' === blockType && parent ) {
+		return index
+			? __( 'Play icon', 'thingamablocks' )
+			: __( 'Pause icon', 'thingamablocks' );
+	}
+
+	return '';
+};
+
+export const variations = layouts.map( ( layout ) => ( {
+	...layout,
+	innerBlocks: nameBlocks( layout.innerBlocks, blockName ),
+} ) );

@@ -73,3 +73,44 @@ export const visuallyHidden = {
 	clipPath: 'inset(50%)',
 	whiteSpace: 'nowrap',
 };
+
+/**
+ * Give a layout's blocks names, so List View shows "Pause button" or "Drawer"
+ * rather than "Container" (stored like a rename: metadata.name).
+ *
+ * @param {Array}    template Block template ([ name, attributes, innerBlocks ]).
+ * @param {Function} nameFor  ( attributes, blockName, index, parentName ) => name, or ''.
+ * @param {string}   parent   The parent's name (used when recursing).
+ * @return {Array} The template with names.
+ */
+export const nameBlocks = ( template = [], nameFor, parent = '' ) =>
+	template.map( ( [ blockName, attributes = {}, innerBlocks ], index ) => {
+		const name = nameFor( attributes, blockName, index, parent );
+
+		return [
+			blockName,
+			name
+				? {
+						...attributes,
+						metadata: { ...attributes.metadata, name },
+				  }
+				: attributes,
+			innerBlocks && nameBlocks( innerBlocks, nameFor, name ),
+		];
+	} );
+
+/**
+ * The part a block plays, from its first tmb-<block>__<part> class.
+ *
+ * @param {Object} attributes Block attributes.
+ * @param {string} block      Block slug, e.g. "marquee".
+ * @return {string} Part, e.g. "pause", or ''.
+ */
+export const partOf = ( attributes, block ) => {
+	const prefix = `tmb-${ block }__`;
+	const found = ( attributes.globalClasses || [] ).find( ( name ) =>
+		name.startsWith( prefix )
+	);
+
+	return found ? found.slice( prefix.length ).split( '--' )[ 0 ] : '';
+};
