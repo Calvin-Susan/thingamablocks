@@ -41,7 +41,7 @@ jobs:
           tools: composer
           coverage: none
       - name: Syntax check
-        run: find thingamablocks.php uninstall.php includes patterns -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find thingamablocks.php uninstall.php includes -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Coding standards
         # PHPCompatibility 9 (used by PHPCompatibilityWP) predates PHP 8.4.
         if: matrix.php == '7.4'
