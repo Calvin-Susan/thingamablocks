@@ -4,6 +4,10 @@ All notable changes to Thingamablocks are listed here.
 
 ## Unreleased
 
+### Added
+
+- Starting layouts name their blocks (stored as a rename, `metadata.name`), so List View shows "Pause button", "Scrolling row", "Days number", "Drawer" and so on instead of "Container" or "Text". Shared helpers `nameBlocks()` / `partOf()` in `src/shared/gb.js`; each block's `templates.js` maps its parts to names.
+
 ### Changed
 
 - **Every block's starting layouts use shared GenerateBlocks Pro Global Styles** instead of styles on each block: Toggle, Countdown, Marquee, Dropdown, Breadcrumbs and Search. Each part gets a base class plus a modifier where a layout differs, named `tmb-<block>__<part>--<modifier>` (e.g. `tmb-countdown__number` + `--boxes`, `tmb-search__field` + `--pill`); about 75 classes in all, listed per block in the README. Every instance on a site looks the same; edit a class in GB's Styles panel to restyle them all, or remove/swap a class (or add local styles) on one block for a one-off look. Default colours are plain hex values for now (they no longer use the GeneratePress global colour variables), so they don't follow the theme palette or dark mode until edited.
