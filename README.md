@@ -1125,7 +1125,7 @@ A few lines of CSS (`viewStyle`) load only on pages with a Search block. There's
 Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
 
 - Works on GenerateBlocks 2 blocks (Element, Text, Media, Shape, Query, Looper, Loop Item…) and, by the same rule, GenerateBlocks Pro's. **Not** on the legacy GB 1.x blocks (Container, Grid, Headline, Button), which have no HTML attributes to store it in.
-- Plays **once** per page view. It doesn't replay when you scroll back up, but you can add a [**Replay button**](#add-a-replay-button) that plays the animations again on click.
+- Plays **once** per page view. It doesn't replay when you scroll back up (developers can replay it with a [little script](#replaying-developers)).
 - **Nothing loads** on pages that don't use an animation. Pages that do get a ~3.7 KB script (1.6 KB gzipped) and ~750 bytes of CSS.
 - Visitors who prefer **reduced motion** see everything straight away, with no animation.
 - Keyboard users who tab into a block that hasn't animated in yet see it straight away, so focus is never on something invisible.
@@ -1155,16 +1155,19 @@ Same idea, set on the **Looper** block (inside the Query block): choose an anima
 
 If posts are added later by JavaScript (say, an infinite-scroll or load-more script), call [`window.tmbAnimate.init()`](#entrance-animations-windowtmbanimate) on the new content.
 
-#### Add a replay button
+#### Replaying (developers)
 
-Handy for a demo, a portfolio piece or a "see it again" moment.
+There's no replay setting, but the script can play animations again for a button of your own. Give the button an ID (say `replay`) and the section one (say `pricing`), then add:
 
-1. Add a GenerateBlocks **Text** block and set its tag to **Button** (any GB 2 block works, but a real `<button>` is best).
-2. In its **Entrance animation** panel, turn on **Replay button**.
-3. Leave **Replay the blocks with these IDs** empty to replay every animation on the page, or add the HTML ID of a section (say `pricing`) to replay just the animations inside it. The field suggests IDs used on the page; an ID it can't find is fine if it lives in a header, footer or other template part.
-4. Publish, scroll through the page, then click the button.
+```html
+<script>
+document.getElementById( 'replay' ).addEventListener( 'click', ( event ) => {
+	window.tmbAnimate?.replay( document.getElementById( 'pricing' ), event.currentTarget );
+} );
+</script>
+```
 
-Clicking it plays the entrance animations inside (and on) those blocks again, restarting any still playing. Only what's on screen plays straight away: blocks below the screen are hidden again and play when they're scrolled to, blocks above it are left as they are, and blocks that haven't been seen yet animate when they arrive. The button never hides itself: if it sits inside a replayed block, that block doesn't replay, and in a "one by one" group the item holding the button is skipped.
+The second argument is the button, so it's never hidden while it's used. Visitors who prefer reduced motion get no replay, so hide the button unless the script says replaying works: `:root:not(.tmb-replay-on) #replay{visibility:hidden}`. See [`window.tmbAnimate`](#entrance-animations-windowtmbanimate).
 
 ### Entrance animation settings
 
@@ -1178,12 +1181,8 @@ Select a GenerateBlocks block. The panel opens by itself on blocks that already 
 | Animate the blocks inside one by one | `data-tmb-animate-children` | Off | Only on blocks that hold other blocks (not Text, Media, Shape or Query page numbers). The block stays put and its direct children animate in turn. The delay applies before the first one. |
 | Time between each (ms) | `data-tmb-animate-children` | `100` | 50–500, in steps of 25. The value of the attribute above. |
 | **Preview** button | – | – | Plays the animation in the editor. Changes nothing. |
-| Replay button | `data-tmb-replay` | Off | Makes this block a button that plays entrance animations again when clicked. Offered on blocks with nothing inside them (a Text, Media or Shape block), so a whole section can't become a button. On its own, stored as `data-tmb-replay="*"` (the whole page). Independent of the Animation setting: the button itself doesn't need an animation. |
-| Replay the blocks with these IDs | `data-tmb-replay` | Empty | Shown when Replay button is on. HTML IDs of the blocks to replay, stored space-separated (`data-tmb-replay="pricing features"`); `#` is dropped and anything that isn't a plain ID is ignored. Empty means every animation on the page. |
 
-The settings are saved in the block's own GenerateBlocks **HTML Attributes** (you'll see them in that panel), so GenerateBlocks saves and renders them like any other attribute. Only values that differ from the defaults are stored: a block set to Fade up at Normal speed with no delay just gets `data-tmb-animate="fade-up"`. Setting Animation back to None removes them all (except a replay button setting, which is separate).
-
-**Replay buttons and accessibility.** Before any JavaScript runs, PHP makes the block behave like a button: a `<button>` gets `type="button"` (so it never submits a form); anything else gets `role="button"`, plus `tabindex="0"` so it can be reached with Tab (unless it's a link with an `href`, which already can). Enter and Space press a `role="button"` element, and a link used as a replay button replays rather than navigates. `aria-controls` lists the IDs it replays. A link or field *inside* a replay button still works normally, and holding a key down replays only once. An author's own `role` is kept. Replay buttons are **hidden** for visitors who prefer reduced motion and when JavaScript is off, since nothing would replay; until the script has loaded they're invisible but keep their space, so nothing shifts when they appear. A page with a replay button loads the animation script and CSS even if nothing else on it is animated.
+The settings are saved in the block's own GenerateBlocks **HTML Attributes** (you'll see them in that panel), so GenerateBlocks saves and renders them like any other attribute. Only values that differ from the defaults are stored: a block set to Fade up at Normal speed with no delay just gets `data-tmb-animate="fade-up"`. Setting Animation back to None removes them all.
 
 The animations move a block by at most 2rem (1.5rem for up/down) and zoom from 92%, so they stay subtle.
 
@@ -1551,11 +1550,11 @@ The Breadcrumbs block fires no events. Its PHP filters are under [PHP](#php).
 
 ```js
 window.tmbAnimate.init( container ); // set up animated blocks added later, e.g. by AJAX
-window.tmbAnimate.replay( element ); // play the animations inside element again (no argument: whole page)
+window.tmbAnimate.replay( element, button ); // play the animations inside element again (no argument: whole page)
 ```
 
 - `init( root )` sets up every `[data-tmb-animate]` block inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. Content added after the page has loaded (filters, infinite scroll, modals) is picked up automatically by a MutationObserver, so you rarely need this. Before the script arrives every animated block is hidden (with a 4-second fail-safe); after it arrives only blocks it is watching (`.tmb-wait`) are hidden, so nothing can get stuck invisible.
-- `replay( element )` plays the animations inside (and on) `element` again, restarting any still playing; with no argument, the whole page. Only blocks that have already animated in are replayed. Does nothing for visitors who prefer reduced motion.
+- `replay( element, keep )` plays the animations inside (and on) `element` again, restarting any still playing; with no argument, the whole page. Only blocks that have already animated in are replayed: those on screen play straight away, those below it play when scrolled to. The optional second argument (say, your button) is never hidden: a block containing it isn't replayed, and a "one by one" group skips the item holding it. Does nothing for visitors who prefer reduced motion; the script sets `html.tmb-replay-on` when replaying works, so a button can be hidden otherwise (`:root:not(.tmb-replay-on) #my-button{visibility:hidden}`).
 - To animate your own markup, add the attributes yourself: `<div data-tmb-animate="fade-up" data-tmb-delay="200">`. The script and CSS load only when a block rendered through WordPress contains `data-tmb-animate`, so on a page without one, enqueue `thingamablocks-animations` and print the CSS (see the filter below).
 
 ### Video backgrounds: `window.tmbVideo`

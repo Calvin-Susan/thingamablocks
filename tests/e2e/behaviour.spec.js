@@ -1,7 +1,6 @@
 /**
  * Behaviour that needs its own test pages: remembered toggle choices,
- * entrance animations and replay buttons, and keyboard focus in a moving
- * marquee.
+ * entrance animations, and keyboard focus in a moving marquee.
  */
 const { test, expect } = require( '@playwright/test' );
 const { testPage } = require( './utils' );
@@ -117,6 +116,34 @@ test.describe( 'Entrance animations', () => {
 		expect( errors ).toEqual( [] );
 	} );
 
+	test( 'window.tmbAnimate.replay() plays a block again (for your own button)', async ( {
+		page,
+	} ) => {
+		await page.goto( url, { waitUntil: 'networkidle' } );
+
+		const block = page.locator( '.gb-element-cc11dd22' );
+		await expect
+			.poll( () =>
+				block.evaluate( ( element ) => element.getAnimations().length )
+			)
+			.toBe( 0 );
+		expect(
+			await page.evaluate( () =>
+				document.documentElement.classList.contains( 'tmb-replay-on' )
+			)
+		).toBe( true );
+
+		await block.evaluate( ( element ) =>
+			window.tmbAnimate.replay( element )
+		);
+
+		expect(
+			await block.evaluate(
+				( element ) => element.getAnimations().length
+			)
+		).toBe( 1 );
+	} );
+
 	test( 'forged preset names are ignored', async ( { page } ) => {
 		const errors = [];
 		page.on( 'pageerror', ( error ) => errors.push( error.message ) );
@@ -149,195 +176,6 @@ test.describe( 'Entrance animations', () => {
 					)
 				).toBe( '1' );
 			}
-		} );
-	} );
-} );
-
-test.describe( 'Entrance animations: replay buttons', () => {
-	let url;
-
-	const text = ( id, tagName, content, htmlAttributes = {} ) => {
-		const attributes = Object.entries( htmlAttributes )
-			.map( ( [ key, value ] ) => ` ${ key }="${ value }"` )
-			.join( '' );
-
-		return `<!-- wp:generateblocks/text ${ JSON.stringify( {
-			uniqueId: id,
-			tagName,
-			htmlAttributes,
-		} ) } --><${ tagName } class="gb-text gb-text-${ id }"${ attributes }>${ content }</${ tagName }><!-- /wp:generateblocks/text -->`;
-	};
-
-	test.beforeAll( async ( { browser } ) => {
-		const page = await browser.newPage();
-		// A "one by one" group holding its own replay button, a plain replay
-		// button for the whole page (a <div>, so it needs a role), and a
-		// forged list of IDs.
-		url = await testPage(
-			page,
-			'tmb-test-replay',
-			`<!-- wp:generateblocks/element {"uniqueId":"ab01ab01","tagName":"div","htmlAttributes":{"id":"rp-group","data-tmb-animate":"fade-up","data-tmb-animate-children":"100"}} --><div class="gb-element-ab01ab01" id="rp-group" data-tmb-animate="fade-up" data-tmb-animate-children="100">` +
-				text( 'ab02ab02', 'p', 'One' ) +
-				text( 'ab03ab03', 'p', 'Two' ) +
-				text( 'ab04ab04', 'button', 'Replay', {
-					'data-tmb-replay': 'rp-group',
-				} ) +
-				'</div><!-- /wp:generateblocks/element -->' +
-				text(
-					'ab05ab05',
-					'div',
-					'Replay everything <a href="#inner">or not</a>',
-					{
-						'data-tmb-replay': '*',
-					}
-				) +
-				text( 'ab06ab06', 'button', 'Forged', {
-					'data-tmb-replay': 'rp-group 9bad (x) main',
-				} ) +
-				'<!-- wp:spacer {"height":"3000px"} --><div style="height:3000px" aria-hidden="true" class="wp-block-spacer"></div><!-- /wp:spacer -->' +
-				'<!-- wp:generateblocks/element {"uniqueId":"ab07ab07","tagName":"div","htmlAttributes":{"data-tmb-animate":"fade-up"}} --><div class="gb-element-ab07ab07" data-tmb-animate="fade-up">Far below</div><!-- /wp:generateblocks/element -->'
-		);
-		await page.close();
-	} );
-
-	// Entrance animations only (not the theme's CSS hover transitions).
-	const running = ( page, selector ) =>
-		page
-			.locator( selector )
-			.evaluate(
-				( element ) =>
-					element
-						.getAnimations()
-						.filter(
-							( animation ) =>
-								! ( animation instanceof window.CSSTransition )
-						).length
-			);
-
-	test( 'are buttons before JavaScript runs', async ( { page } ) => {
-		await page.goto( url );
-
-		const button = page.locator( '.gb-text-ab04ab04' );
-		await expect( button ).toHaveAttribute( 'type', 'button' );
-		await expect( button ).toHaveAttribute( 'aria-controls', 'rp-group' );
-
-		const div = page.locator( '.gb-text-ab05ab05' );
-		await expect( div ).toHaveAttribute( 'role', 'button' );
-		await expect( div ).toHaveAttribute( 'tabindex', '0' );
-		await expect( div ).not.toHaveAttribute( 'aria-controls', /./ );
-
-		// Only real IDs make it into aria-controls.
-		await expect( page.locator( '.gb-text-ab06ab06' ) ).toHaveAttribute(
-			'aria-controls',
-			'rp-group main'
-		);
-	} );
-
-	test( 'play the animations again, but never hide the button pressed', async ( {
-		page,
-	} ) => {
-		const errors = [];
-		page.on( 'pageerror', ( error ) => errors.push( error.message ) );
-		await page.goto( url, { waitUntil: 'networkidle' } );
-
-		// Let the first play finish.
-		await expect
-			.poll( () => running( page, '.gb-text-ab03ab03' ) )
-			.toBe( 0 );
-
-		await page.locator( '.gb-text-ab04ab04' ).click();
-
-		expect( await running( page, '.gb-text-ab02ab02' ) ).toBe( 1 );
-		expect( await running( page, '.gb-text-ab03ab03' ) ).toBe( 1 );
-		expect( await running( page, '.gb-text-ab04ab04' ) ).toBe( 0 );
-
-		// Pressing again mid-play restarts rather than stacking animations.
-		await page.locator( '.gb-text-ab04ab04' ).click();
-		expect( await running( page, '.gb-text-ab02ab02' ) ).toBe( 1 );
-
-		expect( errors ).toEqual( [] );
-	} );
-
-	test( 'a role="button" replay works from the keyboard', async ( {
-		page,
-	} ) => {
-		await page.goto( url, { waitUntil: 'networkidle' } );
-		await expect
-			.poll( () => running( page, '.gb-text-ab03ab03' ) )
-			.toBe( 0 );
-
-		// A held key (auto-repeat) doesn't replay again and again.
-		await page.locator( '.gb-text-ab05ab05' ).evaluate( ( element ) =>
-			element.dispatchEvent(
-				new KeyboardEvent( 'keydown', {
-					key: 'Enter',
-					repeat: true,
-					bubbles: true,
-					cancelable: true,
-				} )
-			)
-		);
-		expect( await running( page, '.gb-text-ab02ab02' ) ).toBe( 0 );
-
-		await page.locator( '.gb-text-ab05ab05' ).focus();
-		await page.keyboard.press( 'Enter' );
-		expect( await running( page, '.gb-text-ab02ab02' ) ).toBe( 1 );
-	} );
-
-	test( 'a link inside a replay button is still just a link', async ( {
-		page,
-	} ) => {
-		await page.goto( url, { waitUntil: 'networkidle' } );
-		await expect
-			.poll( () => running( page, '.gb-text-ab03ab03' ) )
-			.toBe( 0 );
-
-		await page.locator( '.gb-text-ab05ab05 a' ).click();
-		await expect( page ).toHaveURL( /#inner$/ );
-		expect( await running( page, '.gb-text-ab02ab02' ) ).toBe( 0 );
-	} );
-
-	test( 'blocks below the screen replay when they’re scrolled to', async ( {
-		page,
-	} ) => {
-		await page.goto( url, { waitUntil: 'networkidle' } );
-
-		const far = page.locator( '.gb-element-ab07ab07' );
-		await far.scrollIntoViewIfNeeded();
-		await expect
-			.poll( () => running( page, '.gb-element-ab07ab07' ) )
-			.toBe( 0 );
-		await expect( far ).toHaveClass( /tmb-in/ );
-
-		await page.evaluate( () => window.scrollTo( 0, 0 ) );
-		await page
-			.locator( '.gb-text-ab05ab05' )
-			.click( { position: { x: 5, y: 5 } } );
-
-		// Not played out of sight: hidden again, waiting to be seen.
-		await expect( far ).not.toHaveClass( /tmb-in/ );
-		expect( await running( page, '.gb-element-ab07ab07' ) ).toBe( 0 );
-
-		await far.scrollIntoViewIfNeeded();
-		await expect( far ).toHaveClass( /tmb-in/ );
-	} );
-
-	test.describe( 'without JavaScript', () => {
-		test.use( { javaScriptEnabled: false } );
-
-		test( 'replay buttons are hidden', async ( { page } ) => {
-			await page.goto( url );
-			await expect( page.locator( '.gb-text-ab04ab04' ) ).toBeHidden();
-		} );
-	} );
-
-	test.describe( 'with reduced motion', () => {
-		test.use( { reducedMotion: 'reduce' } );
-
-		test( 'replay buttons are hidden', async ( { page } ) => {
-			await page.goto( url, { waitUntil: 'networkidle' } );
-			await expect( page.locator( '.gb-text-ab04ab04' ) ).toBeHidden();
-			await expect( page.locator( '.gb-text-ab05ab05' ) ).toBeHidden();
 		} );
 	} );
 } );
