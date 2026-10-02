@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "thingamablocks/search",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"title": "Search",
 	"category": "generateblocks",
 	"description": "A search form built from GenerateBlocks elements, styled however you like, that can search just the content types you choose.",

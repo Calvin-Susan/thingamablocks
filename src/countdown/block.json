@@ -2,7 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "thingamablocks/countdown",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"title": "Countdown",
 	"category": "generateblocks",
 	"description": "A countdown timer built from GenerateBlocks elements. Count to a date, a per-visitor deadline, or a time that repeats every day.",

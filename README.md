@@ -868,6 +868,8 @@ The block builds the trail from WordPress's own data. On each kind of page:
 | **WooCommerce** product category or tag | Home › Shop › parent categories › Category |
 | **WooCommerce** product | Home › Shop › Product category (the primary one, if Yoast or Rank Math sets it) › Product |
 
+The blog page and the shop page are only included when visitors can see them: a private or draft Posts page or shop page is left out of the trail (on the blog itself, the step is a plain "Blog").
+
 The front page has no trail by default (it would just be "Home").
 
 ### How breadcrumb parts and styling work
@@ -946,6 +948,8 @@ Select the Breadcrumbs block (the wrapper) to see these in the sidebar.
 
 The block always builds its own trail; it doesn't take the trail from an SEO plugin. **Breadcrumb structured data** (Search engines panel) is **on by default**, so search engines get the same path visitors see. The only thing to watch is getting it twice:
 
+- **Yoast SEO** adds its own `BreadcrumbList` (in its schema graph) by default, even with its breadcrumbs off, so switch **Breadcrumb structured data** off there.
+- **Rank Math** adds a `BreadcrumbList` when its breadcrumbs are switched on (Rank Math → General Settings → Breadcrumbs). If they are, switch the block's off.
 - **Slim SEO** already adds a `BreadcrumbList` to every page, so switch **Breadcrumb structured data** off there.
 - **SEOPress** adds it only when its own breadcrumbs (a Pro feature) are switched on. Usually they aren't, so leave the switch on; if they are, switch it off.
 - **Any other SEO plugin**: if it adds breadcrumb structured data, switch it off. Either way the block never prints it more than once per page.
@@ -1740,6 +1744,15 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 - Only posts are scanned. A dark mode toggle placed in a **block widget**, or in a theme template part that has never been edited in the Site Editor, still switches `data-color-scheme`, but gets no no-flash script until a post containing a dark mode toggle is saved. The simplest setup: put the switch in a GeneratePress Element (a post type, so it's tracked).
 - Removing the toggle from the post, unpublishing it, trashing or deleting it switches the head output off again (once no other post has one).
 
+### Keeping pages light
+
+A few details that keep the front end cheap:
+
+- **Block stylesheets in `<head>`.** WordPress adds a block's stylesheet when the block renders, which on a classic theme like GeneratePress can be after `<head>`, so the block could show unstyled for a moment. `thingamablocks_head_block_styles()` (`thingamablocks.php`) enqueues the Toggle's, Dropdown's, Breadcrumbs' and Search's `viewStyle` in `<head>` on a single post or page whose content uses them. Blocks elsewhere (an Element, a widget) still get theirs the usual way.
+- **Options created up front.** `get_option()` on an option that doesn't exist costs a database query on every page view, so `thingamablocks_add_options()` (on `admin_init`) creates the options the front end reads (`thingamablocks_video_hosts`, `thingamablocks_speeds`, `thingamablocks_color_scheme`) as empty, autoloaded options, and the dark mode option is emptied rather than deleted.
+- **No `wp-i18n` on the front end.** The entrance animation and dropdown scripts share `duration()` (`src/shared/speeds.js`) with the editor; the Speed controls' translated help text lives in the editor-only `src/shared/speeds-help.js`, so the front-end scripts don't depend on `wp-i18n`.
+- **The Marquee** re-measures on `window` `load` only in browsers without `ResizeObserver` (which already catches images changing the row's size).
+
 ### Shared code
 
 Things the blocks share live in one place, so a new block can reuse them:
@@ -1749,7 +1762,9 @@ Things the blocks share live in one place, so a new block can reuse them:
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
 - `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all six blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
-- `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews).
+- `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews, `nameBlocks()` / `partOf()` for naming layout blocks in List View).
+- `src/shared/speeds.js` – `duration()`: turns Fast / Normal / Slow into milliseconds, using the site's Speeds (`window.tmbSpeeds`). Shared by the editor and the dropdown and animation front ends. `src/shared/speeds-help.js` (editor only) builds the Speed controls' help text.
+- `src/shared/color-palette.js` – the colour picker's palette: GenerateBlocks Pro Design Tokens when there are any, otherwise the theme palette (used by the video overlay).
 
 ---
 
@@ -1779,15 +1794,15 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the demo sections in `playground/demo/` (block markup exported from the editor; `functions.php` holds a helper for their JSON strings). They're test content for the local site only, not part of the plugin, and the browser tests use that page. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
-- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
-- **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
+- `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip. It uses the system `zip` command and fails with a clear message if `build/` is missing.
+- **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved.
 
 ---
 
 ## File map
 
 ```
-thingamablocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
+thingamablocks.php   Plugin header, block registration, block stylesheets in <head>, front-end options created up front, GB category fallback, "needs GB 2.0" notice
 uninstall.php        Removes the plugin's options when it's deleted
 LICENSE              GPL v2
 includes/
@@ -1809,6 +1824,7 @@ includes/
   class-thingamablocks-global-styles.php  Creates the starting layouts' GB Pro Global Styles (tmb-*__*) once for admins, never overwritten; prints them itself on the test site
   global-styles/{block}.php     Each block's default classes (base before modifiers), loaded by Thingamablocks_Global_Styles::defaults()
   settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, the Bunny hostnames field, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
+  speeds.php                    Settings → Thingamablocks → Speeds: the Fast / Normal / Slow milliseconds (option thingamablocks_speeds), printed as window.tmbSpeeds only when changed
 src/toggle/
   block.json                    Block name, attributes, supports, asset files
   index.js                      Registers the block, variations and inserter example
@@ -1890,7 +1906,10 @@ src/shared/
   targets-control.js            ID/selector picker with page-ID suggestions and "not found" warnings
   variation-placeholder.js      "Choose a starting layout" placeholder
   canvas-style.js               Editor-only CSS portalled into the canvas iframe
-  gb.js                         GenerateBlocks helpers (icon class, style shorthands, inserter previews)
+  gb.js                         GenerateBlocks helpers (icon class, style shorthands, inserter previews, naming layout blocks)
+  speeds.js                     duration(): a speed name to milliseconds, using window.tmbSpeeds; shared by editor and front end (no wp-i18n)
+  speeds-help.js                Editor only: the Speed controls' "Fast 150 ms · Normal 250 ms · Slow 400 ms" help text (kept apart so front-end scripts don't load wp-i18n)
+  color-palette.js              Colour picker palette: GB Pro Design Tokens (backgrounds) or the theme palette (video overlay)
 build/                          Compiled output (git-ignored; created by npm run build)
 playground/blueprint.json       WordPress Playground setup for npm run playground
 playground/demo/                Demo sections for the test site's "Thingamablocks demo" page (not in the plugin zip)

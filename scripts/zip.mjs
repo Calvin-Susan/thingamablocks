@@ -3,9 +3,8 @@
  *
  * The zip contains a single top-level folder, thingamablocks/, with
  * only what WordPress needs at runtime: the main plugin file, readme.txt,
- * uninstall.php,
- * includes/, patterns/, build/ (and LICENSE if there is one). Source files, node_modules
- * and dev tooling stay out.
+ * uninstall.php, includes/, build/ (and LICENSE if there is one). Source
+ * files, node_modules and dev tooling stay out.
  *
  * Run through `npm run zip`, which builds first. Uses the system `zip` command.
  */

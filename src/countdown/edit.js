@@ -177,6 +177,13 @@ function DateSettings( { endDate, setAttributes } ) {
 						variant="secondary"
 						onClick={ onToggle }
 						aria-expanded={ isOpen }
+						aria-label={ sprintf(
+							/* translators: %s: the end date, or "Pick a date". */
+							__( 'End date: %s', 'thingamablocks' ),
+							end
+								? formatMoment( end )
+								: __( 'Pick a date', 'thingamablocks' )
+						) }
 						__next40pxDefaultSize
 						className="tmb-countdown-date-button"
 					>

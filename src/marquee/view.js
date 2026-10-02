@@ -606,9 +606,11 @@ if ( 'loading' === document.readyState ) {
 	init();
 }
 
-// Images can change the row's size after load; ResizeObserver covers most
-// cases, this covers browsers without it.
-window.addEventListener( 'load', () => marquees.forEach( layout ) );
+// Images can change the row's size after load; ResizeObserver covers that,
+// this covers browsers without it.
+if ( ! ( 'ResizeObserver' in window ) ) {
+	window.addEventListener( 'load', () => marquees.forEach( layout ) );
+}
 
 reducedMotion.addEventListener( 'change', () =>
 	marquees.forEach( ( marquee ) => {

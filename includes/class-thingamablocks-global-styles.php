@@ -241,7 +241,7 @@ class Thingamablocks_Global_Styles {
 
 			if ( GenerateBlocks_Pro_Styles::get_class_by_name( $selector ) ) {
 				$handled[] = $class_name;
-				update_option( self::OPTION, $handled, true );
+				update_option( self::OPTION, $handled, false );
 				continue;
 			}
 
@@ -265,7 +265,7 @@ class Thingamablocks_Global_Styles {
 			if ( ! is_wp_error( $post_id ) ) {
 				$handled[] = $class_name;
 				$created   = true;
-				update_option( self::OPTION, $handled, true );
+				update_option( self::OPTION, $handled, false );
 			}
 		}
 

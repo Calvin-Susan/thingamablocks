@@ -33,7 +33,7 @@ import { useRef } from '@wordpress/element';
 import VariationPlaceholder from '../shared/variation-placeholder';
 import { dropdownIcon } from './icon';
 import { DURATIONS, reveal } from './reveal';
-import { speedsHelp } from '../shared/speeds';
+import { speedsHelp } from '../shared/speeds-help';
 
 function DrawerSettings( { attributes, setAttributes } ) {
 	const { animation, speed, align, gap, closeOnClick } = attributes;

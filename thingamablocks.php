@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Thingamablocks
  * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
- * Version:           0.1.0
+ * Version:           1.0.0
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  generateblocks
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'THINGAMABLOCKS_VERSION', '0.1.0' );
+define( 'THINGAMABLOCKS_VERSION', '1.0.0' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once THINGAMABLOCKS_DIR . 'includes/settings.php';
@@ -64,6 +64,43 @@ function thingamablocks_register_blocks() {
 			THINGAMABLOCKS_DIR . "build/{$folder}",
 			array( 'render_callback' => $render )
 		);
+	}
+}
+
+add_action( 'wp_enqueue_scripts', 'thingamablocks_head_block_styles' );
+/**
+ * Load the blocks' small front-end stylesheets in <head> on a post that uses
+ * them. WordPress otherwise adds a block's stylesheet when the block renders,
+ * which on a classic theme (GeneratePress) can be after <head>, so the block
+ * shows unstyled for a moment. Blocks outside the post (an Element, a widget)
+ * still get theirs the usual way.
+ */
+function thingamablocks_head_block_styles() {
+	$post = is_singular() ? get_post() : null;
+
+	if ( ! $post || false === strpos( $post->post_content, '<!-- wp:thingamablocks/' ) ) {
+		return;
+	}
+
+	foreach ( array( 'toggle', 'dropdown', 'breadcrumbs', 'search' ) as $name ) {
+		$handle = generate_block_asset_handle( 'thingamablocks/' . $name, 'viewStyle' );
+
+		if ( has_block( 'thingamablocks/' . $name, $post ) && wp_style_is( $handle, 'registered' ) ) {
+			wp_enqueue_style( $handle );
+		}
+	}
+}
+
+add_action( 'admin_init', 'thingamablocks_add_options' );
+/**
+ * Create the options read on the front end, so a missing one doesn't cost a
+ * database query on every page view.
+ */
+function thingamablocks_add_options() {
+	foreach ( array( 'thingamablocks_video_hosts', 'thingamablocks_speeds', 'thingamablocks_color_scheme' ) as $option ) {
+		if ( false === get_option( $option ) ) {
+			add_option( $option, array(), '', true );
+		}
 	}
 }
 

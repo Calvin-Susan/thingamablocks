@@ -29,7 +29,8 @@
 
 .tmb-search input.tmb-search__input::placeholder {
 	color: inherit;
-	opacity: 0.6;
+	// About 7:1 with the layouts' text colour on white.
+	opacity: 0.75;
 }
 
 // Inside a field, the field shows focus (style it with &:focus-within).

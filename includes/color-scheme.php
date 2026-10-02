@@ -93,7 +93,9 @@ function thingamablocks_set_color_scheme_entry( $post_id, $settings ) {
 	}
 
 	if ( empty( $entries ) ) {
-		delete_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION );
+		// Kept (empty) rather than deleted: a missing option costs a database
+		// query on every page view.
+		update_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION, array(), true );
 	} else {
 		update_option( THINGAMABLOCKS_COLOR_SCHEME_OPTION, $entries, true );
 	}

@@ -26,7 +26,7 @@ import {
 } from '@wordpress/components';
 
 import { animateIn, SPEEDS } from './presets';
-import { speedsHelp } from '../shared/speeds';
+import { speedsHelp } from '../shared/speeds-help';
 
 const KEYS = {
 	type: 'data-tmb-animate',

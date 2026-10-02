@@ -235,18 +235,16 @@ function thingamablocks_usage_counts() {
 	}
 
 	$switches = thingamablocks_switches();
-	$sums     = array();
 	$likes    = array();
 
 	foreach ( $switches as $switch ) {
-		$sums[]  = 'SUM( post_content LIKE %s )';
 		$likes[] = '%' . $wpdb->esc_like( $switch['needle'] ) . '%';
 	}
 
-	// The SUM( … LIKE %s ) list is built from a fixed string above; every value is a placeholder.
+	// One SUM( … LIKE %s ) per switch: a fixed string, every value a placeholder.
 	$row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- cached in a transient.
 		$wpdb->prepare(
-			'SELECT ' . implode( ', ', $sums ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the %s placeholders are built into $sums.
+			'SELECT ' . implode( ', ', array_fill( 0, count( $likes ), 'SUM( post_content LIKE %s )' ) ) . " FROM {$wpdb->posts} WHERE post_status NOT IN ( 'trash', 'auto-draft', 'inherit' )", // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, PluginCheck.Security.DirectDB.UnescapedDBParameter -- fixed placeholders only.
 			$likes
 		),
 		ARRAY_N

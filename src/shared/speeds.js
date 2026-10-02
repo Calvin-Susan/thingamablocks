@@ -3,8 +3,8 @@
  * with each feature; Settings → Thingamablocks can change them site-wide,
  * handed over as window.tmbSpeeds (includes/speeds.php) only when changed.
  */
-import { __, sprintf } from '@wordpress/i18n';
 
+// Own keys only: speed names come from data attributes.
 const own = ( map, key ) =>
 	!! map && Object.prototype.hasOwnProperty.call( map, key );
 
@@ -24,24 +24,4 @@ export function duration( scale, speed, defaults ) {
 	return Number.isFinite( value ) && value >= 0 && value <= 3000
 		? value
 		: defaults[ name ];
-}
-
-/**
- * "Fast 150 ms · Normal 250 ms · Slow 400 ms", for the Speed control's help.
- *
- * @param {string} scale    "dropdown" or "animations".
- * @param {Object} defaults The feature's defaults, by speed.
- * @return {string} Help text.
- */
-export function speedsHelp( scale, defaults ) {
-	return sprintf(
-		/* translators: 1: fast, 2: normal, 3: slow, in milliseconds. */
-		__(
-			'Fast %1$d ms · Normal %2$d ms · Slow %3$d ms. Change them for the whole site in Settings → Thingamablocks.',
-			'thingamablocks'
-		),
-		duration( scale, 'fast', defaults ),
-		duration( scale, 'normal', defaults ),
-		duration( scale, 'slow', defaults )
-	);
 }

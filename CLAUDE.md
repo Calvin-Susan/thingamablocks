@@ -8,8 +8,11 @@ the essentials:
   (`thingamablocks/countdown`), Marquee (`thingamablocks/marquee`), Dropdown
   (`thingamablocks/dropdown`), Breadcrumbs (`thingamablocks/breadcrumbs`),
   Search (`thingamablocks/search`) — plus entrance animations added to every
-  GenerateBlocks 2 / GB Pro block, and video backgrounds (Bunny/Vimeo, a
-  "Video background" panel on the GB Element block, `data-tmb-video`).
+  GenerateBlocks 2 / GB Pro block, image masks (a "Mask" panel on the GB Image
+  block, saved as `mask-*` in its GB styles), video backgrounds (Bunny/Vimeo, a
+  "Video background" panel on the GB Element block, `data-tmb-video`), FAQ
+  schema (GB Pro Accordion, `data-tmb-faq`), and Settings → Thingamablocks
+  (on/off switches per block/feature, Speeds, your own Bunny hostnames).
 - **The core idea**: each block is a *settings-only wrapper* (like GB Pro's
   Accordion/Tabs). Everything visible inside is a real GenerateBlocks block
   (Element, Text, Shape, Media), styled with GB's own Styles panel. Parts are
@@ -25,17 +28,22 @@ the essentials:
   keyframes (survives "remove unused CSS" optimisers).
 - **Naming**: blocks `thingamablocks/*`; PHP `thingamablocks_` / `Thingamablocks_`;
   front end `tmb-` (classes, events, storage keys, data attributes) and
-  `window.tmbToggle` / `tmbCountdown` / `tmbMarquee` / `tmbAnimate`. Text domain
-  `thingamablocks`.
+  `window.tmbToggle` / `tmbCountdown` / `tmbMarquee` / `tmbDropdown` /
+  `tmbBreadcrumbs` / `tmbAnimate` / `tmbVideo`, plus data globals PHP prints
+  as inline script: `window.tmbSpeeds` (only when changed) and
+  `window.tmbVideoHosts`. Text domain `thingamablocks`.
 - **Security**: contributors can save block attributes. Anything reaching a
   `<style>` goes through `Thingamablocks_Sanitize` (`includes/class-thingamablocks-sanitize.php`):
-  selectors must be balanced, no `<`, `\`, `@`, `{};` outside quotes. Site-wide
-  dark-mode colours only change for `edit_theme_options` users.
+  selectors must be balanced, no `<`, `\`, `@`, `{};` outside quotes. The
+  site-wide colour-scheme (no-flash dark mode `<head>` script) settings only
+  change when an `edit_theme_options` user saves.
   `get_block_wrapper_attributes()` strips CSS like `mask-image`; add such styles
   afterwards with the tag processor. Block styles end with `;` (WP < 7.0 joins
   them with a space).
 - **Shared code**: `src/shared/` (ID picker, canvas styles portalled into the
-  editor iframe head, layout picker, GB style helpers).
+  editor iframe head, layout picker, GB style helpers, `speeds.js` for front
+  end and editor, editor-only `speeds-help.js` so front ends don't load
+  wp-i18n, `color-palette.js`).
 - **Templates/variations** (`src/*/templates.js`) give parts GB Pro Global
   Style classes via `globalClasses`, not per-block `styles` (GB assigns
   unique IDs itself). Only styles that must survive a restyled/removed class
@@ -79,7 +87,8 @@ the essentials:
 ## Commands
 
 - `npm run build` / `npm start` — build to `build/` (custom `webpack.config.js`
-  adds the animation entries, which have no block.json).
+  adds entries for animations, mask, faq, video and search/expand, which have
+  no block.json).
 - `npm run playground` — local WordPress (Playground) on http://127.0.0.1:9400
   with free GenerateBlocks + GeneratePress, auto-login, and a
   "Thingamablocks demo" page built from demo sections in `playground/demo/`.
@@ -138,6 +147,6 @@ accessibility, WordPress best practices) with parallel read-only agents.
 - Kyle is a WordPress agency owner who knows GeneratePress/GenerateBlocks well
   and is new to building block plugins: explain WordPress/JS choices plainly.
 - After each new feature: a read-only review agent and a docs agent
-  (README.md, readme.txt, CHANGELOG.md "Unreleased"), then fix and re-test.
+  (README.md, readme.txt, CHANGELOG.md; add an "Unreleased" section after 1.0.0), then fix and re-test.
 - Commit as you go and push to `main` on GitHub
   (github.com/Calvin-Susan/thingamablocks, private).

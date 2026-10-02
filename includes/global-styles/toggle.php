@@ -60,6 +60,11 @@ return static function () {
 			'borderBottomRightRadius'    => '999px',
 			'borderBottomLeftRadius'     => '999px',
 			'backgroundColor'            => $track,
+			// Invisible normally; Windows High Contrast mode draws it, so the
+			// track still shows when backgrounds are removed.
+			'outlineWidth'               => '2px',
+			'outlineStyle'               => 'solid',
+			'outlineColor'               => 'transparent',
 			'cursor'                     => 'pointer',
 			'transition'                 => 'background-color 0.2s ease',
 			'&[aria-checked="true"]'     => array(
@@ -92,6 +97,11 @@ return static function () {
 			'borderBottomRightRadius' => '50%',
 			'borderBottomLeftRadius'  => '50%',
 			'backgroundColor'         => $knob,
+			// Shows in High Contrast mode (see the switch).
+			'outlineWidth'            => '2px',
+			'outlineStyle'            => 'solid',
+			'outlineColor'            => 'transparent',
+			'outlineOffset'           => '-2px',
 			'boxShadow'               => '0 1px 3px rgba(0, 0, 0, 0.25)',
 			'transition'              => 'margin 0.2s ease',
 		),
@@ -181,6 +191,10 @@ return static function () {
 			$active                   => array(
 				'backgroundColor' => $accent,
 				'color'           => $white,
+				// Marks the current choice in High Contrast mode too.
+				'outlineWidth'    => '2px',
+				'outlineStyle'    => 'solid',
+				'outlineColor'    => 'transparent',
 			),
 			'&:focus-visible'         => $focus_ring,
 		),

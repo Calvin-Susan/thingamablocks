@@ -79,7 +79,7 @@ class Thingamablocks_Breadcrumbs_Trail {
 
 		if ( is_home() ) {
 			$blog    = (int) get_option( 'page_for_posts' );
-			$trail[] = $blog ? self::post_step( $blog ) : self::step( __( 'Blog', 'thingamablocks' ), '' );
+			$trail[] = $blog && is_post_publicly_viewable( $blog ) ? self::post_step( $blog ) : self::step( __( 'Blog', 'thingamablocks' ), '' );
 		} elseif ( is_singular() ) {
 			$post  = get_queried_object();
 			$trail = array_merge( $trail, self::before_post( $post, $options, $shop ) );
@@ -258,7 +258,7 @@ class Thingamablocks_Breadcrumbs_Trail {
 	private static function blog_page() {
 		$blog = (int) get_option( 'page_for_posts' );
 
-		return $blog && 'page' === get_option( 'show_on_front' ) ? array( self::post_step( $blog ) ) : array();
+		return $blog && 'page' === get_option( 'show_on_front' ) && is_post_publicly_viewable( $blog ) ? array( self::post_step( $blog ) ) : array();
 	}
 
 	/**
@@ -347,7 +347,8 @@ class Thingamablocks_Breadcrumbs_Trail {
 		$shop  = max( 0, (int) wc_get_page_id( 'shop' ) );
 		$front = 'page' === get_option( 'show_on_front' ) ? (int) get_option( 'page_on_front' ) : 0;
 
-		return $shop === $front ? 0 : $shop;
+		// Not the front page (home already covers it), and only if visitors can see it.
+		return $shop === $front || ! $shop || ! is_post_publicly_viewable( $shop ) ? 0 : $shop;
 	}
 
 	/**

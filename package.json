@@ -1,8 +1,8 @@
 {
 	"name": "thingamablocks",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"private": true,
-	"description": "A completely unnecessary ultimate add-ons power-pack for GenerateBlocks: Toggle, Countdown and Marquee blocks, plus entrance animations.",
+	"description": "A completely unnecessary ultimate add-ons power-pack for GenerateBlocks: Toggle, Countdown, Marquee, Dropdown, Breadcrumbs and Search blocks, plus entrance animations, image masks, video backgrounds and FAQ schema.",
 	"author": "OGAL Web Design",
 	"license": "GPL-2.0-or-later",
 	"repository": {
