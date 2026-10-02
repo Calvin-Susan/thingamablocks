@@ -26,7 +26,8 @@ import {
 	__experimentalToggleGroupControlOption as ToggleGroupControlOption,
 } from '@wordpress/components';
 
-import { animateIn } from './presets';
+import { animateIn, SPEEDS } from './presets';
+import { speedsHelp } from '../shared/speeds';
 import { usePageIds } from '../shared/targets-control';
 
 const KEYS = {
@@ -208,6 +209,7 @@ function AnimationPanel( { attributes, setAttributes, clientId } ) {
 								__nextHasNoMarginBottom
 								isBlock
 								label={ __( 'Speed', 'thingamablocks' ) }
+								help={ speedsHelp( 'animations', SPEEDS ) }
 								value={ settings.speed }
 								onChange={ ( speed ) => update( { speed } ) }
 							>

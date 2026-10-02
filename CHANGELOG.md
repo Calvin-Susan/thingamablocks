@@ -6,6 +6,8 @@ All notable changes to Thingamablocks are listed here.
 
 ### Added
 
+- **Settings → Thingamablocks → Speeds**: set what Fast, Normal and Slow mean, in milliseconds, for the whole site: one row for dropdowns opening (defaults 150 / 250 / 400) and one for entrance animations (400 / 700 / 1100). Empty fields keep the default; values are whole milliseconds from 0 to 3000 and only changed ones are stored (option `thingamablocks_speeds`). They reach the front end as `window.tmbSpeeds` in a line of inline script before the dropdown and animation scripts, so only pages using those get it, and nothing at all is printed while everything is the default. The editor uses them for its previews, and each Speed control now shows the current values under it ("Fast 150 ms · Normal 250 ms · Slow 400 ms"). Shared helper `src/shared/speeds.js`; PHP in `includes/speeds.php`; tests in `tests/e2e/speeds.spec.js`.
+
 - Starting layouts name their blocks (stored as a rename, `metadata.name`), so List View shows "Pause button", "Scrolling row", "Days number", "Drawer" and so on instead of "Container" or "Text". Shared helpers `nameBlocks()` / `partOf()` in `src/shared/gb.js`; each block's `templates.js` maps its parts to names.
 
 ### Changed

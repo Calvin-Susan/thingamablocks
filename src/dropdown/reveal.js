@@ -4,6 +4,9 @@
  * optimisers can't break them.
  */
 
+import { duration } from '../shared/speeds';
+
+// Defaults; Settings → Thingamablocks → Speeds can change them.
 export const DURATIONS = { fast: 150, normal: 250, slow: 400 };
 
 const EASING = 'cubic-bezier(0.2, 0, 0, 1)';
@@ -72,10 +75,7 @@ export function reveal( element, { type, speed, placement, reverse = false } ) {
 	}
 
 	return element.animate( reverse ? [ ...keyframes ].reverse() : keyframes, {
-		// Own keys only: the speed comes from a data attribute.
-		duration: Object.prototype.hasOwnProperty.call( DURATIONS, speed )
-			? DURATIONS[ speed ]
-			: DURATIONS.normal,
+		duration: duration( 'dropdown', speed, DURATIONS ),
 		easing: EASING,
 	} );
 }

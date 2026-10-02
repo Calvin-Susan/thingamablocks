@@ -156,6 +156,14 @@ function thingamablocks_settings_style( $hook_suffix ) {
 		. '.tmb-settings__usage{display:block;margin-top:2px;color:#50575e}'
 		. '.tmb-settings__row--field{flex-wrap:wrap;align-items:flex-start}'
 		. '.tmb-settings__row--field textarea{width:100%;max-width:none}'
+		. '.tmb-settings .tmb-settings__card-intro{margin:0 0 4px}'
+		. '.tmb-settings__row--speeds{flex-wrap:wrap;align-items:flex-start}'
+		. '.tmb-settings__row--speeds .tmb-settings__text{flex:1 1 280px}'
+		. '.tmb-settings__row--speeds .tmb-settings__label{margin:0}'
+		. '.tmb-speeds{display:flex;flex-wrap:wrap;gap:12px}'
+		. '.tmb-speeds__field{display:flex;flex-direction:column;gap:4px;font-weight:600}'
+		. '.tmb-speeds__input{display:flex;align-items:center;gap:6px;font-weight:400;color:#50575e}'
+		. '.tmb-speeds__input input{width:6em}'
 		. '.tmb-settings input.tmb-switch{appearance:none;-webkit-appearance:none;position:relative;flex:none;box-sizing:border-box;width:48px;height:28px;margin:0;padding:0;border:0;border-radius:999px;background:#8c8f94;cursor:pointer;transition:background-color .15s ease;box-shadow:none}'
 		. '.tmb-settings input.tmb-switch::before,.tmb-settings input.tmb-switch:checked::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;margin:0;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s ease}'
 		. '.tmb-settings input.tmb-switch:checked{background:var(--wp-admin-theme-color,#2271b1)}'
@@ -332,6 +340,8 @@ function thingamablocks_render_settings_page() {
 					<?php endforeach; ?>
 				</div>
 			<?php endforeach; ?>
+
+			<?php thingamablocks_render_speeds_card(); ?>
 
 			<div class="tmb-settings__card">
 				<h2><?php esc_html_e( 'Video backgrounds', 'thingamablocks' ); ?></h2>

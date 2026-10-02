@@ -112,7 +112,9 @@ The switches are ordinary checkboxes styled as switches (with `role="switch"`, s
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
 
-Below the switches, a **Video backgrounds** card has one field, **Your own Bunny hostnames**. Bunny's own addresses (`*.b-cdn.net`) and Vimeo always work. If a Bunny pull zone uses your own hostname (like `video.example.com`), add it here, one per line. Only videos from these places can be used, so nobody editing a page can point a background at anything else. (A pasted address is cut down to its hostname.)
+Below the switches, a **Speeds** card sets what **Fast**, **Normal** and **Slow** mean, in milliseconds, for the whole site: one row for **Dropdown speed** (defaults 150 / 250 / 400) and one for **Entrance animation speed** (400 / 700 / 1100). The blocks keep their simple Fast / Normal / Slow choice, and each Speed control shows the site's current values under it. Leave a field empty for the default; values from 0 to 3000 are allowed. Changing one changes every dropdown or animation already using that speed. Nothing is added to pages unless a value is changed, and then only a line of script on pages with a dropdown or animation (`window.tmbSpeeds`, option `thingamablocks_speeds`).
+
+A **Video backgrounds** card has one field, **Your own Bunny hostnames**. Bunny's own addresses (`*.b-cdn.net`) and Vimeo always work. If a Bunny pull zone uses your own hostname (like `video.example.com`), add it here, one per line. Only videos from these places can be used, so nobody editing a page can point a background at anything else. (A pasted address is cut down to its hostname.)
 
 ---
 

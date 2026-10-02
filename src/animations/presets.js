@@ -7,6 +7,8 @@
  * lift) is left alone.
  */
 
+import { duration } from '../shared/speeds';
+
 export const ANIMATIONS = {
 	fade: { opacity: 0 },
 	'fade-up': { opacity: 0, translate: '0 1.5rem' },
@@ -16,6 +18,7 @@ export const ANIMATIONS = {
 	zoom: { opacity: 0, scale: '0.92' },
 };
 
+// Defaults; Settings → Thingamablocks → Speeds can change them.
 export const SPEEDS = {
 	fast: 400,
 	normal: 700,
@@ -48,7 +51,7 @@ export function animateIn( element, type, delay = 0, speed = 'normal' ) {
 	// own styles. (Without the offset a lone keyframe counts as the *end*.)
 	// fill "backwards" keeps it hidden during the delay.
 	return element.animate( [ { ...from, offset: 0 } ], {
-		duration: has( SPEEDS, speed ) ? SPEEDS[ speed ] : SPEEDS.normal,
+		duration: duration( 'animations', speed, SPEEDS ),
 		delay,
 		easing: EASING,
 		fill: 'backwards',

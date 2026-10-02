@@ -32,7 +32,8 @@ import { useRef } from '@wordpress/element';
 
 import VariationPlaceholder from '../shared/variation-placeholder';
 import { dropdownIcon } from './icon';
-import { reveal } from './reveal';
+import { DURATIONS, reveal } from './reveal';
+import { speedsHelp } from '../shared/speeds';
 
 function DrawerSettings( { attributes, setAttributes } ) {
 	const { animation, speed, align, gap, closeOnClick } = attributes;
@@ -83,6 +84,7 @@ function DrawerSettings( { attributes, setAttributes } ) {
 						__nextHasNoMarginBottom
 						isBlock
 						label={ __( 'Speed', 'thingamablocks' ) }
+						help={ speedsHelp( 'dropdown', DURATIONS ) }
 						value={ speed }
 						onChange={ ( value ) =>
 							setAttributes( { speed: value } )
