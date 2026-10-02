@@ -17,7 +17,6 @@ import {
 	MediaUpload,
 	MediaUploadCheck,
 	store as blockEditorStore,
-	useSettings,
 } from '@wordpress/block-editor';
 import { useSelect } from '@wordpress/data';
 import {
@@ -38,6 +37,7 @@ import {
 } from '@wordpress/components';
 
 import { classify } from './source';
+import { useColorPalette } from '../shared/color-palette';
 import './editor.scss';
 
 const ELEMENT = 'generateblocks/element';
@@ -156,7 +156,8 @@ function VideoPanel( { attributes, setAttributes } ) {
 	const htmlAttributes = attributes.htmlAttributes || {};
 	const stored = read( htmlAttributes );
 	const settings = { ...DEFAULTS, ...( stored || {} ) };
-	const [ palette ] = useSettings( 'color.palette' );
+	// The same colours GenerateBlocks' own pickers offer (GB Pro design tokens).
+	const palette = useColorPalette( 'backgroundColor' );
 
 	const posterUrl = useSelect(
 		( select ) => {
@@ -516,7 +517,8 @@ function VideoPanel( { attributes, setAttributes } ) {
 							) }
 						>
 							<ColorPalette
-								colors={ palette || [] }
+								colors={ palette }
+								__experimentalIsRenderedInSidebar
 								value={ settings.overlay }
 								onChange={ ( overlay ) =>
 									update( { overlay: overlay || '' } )

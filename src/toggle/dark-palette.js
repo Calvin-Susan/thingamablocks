@@ -15,6 +15,8 @@ import { Button, Flex } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useCallback } from '@wordpress/element';
 
+import { useColorPalette } from '../shared/color-palette';
+
 /**
  * The CSS variable behind a palette colour. GeneratePress palette colours are
  * already var(--name); a block theme's are --wp--preset--color--slug.
@@ -214,6 +216,8 @@ export function suggestDarkPalette( entries ) {
 
 export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 	const palette = useThemePalette();
+	// The colours to choose from: GB Pro design tokens where there are any.
+	const choices = useColorPalette( 'backgroundColor' );
 
 	const setColor = useCallback(
 		( name, value ) => {
@@ -261,6 +265,7 @@ export default function DarkPaletteSettings( { darkPalette, setAttributes } ) {
 					),
 					value: darkPalette[ name ],
 					onChange: ( value ) => setColor( name, value ),
+					colors: choices,
 				};
 			} ) }
 		>

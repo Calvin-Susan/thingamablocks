@@ -708,6 +708,88 @@ test.describe( 'Video background', () => {
 		}
 	} );
 
+	test( 'the overlay picker offers GB Pro design tokens', async ( {
+		page,
+	} ) => {
+		// GB Pro isn't installed here: stand in for the tokens it gives the editor.
+		await page.addInitScript( () => {
+			window.gbDesignTokens = {
+				tokens: [
+					{
+						name: '--brand-ink',
+						type: 'color',
+						label: 'Brand ink',
+						category: 'Palette',
+						scope: [ 'color', 'backgroundColor' ],
+						value: '#111111',
+					},
+					{
+						name: '--brand-text-only',
+						type: 'color',
+						label: 'Text only',
+						category: 'Palette',
+						scope: [ 'color' ],
+						value: '#222222',
+					},
+					{
+						name: '--brand-space',
+						type: 'unit',
+						label: 'Space',
+						scope: [ 'paddingTop' ],
+						value: '1rem',
+					},
+				],
+			};
+		} );
+		await newPost( page );
+
+		const clientId = await page.evaluate( ( src ) => {
+			const block = window.wp.blocks.createBlock(
+				'generateblocks/element',
+				{
+					tagName: 'section',
+					htmlAttributes: {
+						'data-tmb-video': JSON.stringify( { src } ),
+					},
+				}
+			);
+			window.wp.data
+				.dispatch( 'core/block-editor' )
+				.insertBlocks( block );
+			window.wp.data
+				.dispatch( 'core/block-editor' )
+				.selectBlock( block.clientId );
+			return block.clientId;
+		}, BUNNY );
+
+		const panel = page.locator( '.tmb-video-panel' );
+		await expect( panel ).toBeVisible();
+
+		// Only colour tokens that apply to backgrounds, under their category.
+		await expect( panel ).toContainText( 'Palette' );
+		await expect(
+			panel.getByRole( 'option', { name: /Brand ink/ } )
+		).toBeVisible();
+		await expect(
+			panel.getByRole( 'option', { name: /Text only/ } )
+		).toHaveCount( 0 );
+
+		await panel.getByRole( 'option', { name: /Brand ink/ } ).click();
+
+		const stored = await page.evaluate(
+			( id ) =>
+				JSON.parse(
+					window.wp.data
+						.select( 'core/block-editor' )
+						.getBlockAttributes( id ).htmlAttributes[
+						'data-tmb-video'
+					]
+				),
+			clientId
+		);
+		expect( stored.overlay ).toBe( 'var(--brand-ink)' );
+	} );
+
 	test( 'the editor panel writes the settings and previews the poster', async ( {
 		page,
 	} ) => {
