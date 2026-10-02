@@ -102,16 +102,16 @@ class Thingamablocks_Breadcrumbs_Render {
 		$aria   = sanitize_text_field( $attributes['ariaLabel'] ?? '' );
 
 		return array(
-			'home'           => in_array( $home, array( 'text', 'icon', 'both' ), true ) ? $home : 'text',
-			'home_label'     => '' !== $label ? $label : __( 'Home', 'thingamablocks' ),
-			'label'          => '' !== $aria ? $aria : __( 'Breadcrumb', 'thingamablocks' ),
-			'show_current'   => $flag( 'showCurrent', true ),
-			'show_on_home'   => $flag( 'showOnHome', false ),
-			'blog_page'      => $flag( 'showBlogPage', true ),
-			'category'       => $flag( 'showCategory', true ),
-			'collapse'       => $flag( 'collapse', true ),
+			'home'         => in_array( $home, array( 'text', 'icon', 'both' ), true ) ? $home : 'text',
+			'home_label'   => '' !== $label ? $label : __( 'Home', 'thingamablocks' ),
+			'label'        => '' !== $aria ? $aria : __( 'Breadcrumb', 'thingamablocks' ),
+			'show_current' => $flag( 'showCurrent', true ),
+			'show_on_home' => $flag( 'showOnHome', false ),
+			'blog_page'    => $flag( 'showBlogPage', true ),
+			'category'     => $flag( 'showCategory', true ),
+			'collapse'     => $flag( 'collapse', true ),
 			// On unless switched off ("never" is the old setting's off).
-			'schema'         => ! in_array( $schema, array( 'off', 'never' ), true ),
+			'schema'       => ! in_array( $schema, array( 'off', 'never' ), true ),
 		);
 	}
 
