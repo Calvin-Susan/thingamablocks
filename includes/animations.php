@@ -144,17 +144,15 @@ function thingamablocks_animation_in( $content ) {
 	return false !== strpos( $content, 'data-tmb-animate' );
 }
 
-add_filter( 'render_block', 'thingamablocks_animation_render_block', 20, 2 );
+add_filter( 'render_block', 'thingamablocks_animation_render_block', 20 );
 /**
- * When an animated block renders, load the script (in the
- * footer, deferred). If the CSS wasn't printed in <head>, put it just before
- * the block instead.
+ * When an animated block renders, load the script (in the footer, deferred).
+ * If the CSS wasn't printed in <head>, put it just before the block instead.
  *
  * @param string $content Rendered block.
- * @param array  $block   Parsed block.
  * @return string
  */
-function thingamablocks_animation_render_block( $content, $block = array() ) {
+function thingamablocks_animation_render_block( $content ) {
 	if ( is_admin() || ! thingamablocks_animation_in( $content ) ) {
 		return $content;
 	}
