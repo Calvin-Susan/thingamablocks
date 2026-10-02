@@ -129,14 +129,19 @@ test.describe( 'Breadcrumbs with SEO plugins', () => {
 				window.wp.data
 					.dispatch( 'core/block-editor' )
 					.insertBlocks( block );
-				// Wait for GenerateBlocks to compile each part's CSS.
+				// Wait for GenerateBlocks to set up each part (ID, any local CSS).
 				await new Promise( ( resolve ) => {
 					const check = () =>
 						window.wp.data
 							.select( 'core/block-editor' )
 							.getBlock( block.clientId )
 							.innerBlocks.every(
-								( inner ) => inner.attributes.css
+								( inner ) =>
+									inner.attributes.uniqueId &&
+									( ! Object.keys(
+										inner.attributes.styles || {}
+									).length ||
+										inner.attributes.css )
 							)
 							? resolve()
 							: setTimeout( check, 100 );

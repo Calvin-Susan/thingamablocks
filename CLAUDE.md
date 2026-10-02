@@ -36,27 +36,42 @@ the essentials:
   them with a space).
 - **Shared code**: `src/shared/` (ID picker, canvas styles portalled into the
   editor iframe head, layout picker, GB style helpers).
-- **Templates/variations** set GB `styles` objects; GB compiles them to CSS and
-  assigns unique IDs itself. GB nested selectors must start with `&` (no
-  ancestor selectors), so state styling is on the part: `&[aria-checked="true"]`,
-  `&[data-active="true"]`, `&[aria-pressed="true"]`.
-- **Global Styles for layouts (in progress, Countdown first)**: instead of
-  per-block `styles`, a block's starting layouts give parts GB Pro Global
-  Style classes via `globalClasses`: a base class per part plus a layout
-  modifier, named `tmb-<block>__<part>--<modifier>` (e.g.
-  `tmb-countdown__number` + `tmb-countdown__number--boxes`). The defaults live
-  in `Thingamablocks_Global_Styles::defaults()`
-  (`includes/class-thingamablocks-global-styles.php`), keyed by feature switch,
-  base classes before modifiers; they're created as `gblocks_styles` posts in a
-  "Thingamablocks" category on `admin_init` for users who can manage GB styles,
-  once per class name (the `thingamablocks_global_styles` option lists the
-  names already handled, so a class the site deletes stays deleted). **Never
-  overwrite** an existing
-  class (it's the site's now), so changing a default only reaches new sites;
-  add a new class rather than relying on an edit. Needs GB Pro (free GB: the
-  block works, layouts unstyled). Keep screen-reader-only styles local, not in
-  a class. Converting the other blocks the same way is the plan; patterns
-  still use per-block styles.
+- **Templates/variations** (`src/*/templates.js`) give parts GB Pro Global
+  Style classes via `globalClasses`, not per-block `styles` (GB assigns
+  unique IDs itself). Only styles that must survive a restyled/removed class
+  stay local `styles`: screen-reader-only text (Countdown), the Marquee row's
+  `display:flex`/`flex-direction`, the Search input's `flex-grow`. GB nested
+  selectors must start with `&` or be a descendant (no ancestor selectors), so
+  state styling is on the part: `&[aria-checked="true"]`,
+  `&[data-active="true"]`, `&[aria-pressed="true"]`; a look that needs two
+  parts spans two classes (e.g. `tmb-toggle__switch--dark-mode` +
+  `tmb-toggle__icon--on`).
+- **Global Styles for layouts** (all six blocks): classes are named
+  `tmb-<block>__<part>--<modifier>` (base per part, modifier per layout).
+  Don't reuse class names the PHP renderers add themselves
+  (`tmb-breadcrumbs__separator` → the template uses `__divider`;
+  `tmb-search__input`, `tmb-search__label--block`). Defaults live in
+  `includes/global-styles/{feature}.php` (returns a static function returning
+  `array( class => GB styles )`), loaded by
+  `Thingamablocks_Global_Styles::defaults()`
+  (`includes/class-thingamablocks-global-styles.php`). They're created as
+  `gblocks_styles` posts in a "Thingamablocks" category on an ordinary
+  wp-admin load (not AJAX/REST/cron) for users who can manage GB styles, under
+  an atomic lock (`INSERT IGNORE` of `thingamablocks_global_styles_lock`), with
+  GB Pro's per-save stylesheet rebuild paused and run once at the end; the
+  `thingamablocks_global_styles` option (saved after each class) lists names
+  already handled, so runs resume and deleted classes stay deleted. ~75
+  classes, ~18 KB raw in GB Pro's site-wide stylesheet; keep additions lean.
+  **To add a class** (new block or layout): add it to that block's defaults
+  file, base before modifiers, and use it in the template; it's created on
+  the next admin load. **Never rely on editing an existing default**: the
+  plugin never overwrites a class (it's the site's), so edits only reach new
+  sites; add a new class instead. Needs GB Pro (free GB: blocks work, layouts
+  unstyled). The Playground blueprint's mu-plugin defines
+  `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`, so the test site prints the compiled
+  defaults itself (`thingamablocks-default-styles`); tests that build layouts
+  wait for each part's `uniqueId`, not its CSS. Patterns still use per-block
+  styles.
 - **Patterns** live in `patterns/*.php` (markup exported from the editor, so
   it's exactly what GB saves, with visible strings wrapped for translation) and
   are registered in `includes/patterns.php` with `filePath`.

@@ -29,11 +29,19 @@ And it adds **video backgrounds** to the GenerateBlocks Element block (container
 
 With GenerateBlocks Pro, it adds **FAQ schema** to the Accordion block: one switch tells search engines the accordion is a list of questions and answers (schema.org FAQPage structured data), built from the accordion's own text.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field) is an ordinary GenerateBlocks Element, Text, Shape or Media block. You style it with the GenerateBlocks Styles panel you already know, and global styles work as usual. The starting layouts are styled with shared GenerateBlocks Pro Global Styles (see below).
 
 Nothing from the plugin loads on pages that don't use it: each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block (the Search block has no script at all unless it uses the expanding style), image masks load nothing at all (the mask is part of the image's GenerateBlocks CSS), FAQ schema adds only the structured data itself, on pages with an FAQ accordion, and video backgrounds load their small script and CSS only on pages with one. The one exception is dark mode, whose tiny head script runs on every page once a dark mode toggle is published, so the visitor's choice applies everywhere.
 
 Don't need them all? Under **Settings → Thingamablocks** you can switch off any block or feature to keep the editor tidy: each has an on/off switch, with a short description and how many posts, pages, templates and Elements use it. Switching off only hides: the block leaves the inserter (and its patterns leave the Patterns tab), or the feature's panel leaves the sidebar, while anything already built with it keeps working on your site and can still be edited (though WordPress may not let you duplicate or paste a switched-off block).
+
+= Starting layouts and Global Styles =
+
+Each block's starting layouts are styled with shared GenerateBlocks Pro Global Styles: a base class per part plus a modifier where a layout differs, e.g. `tmb-search__field` and `tmb-search__field--pill`. Edit a class to restyle every block on the site that uses it; remove or swap a class on one block (or add local styles) for a one-off look. The default colours are plain hex values for now, so they don't follow your theme colours or dark mode until you change them.
+
+The plugin creates the classes (about 75), in a "Thingamablocks" Global Styles category, the first time someone who can manage GenerateBlocks styles opens wp-admin after installing or updating. After that they're yours: the plugin never overwrites them, so your edits are safe (but improved defaults in later versions won't change existing classes), and a class you delete stays deleted. GenerateBlocks Pro loads Global Styles as one stylesheet on every page; these add around 18 KB (under 3 KB gzipped).
+
+Without GenerateBlocks Pro every block still works, but the layouts are unstyled. Blocks inserted with an older version, and the patterns, keep their own per-block styles.
 
 = Toggle: starting layouts =
 
@@ -44,7 +52,7 @@ When you insert a Toggle you pick one of four layouts. Each is fully editable af
 * **Switch** – just the switch.
 * **Dark mode switch** – a switch with a sun/moon icon in the knob.
 
-The layouts use the GeneratePress global colour variables (`--accent`, `--base-3`, `--contrast` and so on), with fallbacks for other themes. The switch's "off" track is a fixed grey with enough contrast in both light and dark mode.
+Classes: `tmb-toggle__row`, `__label`, `__switch` (`--dark-mode`), `__knob`, `__icon` (`--on`), `__segments` and `__segment`. The dark mode switch's sun/moon swap spans two: `tmb-toggle__icon--on` hides the moon, and `tmb-toggle__switch--dark-mode` swaps them while on. The switch's "off" track is a fixed grey with enough contrast in both light and dark mode.
 
 = Toggle: ready-made pricing pattern =
 
@@ -95,9 +103,7 @@ The editor shows the toggle in its starting state. Use the On/Off button in the 
 * **Inline text** – "Ends in 2d 5h 12m 9s", for banners and buttons.
 * **Large numbers** – big numbers with colons, for launches.
 
-The layouts are styled with shared GenerateBlocks Pro Global Styles (`tmb-countdown__timer`, `__unit`, `__number`, `__label`, `__intro`, `__suffix`, `__separator`, `__ended`, plus a modifier per layout such as `tmb-countdown__number--boxes`), so every countdown on the site looks the same. Edit a class in the GenerateBlocks Styles panel to restyle them all; remove or swap a class on one block (or add local styles) for a one-off look.
-
-The plugin creates these classes, in a "Thingamablocks" Global Styles category, the first time an administrator opens wp-admin after installing or updating. After that they're yours: the plugin never overwrites them, so your edits are safe (but improved defaults in later versions won't change existing classes). Without GenerateBlocks Pro the countdown still works, but the layouts are unstyled. Countdowns inserted with an older version, and the countdown patterns, keep their own per-block styles.
+Classes: `tmb-countdown__timer`, `__unit`, `__number`, `__label`, `__intro`, `__suffix`, `__separator` and `__ended`, plus a modifier per layout such as `tmb-countdown__number--boxes`. The Inline text layout's screen-reader-only unit names keep local styles, so restyling a class can't reveal them.
 
 = Countdown: what it counts to =
 
@@ -153,6 +159,8 @@ Client logos, short messages, big headlines, or testimonials scrolling upwards. 
 
 Each has a small pause button in the corner. It comes first in the block, so keyboard users reach it before any links in the row.
 
+Classes: `tmb-marquee__pause` (`--middle`; it also holds the pause/play icon swap), `__items` (`--logos`, `--messages`, `--headline`, `--quotes`), `__logo`, `__band`, `__message`, `__headline` (`--muted`), `__star` (`--messages`, `--headline`), `__card`, `__quote` and `__author`. The row's `display: flex` (and `flex-direction: column` for vertical quotes) stays a local style, since the loop needs it.
+
 = Marquee: ready-made pattern =
 
 Under Patterns → **Marquees**, **Logo strip: "Trusted by…"** is a small "Trusted by teams at" heading above a scrolling row of placeholder logos. Swap in your clients' logos (GenerateBlocks Media blocks inside the scrolling row, all the same height) and publish.
@@ -185,6 +193,8 @@ A button that opens a drawer underneath it: a downloads menu, a short list of li
 * **Panel** – a "Need help?" button opening a panel with text and a "Contact us" button.
 
 The button is a GenerateBlocks Button with a chevron that turns over while it's open. The links start as `#`: point them at your files or pages.
+
+Classes: `tmb-dropdown__button`, `__drawer` (`--panel`, which sets the panel's 18rem width), `__item`, `__link` (`--downloads`, `--simple`), `__file-name`, `__file-meta`, `__title`, `__text` and `__cta`.
 
 = Dropdown: ready-made pattern =
 
@@ -236,6 +246,8 @@ The path to the page a visitor is on, each step a link back up the site. Place i
 * **Slashes** – Home / Blog / Post.
 * **Pills** – each step in a soft rounded box, the current page in your accent colour.
 
+Classes: `tmb-breadcrumbs__item` (`--pill`), `__divider` (the separator; the plugin already adds `tmb-breadcrumbs__separator` itself) and `__current` (`--pill`).
+
 = Breadcrumbs: parts =
 
 Each style is three GenerateBlocks Text blocks, marked in the **Breadcrumb part** panel: **Link to each page** (a Text block using the `<a>` tag), **Separator** and **The current page**. They're templates: style them once in the Styles panel and they're repeated for every step, with each page's title and link. The editor shows the templates, not the real trail. Only blocks set as a part are shown.
@@ -280,6 +292,8 @@ A search form for your header, sidebar or 404 page that looks like the rest of y
 * **Pill, button inside** – a rounded field with a round search-icon button inside it.
 * **Underline** – just a line and a search icon, for headers and sidebars.
 * **Icon that opens a search** – a search icon; clicking it opens a field below it, floating over the page.
+
+Classes: `tmb-search__wrapper` (`--bar`, `--expand`), `__field` (`--bar`, `--pill`, `--underline`, `--expand`) and `__button` (`--bar`, `--pill`, `--underline`, `--toggle`, `--expand`). The pop-up field's position needs two: `tmb-search__wrapper--expand` (`position: relative`) and `tmb-search__field--expand` (`position: absolute`). The input has no class; on the site it gets the plugin's own `tmb-search__input`.
 
 = Search: parts =
 
@@ -408,7 +422,7 @@ An honest note: since August 2023 Google only shows FAQ rich results for well-kn
 
 * WordPress 6.6 or newer (tested up to 7.1)
 * PHP 7.4 or newer
-* GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block, and the Countdown's starting layouts get their look from GenerateBlocks Pro Global Styles)
+* GenerateBlocks 2.0 or newer (the free plugin is enough; FAQ schema needs GenerateBlocks Pro 2.x for its Accordion block, and the blocks' starting layouts get their look from GenerateBlocks Pro Global Styles)
 
 Tested with GenerateBlocks 2.4.1. Not yet tested with GenerateBlocks Pro.
 
@@ -428,7 +442,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 
 = Does it need GenerateBlocks Pro? =
 
-No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The exceptions: FAQ schema adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x; and the Countdown's starting layouts are styled with GenerateBlocks Pro Global Styles, so with free GenerateBlocks the countdown works but its layouts are unstyled (style the parts yourself). The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
+No. It only needs the free GenerateBlocks plugin, version 2.0 or newer. The exceptions: FAQ schema adds to GenerateBlocks Pro's Accordion block, so it needs GenerateBlocks Pro 2.x; and the blocks' starting layouts are styled with GenerateBlocks Pro Global Styles, so with free GenerateBlocks every block works but the layouts are unstyled (style the parts yourself). The rest of the plugin hasn't been tested with GenerateBlocks Pro yet.
 
 = Why does nothing happen when I click the toggle in the editor? =
 

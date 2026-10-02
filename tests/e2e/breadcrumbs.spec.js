@@ -41,12 +41,19 @@ async function breadcrumbsMarkup( page, attributes = {}, style = 'chevrons' ) {
 
 			dispatch( 'core/block-editor' ).insertBlocks( block );
 
-			// GenerateBlocks compiles each part's CSS once it's in the editor.
+			// GenerateBlocks gives each part its ID (and compiles any local CSS)
+			// once it's in the editor.
 			await new Promise( ( resolve ) => {
 				const check = () =>
 					select( 'core/block-editor' )
 						.getBlock( block.clientId )
-						.innerBlocks.every( ( inner ) => inner.attributes.css )
+						.innerBlocks.every(
+							( inner ) =>
+								inner.attributes.uniqueId &&
+								( ! Object.keys( inner.attributes.styles || {} )
+									.length ||
+									inner.attributes.css )
+						)
 						? resolve()
 						: setTimeout( check, 100 );
 				check();

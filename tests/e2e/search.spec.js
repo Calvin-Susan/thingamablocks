@@ -59,7 +59,10 @@ async function buildSearch( page, variation, attributes = {} ) {
 				if (
 					all().every(
 						( item ) =>
-							item.attributes.uniqueId && item.attributes.css
+							item.attributes.uniqueId &&
+							( ! Object.keys( item.attributes.styles || {} )
+								.length ||
+								item.attributes.css )
 					)
 				) {
 					break;

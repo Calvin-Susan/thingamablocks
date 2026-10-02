@@ -12,22 +12,23 @@
  */
 import { __ } from '@wordpress/i18n';
 
-import { border, color, padding, radius } from '../shared/gb';
 import { variationIcons } from './icon';
 
 const chevron =
 	'<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>';
 
-// Shared by the button and the drawer, so they look like a pair.
-const corner = '0.5rem';
+/*
+ * The look comes from GenerateBlocks Pro Global Styles the plugin creates
+ * (includes/class-thingamablocks-global-styles.php): a base class for each
+ * part, plus a modifier for the layout, e.g. tmb-dropdown__drawer and
+ * tmb-dropdown__drawer--panel. Edit a class to restyle every dropdown.
+ * Positioning and the closed state aren't in the classes: they come from the
+ * block itself (style.scss, view.js and the PHP renderer).
+ */
+const classes = ( part, modifier ) => {
+	const base = `tmb-dropdown__${ part }`;
 
-const focusRing = {
-	'&:focus-visible': {
-		outlineWidth: '2px',
-		outlineStyle: 'solid',
-		outlineColor: color.accent,
-		outlineOffset: '2px',
-	},
+	return modifier ? [ base, `${ base }--${ modifier }` ] : [ base ];
 };
 
 const button = ( label ) => [
@@ -38,105 +39,32 @@ const button = ( label ) => [
 		icon: chevron,
 		iconLocation: 'after',
 		htmlAttributes: { 'data-dropdown-part': 'button' },
-		styles: {
-			display: 'inline-flex',
-			alignItems: 'center',
-			justifyContent: 'space-between',
-			columnGap: '0.75rem',
-			...padding( '0.75rem', '1.25rem' ),
-			...radius( corner ),
-			...border( '0', 'none', 'transparent' ),
-			backgroundColor: color.accent,
-			color: color.background,
-			fontSize: '1rem',
-			fontWeight: '600',
-			lineHeight: '1.2',
-			cursor: 'pointer',
-			transition: 'background-color 0.2s ease',
-			'&:is(:hover, :focus-visible), &[aria-expanded="true"]': {
-				backgroundColor: color.text,
-				color: color.background,
-			},
-			...focusRing,
-			'.gb-shape svg': {
-				width: '1.1em',
-				height: '1.1em',
-				transition: 'transform 0.2s ease',
-			},
-			'&[aria-expanded="true"] .gb-shape svg': {
-				transform: 'rotate(180deg)',
-			},
-		},
+		globalClasses: classes( 'button' ),
 	},
 ];
 
-const drawerStyles = {
-	display: 'flex',
-	flexDirection: 'column',
-	rowGap: '0.125rem',
-	// Themes give lists a margin (GeneratePress: 3em on the left).
-	marginTop: '0',
-	marginRight: '0',
-	marginBottom: '0',
-	marginLeft: '0',
-	...padding( '0.375rem' ),
-	...radius( corner ),
-	...border( '1px', 'solid', color.border ),
-	backgroundColor: color.background,
-	color: color.text,
-	boxShadow:
-		'0 12px 32px -12px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.06)',
-	listStyleType: 'none',
-};
-
-const drawer = ( tagName, children, styles = {} ) => [
+const drawer = ( tagName, children, modifier ) => [
 	'generateblocks/element',
 	{
 		tagName,
 		htmlAttributes: { 'data-dropdown-part': 'drawer' },
-		styles: { ...drawerStyles, ...styles },
+		globalClasses: classes( 'drawer', modifier ),
 	},
 	children,
 ];
-
-// One row in the drawer: a link that fills the row, with a hover tint.
-const rowLink = {
-	display: 'flex',
-	flexDirection: 'column',
-	rowGap: '0.125rem',
-	...padding( '0.5rem', '0.75rem' ),
-	...radius( '0.25rem' ),
-	color: color.text,
-	textDecoration: 'none',
-	transition: 'background-color 0.15s ease',
-	'&:is(:hover, :focus-visible)': {
-		backgroundColor: color.surface,
-		color: color.accent,
-	},
-	...focusRing,
-	'&:focus-visible': {
-		...focusRing[ '&:focus-visible' ],
-		outlineOffset: '-2px',
-	},
-};
 
 const listItem = ( children ) => [
 	'generateblocks/element',
 	{
 		tagName: 'li',
-		styles: {
-			marginTop: '0',
-			marginRight: '0',
-			marginBottom: '0',
-			marginLeft: '0',
-		},
+		globalClasses: classes( 'item' ),
 	},
 	children,
 ];
 
-const text = ( content, styles, tagName = 'span' ) => [
+const text = ( content, part, tagName = 'span' ) => [
 	'generateblocks/text',
-	{ tagName, content, styles },
+	{ tagName, content, globalClasses: classes( part ) },
 ];
 
 const downloads = () => {
@@ -166,19 +94,11 @@ const downloads = () => {
 						{
 							tagName: 'a',
 							htmlAttributes: { href: '#' },
-							styles: rowLink,
+							globalClasses: classes( 'link', 'downloads' ),
 						},
 						[
-							text( name, {
-								fontSize: '0.9375rem',
-								fontWeight: '600',
-								lineHeight: '1.3',
-							} ),
-							text( meta, {
-								fontSize: '0.8125rem',
-								lineHeight: '1.3',
-								color: color.muted,
-							} ),
+							text( name, 'file-name' ),
+							text( meta, 'file-meta' ),
 						],
 					],
 				] )
@@ -206,12 +126,7 @@ const links = () => {
 							tagName: 'a',
 							content: label,
 							htmlAttributes: { href: '#' },
-							styles: {
-								...rowLink,
-								display: 'block',
-								fontSize: '0.9375rem',
-								fontWeight: '500',
-							},
+							globalClasses: classes( 'link', 'simple' ),
 						},
 					],
 				] )
@@ -227,7 +142,7 @@ const panel = () => [
 		[
 			text(
 				__( 'Talk to a real person', 'thingamablocks' ),
-				{ marginBottom: '0', fontSize: '1rem', fontWeight: '600' },
+				'title',
 				'p'
 			),
 			text(
@@ -235,7 +150,7 @@ const panel = () => [
 					'We usually reply within a few hours, Monday to Friday.',
 					'thingamablocks'
 				),
-				{ marginBottom: '0', fontSize: '0.875rem', color: color.muted },
+				'text',
 				'p'
 			),
 			[
@@ -244,28 +159,12 @@ const panel = () => [
 					tagName: 'a',
 					content: __( 'Contact us', 'thingamablocks' ),
 					htmlAttributes: { href: '#' },
-					styles: {
-						display: 'inline-flex',
-						alignSelf: 'flex-start',
-						marginTop: '0.25rem',
-						...padding( '0.5rem', '0.875rem' ),
-						...radius( '0.375rem' ),
-						backgroundColor: color.accent,
-						color: color.background,
-						fontSize: '0.875rem',
-						fontWeight: '600',
-						textDecoration: 'none',
-						'&:is(:hover, :focus-visible)': {
-							backgroundColor: color.text,
-							color: color.background,
-						},
-						...focusRing,
-					},
+					globalClasses: classes( 'cta' ),
 				},
 			],
 		],
-		// A panel needs room: this layout sets its own width (the others match the button).
-		{ width: '18rem', rowGap: '0.5rem', ...padding( '1rem' ) }
+		// A panel needs room: its modifier sets a width (the others match the button).
+		'panel'
 	),
 ];
 

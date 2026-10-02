@@ -6,30 +6,46 @@
  *   data-marquee-part="pause"  a pause/play button (needed for accessibility:
  *                              moving content must be pausable, WCAG 2.2.2)
  *
- * The gap between items is the row's own GB gap; the script uses the same gap
- * where the row repeats, so the loop has no seam.
+ * The gap between items is the row's own gap; the script reads the computed
+ * gap and uses it where the row repeats, so the loop has no seam.
  */
 import { __ } from '@wordpress/i18n';
 
-import { border, color, padding, radius } from '../shared/gb';
 import { variationIcons } from './icon';
 
-const shape = ( html, styles = {} ) => [
+/*
+ * The look comes from GenerateBlocks Pro Global Styles the plugin creates
+ * (includes/class-thingamablocks-global-styles.php): a base class for each
+ * part, plus a modifier for the layout, e.g. tmb-marquee__items and
+ * tmb-marquee__items--logos. Edit a class to restyle every marquee.
+ *
+ * The items row's display:flex (and flex-direction for vertical layouts)
+ * stays local: the scrolling depends on the row being a flex row/column, so
+ * it mustn't be lost if a class is restyled or removed.
+ */
+const classes = ( part, modifier ) => {
+	const base = `tmb-marquee__${ part }`;
+
+	return modifier ? [ base, `${ base }--${ modifier }` ] : [ base ];
+};
+
+const shape = ( html, globalClasses = [] ) => [
 	'generateblocks/shape',
-	{ html, styles },
+	{ html, globalClasses },
 ];
 
-const text = ( content, styles, tagName = 'span' ) => [
+const text = ( content, globalClasses, tagName = 'span' ) => [
 	'generateblocks/text',
-	{ tagName, content, styles },
+	{ tagName, content, globalClasses },
 ];
 
-const items = ( styles, children ) => [
+const items = ( modifier, children, styles = {} ) => [
 	'generateblocks/element',
 	{
 		tagName: 'div',
 		htmlAttributes: { 'data-marquee-part': 'items' },
-		styles: { display: 'flex', alignItems: 'center', ...styles },
+		styles: { display: 'flex', ...styles },
+		globalClasses: classes( 'items', modifier ),
 	},
 	children,
 ];
@@ -40,45 +56,19 @@ const playIcon =
 	'<svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z"></path></svg>';
 
 /**
- * A small round pause/play button in the corner. It shows the pause icon while
+ * A small round pause/play button, in the bottom corner or (modifier
+ * "middle") vertically centred on the right. It shows the pause icon while
  * moving and the play icon once paused (aria-pressed="true").
  *
- * @param {Object} position Position styles.
+ * @param {string} [modifier] Position modifier.
  * @return {Array} Block template.
  */
-const pauseButton = ( position = { right: '0.5rem', bottom: '0.5rem' } ) => [
+const pauseButton = ( modifier ) => [
 	'generateblocks/element',
 	{
 		tagName: 'div',
 		htmlAttributes: { 'data-marquee-part': 'pause' },
-		styles: {
-			position: 'absolute',
-			zIndex: '2',
-			...position,
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-			width: '2rem',
-			height: '2rem',
-			...radius( '50%' ),
-			...border( '1px', 'solid', color.border ),
-			backgroundColor: color.background,
-			color: color.muted,
-			cursor: 'pointer',
-			opacity: '0.75',
-			transition: 'opacity 0.2s ease',
-			'&:is(:hover, :focus-visible)': { opacity: '1', color: color.text },
-			'&:focus-visible': {
-				outlineWidth: '2px',
-				outlineStyle: 'solid',
-				outlineColor: color.accent,
-				outlineOffset: '2px',
-			},
-			'.gb-shape svg': { width: '0.875rem', height: '0.875rem' },
-			'& .gb-shape:last-child': { display: 'none' },
-			'&[aria-pressed="true"] .gb-shape:first-child': { display: 'none' },
-			'&[aria-pressed="true"] .gb-shape:last-child': { display: 'flex' },
-		},
+		globalClasses: classes( 'pause', modifier ),
 	},
 	[ shape( pauseIcon ), shape( playIcon ) ],
 ];
@@ -97,17 +87,13 @@ const logoMarks = [
 // before the links in the row. It's absolutely positioned, so the order
 // doesn't change the look.
 const logos = () => [
-	pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
+	pauseButton( 'middle' ),
 	items(
-		{ columnGap: '4rem', ...padding( '1.5rem', '0' ) },
+		'logos',
 		logoMarks.map( ( mark ) =>
 			shape(
 				`<svg aria-hidden="true" viewBox="0 0 112 32" fill="currentColor">${ mark }</svg>`,
-				{
-					display: 'flex',
-					color: color.subtle,
-					svg: { width: 'auto', height: '2rem' },
-				}
+				classes( 'logo' )
 			)
 		)
 	),
@@ -126,37 +112,16 @@ const messages = () => {
 	const children = [];
 
 	lines.forEach( ( line ) => {
-		children.push(
-			text( line, {
-				whiteSpace: 'nowrap',
-				fontSize: '1rem',
-				fontWeight: '600',
-				// base-3 is white normally and dark in dark mode, so the text stays readable on the accent.
-				color: 'var(--base-3, #ffffff)',
-			} )
-		);
-		children.push(
-			shape( star, {
-				display: 'flex',
-				color: 'var(--base-3, #ffffff)',
-				opacity: '0.6',
-				svg: { width: '0.875rem', height: '0.875rem' },
-			} )
-		);
+		children.push( text( line, classes( 'message' ) ) );
+		children.push( shape( star, classes( 'star', 'messages' ) ) );
 	} );
 
 	return [
-		pauseButton( { right: '0.5rem', top: '50%', marginTop: '-1rem' } ),
+		pauseButton( 'middle' ),
 		[
 			'generateblocks/element',
-			{
-				tagName: 'div',
-				styles: {
-					backgroundColor: color.accent,
-					...padding( '0.875rem', '0' ),
-				},
-			},
-			[ items( { columnGap: '2rem' }, children ) ],
+			{ tagName: 'div', globalClasses: classes( 'band' ) },
+			[ items( 'messages', children ) ],
 		],
 	];
 };
@@ -170,31 +135,12 @@ const headline = () => {
 
 	[ ...words, ...words ].forEach( ( word, index ) => {
 		children.push(
-			text( word, {
-				whiteSpace: 'nowrap',
-				fontSize: 'clamp(2.5rem, 7vw, 5.5rem)',
-				fontWeight: '800',
-				lineHeight: '1.1',
-				letterSpacing: '-0.03em',
-				color: index % 2 ? color.muted : color.text,
-			} )
+			text( word, classes( 'headline', index % 2 ? 'muted' : '' ) )
 		);
-		children.push(
-			shape( star, {
-				display: 'flex',
-				color: color.accent,
-				svg: {
-					width: 'clamp(1.5rem, 3vw, 2.5rem)',
-					height: 'clamp(1.5rem, 3vw, 2.5rem)',
-				},
-			} )
-		);
+		children.push( shape( star, classes( 'star', 'headline' ) ) );
 	} );
 
-	return [
-		pauseButton(),
-		items( { columnGap: '2.5rem', ...padding( '1rem', '0' ) }, children ),
-	];
+	return [ pauseButton(), items( 'headline', children ) ];
 };
 
 const quotes = () => {
@@ -232,39 +178,16 @@ const quotes = () => {
 	return [
 		pauseButton(),
 		items(
-			{ flexDirection: 'column', alignItems: 'stretch', rowGap: '1rem' },
+			'quotes',
 			cards.map( ( [ quote, name ] ) => [
 				'generateblocks/element',
-				{
-					tagName: 'figure',
-					styles: {
-						marginTop: '0',
-						marginRight: '0',
-						marginBottom: '0',
-						marginLeft: '0',
-						...padding( '1.25rem', '1.5rem' ),
-						...radius( '0.75rem' ),
-						...border( '1px', 'solid', color.border ),
-						backgroundColor: color.surface,
-					},
-				},
+				{ tagName: 'figure', globalClasses: classes( 'card' ) },
 				[
-					text(
-						quote,
-						{ marginBottom: '0.5rem', color: color.text },
-						'p'
-					),
-					text(
-						name,
-						{
-							fontSize: '0.875rem',
-							fontWeight: '600',
-							color: color.muted,
-						},
-						'figcaption'
-					),
+					text( quote, classes( 'quote' ), 'p' ),
+					text( name, classes( 'author' ), 'figcaption' ),
 				],
-			] )
+			] ),
+			{ flexDirection: 'column' }
 		),
 	];
 };

@@ -59,7 +59,12 @@ async function dropdownMarkup( page, variation, attributes = {} ) {
 
 		return all
 			.filter( ( block ) => block.name.startsWith( 'generateblocks/' ) )
-			.every( ( block ) => block.attributes.css );
+			.every(
+				( block ) =>
+					block.attributes.uniqueId &&
+					( ! Object.keys( block.attributes.styles || {} ).length ||
+						block.attributes.css )
+			);
 	}, clientId );
 
 	return page.evaluate(

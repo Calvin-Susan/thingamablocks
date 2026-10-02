@@ -96,6 +96,11 @@ async function pluginAssets( page, url ) {
 		elements
 			.map( ( element ) => element.id || element.className )
 			.filter( ( name ) => /^(tmb-|thingamablocks-)/.test( name ) )
+			// The test site's stand-in for GB Pro's Global Styles (see
+			// THINGAMABLOCKS_PRINT_DEFAULT_STYLES): on real sites GB Pro prints these.
+			.filter(
+				( name ) => name !== 'thingamablocks-default-styles-inline-css'
+			)
 	);
 
 	return { files, inline };

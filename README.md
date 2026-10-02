@@ -23,9 +23,9 @@ And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an
 
 All six blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
-**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site). The Countdown's starting layouts get their look from GenerateBlocks Pro Global Styles (see [Countdown styling](#styling)): with free GenerateBlocks the countdown works, but the layouts are unstyled. Everything else works with free GenerateBlocks.
+**Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free). Not yet tested with GenerateBlocks Pro. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block (it's tested against the markup GB Pro 2.x saves, not yet on a live GB Pro site). The blocks' starting layouts get their look from GenerateBlocks Pro Global Styles (see [Starting layouts and Global Styles](#starting-layouts-and-global-styles)): with free GenerateBlocks every block works, but the layouts are unstyled. Everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The Countdown layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add about 1.8 KB to it.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The starting layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add around 18 KB to it, under 3 KB gzipped.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, masks or video backgrounds? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -35,6 +35,7 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 
 - [Install](#install)
 - [Settings](#settings)
+- [Starting layouts and Global Styles](#starting-layouts-and-global-styles)
 - [Toggle block](#toggle-block)
   - [Toggle quick start](#toggle-quick-start)
   - [How toggle parts and styling work](#how-toggle-parts-and-styling-work)
@@ -115,12 +116,31 @@ Below the switches, a **Video backgrounds** card has one field, **Your own Bunny
 
 ---
 
+## Starting layouts and Global Styles
+
+When you insert a block you pick a starting layout. Those layouts don't put styles on each block: each part gets shared **GenerateBlocks Pro Global Styles** classes instead, a base class for the part plus a modifier where a layout differs (the BEM naming idea, `tmb-block__part--modifier`), e.g. `tmb-search__field` + `tmb-search__field--pill`. Each block's section lists its classes.
+
+- **Restyle every one on the site** by editing a class in GB's Styles panel (or under the **Thingamablocks** category of your Global Styles).
+- **One looks different?** Remove or swap a class on that block, or add local styles on top in the Styles panel as usual.
+- **A few styles stay local on purpose**, so restyling a class can't break anything: the Countdown's visually hidden unit names, the Marquee row's `display: flex` (and `flex-direction: column` for vertical layouts), which the loop needs, and the Search input's `flex-grow`.
+- **The colours are plain hex values for now**, not your GeneratePress global colours, so they don't follow your palette or dark mode until you change them in the classes.
+
+**Where the classes come from.** The plugin creates them (about 75 in all) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles opens a wp-admin page after installing or updating to a version that adds classes. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so a class you delete stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.)
+
+Behind the scenes: they're only created on an ordinary admin page load, never in AJAX, REST or cron requests, and a lock stops two admin tabs loading at once from creating duplicates. GB Pro normally rebuilds its stylesheet after every Global Style is saved; that's paused while the classes are created and done once at the end. Progress is saved after each class, so a run that's cut short carries on next time.
+
+**Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks every block works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the plugin's classes add around 18 KB to it (under 3 KB gzipped).
+
+Blocks inserted with an older version keep the styles they were inserted with, and the patterns still use per-block styles.
+
+---
+
 ## Toggle block
 
 A toggle can:
 
 - **Show / hide elements** – e.g. monthly vs. annual pricing.
-- **Switch light / dark mode** – with a dark version of each theme colour picked in the sidebar, remembered per visitor, no flash on load.
+- **Switch light / dark mode** – your `light-dark()` colours follow it, remembered per visitor, no flash on load.
 - **Add / remove classes** on any elements.
 - **Do nothing** – just hold an on/off state for your own code.
 
@@ -135,7 +155,7 @@ When you insert a Toggle you're asked to pick a starting layout:
 | **Switch** | Just the switch (give it a label under Accessibility) | Show / hide |
 | **Dark mode switch** | Switch with a sun/moon icon in the knob, label "Dark mode" | Light / dark mode |
 
-The layouts use the GeneratePress global colour variables (`--accent`, `--base`, `--base-2`, `--base-3`, `--contrast`, `--contrast-2`, `--contrast-3`) with fallback colours for other themes, so they pick up your GP colours straight away. The one fixed colour is the switch's "off" track, a mid grey (`#767680`) that has enough contrast against both light and dark backgrounds.
+The layouts are styled with shared Global Styles classes (see [Toggle classes](#toggle-classes)). The switch's "off" track is a mid grey (`#767680`) with enough contrast against both light and dark backgrounds, and the knob is white with a grey icon, so the switch reads the same in light and dark mode.
 
 > **In the editor, clicking the switch doesn't flip it.** Clicking selects blocks so you can edit them. To see the other state, use the **On/Off** button in the Toggle's block toolbar. The actual toggling happens on the front end.
 
@@ -262,7 +282,25 @@ Style parts with GenerateBlocks **nested selectors** on the part itself (in the 
 | Active on/off label or button | `&[data-active="true"]` | the label or button |
 | Anything, based on the whole toggle | `.tmb-toggle.is-on …` | global CSS (the wrapper has `is-on` or `is-off`) |
 
-The starting layouts already use these – open the switch block's Styles to see a working example. The dark mode switch also swaps its sun/moon icons with `&[aria-checked="true"] .gb-shape:first-child` / `:last-child` on the switch.
+The starting layouts already use these – open the `tmb-toggle__switch` class to see a working example.
+
+#### Toggle classes
+
+The starting layouts' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Layouts |
+| --- | --- | --- |
+| `tmb-toggle__row` | The row holding the labels and switch | Switch with labels |
+| `tmb-toggle__label` | "Monthly" / "Annual", darker while active | Switch with labels |
+| `tmb-toggle__switch` | The track, its "on" colour, focus ring, and the knob's slide | All but Segmented buttons |
+| `tmb-toggle__switch--dark-mode` | Swaps the sun for the moon while on | Dark mode switch |
+| `tmb-toggle__knob` | The white knob | All but Segmented buttons |
+| `tmb-toggle__icon` | The sun and moon icons in the knob | Dark mode switch |
+| `tmb-toggle__icon--on` | Hides the moon until the switch is on | Dark mode switch |
+| `tmb-toggle__segments` | The box around the two buttons | Segmented buttons |
+| `tmb-toggle__segment` | Each button, highlighted while active | Segmented buttons |
+
+The sun/moon swap spans two classes: `tmb-toggle__icon--on` hides the moon, and `tmb-toggle__switch--dark-mode` (with `&[aria-checked="true"] .gb-shape:first-child` / `:last-child`) hides the sun and shows the moon while the switch is on.
 
 **The editor previews the starting state.** Use the **On/Off** toolbar button (or **State → Starts as**) to preview the other state while you style it. That button also changes which state visitors start in, so set it back when you're done.
 
@@ -437,7 +475,7 @@ The sidebar warns you if the countdown has **no number parts**, and (when it's s
 
 #### Styling
 
-The starting layouts don't put styles on each block. Instead each block gets shared **GenerateBlocks Pro Global Styles** classes: a base class for its part, plus a modifier for the layout (the same naming idea as BEM, `block__part--modifier`):
+The starting layouts are styled with shared [Global Styles](#starting-layouts-and-global-styles) classes, a base class per part plus a modifier per layout:
 
 | Class | Modifiers | On |
 | --- | --- | --- |
@@ -450,17 +488,7 @@ The starting layouts don't put styles on each block. Instead each block gets sha
 | `tmb-countdown__separator` | | The colons (Large numbers) |
 | `tmb-countdown__ended` | | The ended message |
 
-So:
-
-- **Restyle every countdown on the site** by editing a class in GB's Styles panel (or under the **Thingamablocks** category of your Global Styles).
-- **One countdown looks different?** Remove or swap a class on that block, or add local styles on top in the Styles panel as usual.
-- The Inline text layout's visually hidden full unit name ("days") keeps its own local styles rather than a class, so restyling the classes can never make it visible.
-
-**Where the classes come from.** The plugin creates them as ordinary Global Styles, in a **Thingamablocks** category, the first time an administrator (anyone who can manage GB styles) opens wp-admin after installing or updating to a version that adds a class. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so if you delete one it stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.) The default colours are plain hex values for now.
-
-**Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks the countdown works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the countdown classes add about 1.8 KB to it (well under 1 KB gzipped).
-
-Countdowns inserted with an older version keep the styles they were inserted with, and the countdown patterns still use per-block styles for now.
+The Inline text layout's visually hidden full unit name ("days") keeps its own local styles rather than a class, so restyling the classes can never make it visible.
 
 For state-based styles use global CSS: the wrapper is `.tmb-countdown` with `.is-running` or `.is-ended`.
 
@@ -551,7 +579,7 @@ When you insert a Marquee you pick a starting layout:
 | **Big scrolling headline** | Two phrases in very large type, separated by stars | Left, 45 px/s, 15% fade |
 | **Vertical quotes** | Four testimonial cards scrolling upwards | Up, 30 px/s, 22rem tall |
 
-Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. It comes first inside the Marquee (it's positioned in the corner, so this doesn't change the look), so keyboard users reach it before any links in the row; keep it first if you build your own. Like the other blocks' layouts, colours use the GeneratePress global colour variables with fallbacks.
+Every layout has a small round **pause button** in the corner. It shows a pause icon while moving and a play icon once paused. It comes first inside the Marquee (it's positioned in the corner, so this doesn't change the look), so keyboard users reach it before any links in the row; keep it first if you build your own. The layouts are styled with shared Global Styles classes (see [Marquee classes](#marquee-classes)).
 
 #### Fastest: the logo strip pattern
 
@@ -565,7 +593,7 @@ The plugin registers **Logo strip: "Trusted by…"** in a **Marquees** pattern c
 2. **Open List View** and expand the Marquee. Inside it there's an Element marked as the row that scrolls (its sidebar shows **Marquee part: The row that scrolls**) holding six Shape blocks – the placeholder logos.
 3. **Replace the placeholders.** Delete the Shape blocks and add a GenerateBlocks **Media** (image) block inside the row for each logo. Give each one alt text with the company name.
 4. **Keep logos the same height.** In each image's Styles set a height (e.g. `2rem` or `2.5rem`) and width `auto`, so wide and tall logos sit evenly. Using a global style for this saves repeating it.
-5. **Set the spacing on the row**, not on the logos: select the row and change its **gap** (the layout uses `4rem`). The marquee uses the same gap where the row repeats, so the spacing stays even all the way round.
+5. **Set the spacing on the row**, not on the logos: the layout's `tmb-marquee__items--logos` class gives the row a `4rem` **gap**. Change it in the class for every logo strip, or give this row its own gap in its Styles. The marquee uses the same gap where the row repeats, so the spacing stays even all the way round.
 6. Check **Accessibility → Label** (e.g. "Our clients") and publish.
 
 Logos can link to the clients' sites; the repeated copies are skipped by screen readers and the keyboard (see [Accessibility behaviour](#accessibility-behaviour-2)).
@@ -596,6 +624,28 @@ Style everything in the GB Styles panel. For the paused state:
 | Anything while the marquee is paused | `.tmb-marquee.is-paused …` | global CSS |
 
 `.is-paused` is on the wrapper whenever it's not moving: paused by the button, by hover or focus, or because it's off screen.
+
+#### Marquee classes
+
+The starting layouts' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Layouts |
+| --- | --- | --- |
+| `tmb-marquee__pause` | The round pause button in the bottom corner, and its pause/play icon swap (`&[aria-pressed="true"] .gb-shape…`) | All |
+| `tmb-marquee__pause--middle` | Moves it to the middle of the right edge | Logo strip, Message ticker |
+| `tmb-marquee__items` | The row that scrolls (alignment) | All |
+| `tmb-marquee__items--logos`, `--messages`, `--headline`, `--quotes` | Each layout's gap and padding | One each |
+| `tmb-marquee__logo` | The placeholder logos' colour and height | Logo strip |
+| `tmb-marquee__band` | The accent-coloured band | Message ticker |
+| `tmb-marquee__message` | Each message (white on the band) | Message ticker |
+| `tmb-marquee__headline` | The big words | Big scrolling headline |
+| `tmb-marquee__headline--muted` | Every other phrase, in a muted colour | Big scrolling headline |
+| `tmb-marquee__star` | The stars between items | Message ticker, Big scrolling headline |
+| `tmb-marquee__star--messages`, `--headline` | Their size and colour per layout | One each |
+| `tmb-marquee__card` | Each testimonial card | Vertical quotes |
+| `tmb-marquee__quote`, `tmb-marquee__author` | The quote and the name under it | Vertical quotes |
+
+The row's `display: flex` (and `flex-direction: column` in Vertical quotes) stays a local style on the row, not in a class: the loop needs it, so restyling or removing a class can't stop the marquee working.
 
 The Marquee has no stylesheet of its own. Its clipping, edge fade and height are inline styles, so it looks right before the script starts. The fade applies to the scrolling row only, not to the pause button.
 
@@ -677,7 +727,7 @@ When you insert a Dropdown you pick a starting layout:
 | **Simple links** | A "Resources" button opening a plain list of three links | As wide as the button |
 | **Panel** | A "Need help?" button opening a panel with a heading, a line of text and a "Contact us" button | `18rem` |
 
-Every layout's button is a GenerateBlocks Button (`<button>` tag) with a chevron icon that turns over while the drawer is open. Button and drawer share the same corner radius and colours, and like the other blocks' layouts they use the GeneratePress global colour variables with fallbacks. The links start as `#`: point them at your files or pages (add a `download` attribute under **HTML Attributes** if you want files to download rather than open).
+Every layout's button is a GenerateBlocks Button (`<button>` tag) with a chevron icon that turns over while the drawer is open. Button and drawer share the same corner radius and colours, from shared Global Styles classes (see [Dropdown classes](#dropdown-classes)). The links start as `#`: point them at your files or pages (add a `download` attribute under **HTML Attributes** if you want files to download rather than open).
 
 > **In the editor, the drawer shows while the dropdown or anything inside it is selected**, sitting in the page flow under the button so you can edit it. Click elsewhere and it hides again. The **Preview** button in the block toolbar plays the reveal animation.
 
@@ -697,7 +747,7 @@ The plugin registers **Product resources with a Downloads dropdown** in a **Drop
 
 1. Insert a Dropdown and choose **Panel**.
 2. Replace the text and the **Contact us** link. Put any GenerateBlocks blocks you like in the drawer: an image, a phone number, two buttons.
-3. The panel is `18rem` wide (set on the drawer in its Styles). Change it there.
+3. The panel is `18rem` wide, set by the `tmb-dropdown__drawer--panel` class. Change it there for every panel, or give this drawer its own width in its Styles.
 4. If the panel has a form or several things to click, turn off **Close when an item is clicked** so it stays open while the visitor uses it.
 
 ### How dropdown parts and styling work
@@ -732,6 +782,23 @@ Style everything in the GB Styles panel. For the open state:
 | Anything depending on which way it opened | `.tmb-dropdown[data-placement="top"] …` (or `"bottom"`) | global CSS – only set while open |
 
 The drawer itself needs no "open" styling: it's hidden while closed and shown while open.
+
+#### Dropdown classes
+
+The starting layouts' [Global Styles](#starting-layouts-and-global-styles). Positioning and the closed state aren't in them: those come from the block itself.
+
+| Class | Styles | Layouts |
+| --- | --- | --- |
+| `tmb-dropdown__button` | The button: colours, hover/focus and open state, chevron size and turn | All |
+| `tmb-dropdown__drawer` | The drawer: background, border, shadow, list margins reset | All |
+| `tmb-dropdown__drawer--panel` | The panel's `18rem` width and padding | Panel |
+| `tmb-dropdown__item` | Each list row (`<li>`), margins reset | Downloads, Simple links |
+| `tmb-dropdown__link` | A link filling the row, with a hover tint and focus ring | Downloads, Simple links |
+| `tmb-dropdown__link--downloads` | Stacks the file name above its type and size | Downloads |
+| `tmb-dropdown__link--simple` | The plain links' text size | Simple links |
+| `tmb-dropdown__file-name`, `tmb-dropdown__file-meta` | A file's name, and its type and size | Downloads |
+| `tmb-dropdown__title`, `tmb-dropdown__text` | The panel's heading and line of text | Panel |
+| `tmb-dropdown__cta` | The panel's "Contact us" button | Panel |
 
 ### Dropdown settings
 
@@ -797,7 +864,7 @@ When you insert Breadcrumbs you pick a starting style:
 
 Each style is three GenerateBlocks Text blocks: a link (reading "Parent page"), a separator and the current page (reading "Current page"). **The editor shows these templates, not the real trail** – the trail depends on the page being viewed, so it's built on the front end. Style the three blocks the way you want every step to look, then view any page on the site.
 
-Like the other blocks' layouts, the styles use the GeneratePress global colour variables with fallbacks. Separators are plain characters (`›`, `/`), not icons, so Authors and Contributors can save the block without anything being stripped.
+The styles are shared Global Styles classes (see [Breadcrumbs classes](#breadcrumbs-classes)). Separators are plain characters (`›`, `/`), not icons, so Authors and Contributors can save the block without anything being stripped.
 
 **Recipe: breadcrumbs above every post and page with GeneratePress**
 
@@ -852,6 +919,20 @@ The sidebar warns you if there's no **Link to each page** part. If there's no cu
 - **The current page** has its own part, so it needs no special selector. If you'd rather style it from global CSS, use `[aria-current="page"]`.
 - **The row**: the plugin lays the steps out in a wrapping row with a `0.5em` gap. To change the gap or alignment, target `.tmb-breadcrumbs__list` / `.tmb-breadcrumbs__step` in global CSS.
 - **The "…" button** (when a long trail collapses) isn't a GB block. It inherits the text colour and font; style it with `.tmb-breadcrumbs__more`.
+
+#### Breadcrumbs classes
+
+The starting styles' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Styles used in |
+| --- | --- | --- |
+| `tmb-breadcrumbs__item` | Each link: muted, accent colour and underline on hover/focus, focus ring, at least 24 px tall | All |
+| `tmb-breadcrumbs__item--pill` | Turns the link into a soft rounded pill | Pills |
+| `tmb-breadcrumbs__divider` | The separator | All |
+| `tmb-breadcrumbs__current` | The current page, in the text colour | All |
+| `tmb-breadcrumbs__current--pill` | The current page as an accent-coloured pill | Pills |
+
+The separator's class is `__divider`, not `__separator`: the plugin already adds `tmb-breadcrumbs__separator` to every separator on the site, as a hook for its script.
 
 ### Breadcrumbs settings
 
@@ -942,7 +1023,7 @@ When you insert a Search you pick a starting style:
 | **Underline** | Just a line under the text and a search icon, for headers and sidebars |
 | **Icon that opens a search** | A round search icon. Clicking it opens a field with a "Search" button underneath, floating over the page and lined up with the icon's right edge |
 
-Like the other blocks' layouts, the styles use the GeneratePress global colour variables with fallbacks, and every field and button has a visible focus outline in your accent colour. The input's text in the editor ("Search…") is the **placeholder** on the site: click it and type your own, e.g. "Search products…".
+The styles are shared Global Styles classes (see [Search classes](#search-classes)), and every field and button has a visible focus outline in the accent colour. The input's text in the editor ("Search…") is the **placeholder** on the site: click it and type your own, e.g. "Search products…".
 
 > **In the editor, the expanding style's field sits in the page flow under the icon**, so you can see and edit it. On the site it's hidden until the icon is clicked.
 
@@ -981,7 +1062,25 @@ A search needs an input; the sidebar warns you if there isn't one. As with the o
 - **Style the field, not the input.** Themes style every search input on the site (GeneratePress styles `input[type="search"]`) with selectors stronger than GenerateBlocks' own, so styles set on the input itself would lose. So the plugin resets the input to a plain, see-through text area that inherits its font and colour, and the field carries the look. The input is at least 2.75rem tall, a comfortable target, unless you give it a height.
 - **Focus:** the field shows the focus outline while the visitor types (the input's own outline is switched off inside a field). The styles set it with `&:focus-within` on the field – change or replace it there. Without one, a plain `2px` outline in the text colour is used.
 - **Buttons:** hover and focus are set with `&:is(:hover, :focus-visible)`, including a background, since themes give every `<button>` a hover background. The expanding style's icon also uses `&[aria-expanded="true"]` for while it's open.
-- **The expanding style's field** is positioned with GB styles (`position: absolute`, `top`, `right`, `width: 20rem`, `max-width: calc(100vw - 2rem)`), so change where it opens and how wide it is in the Styles panel. Like any popover, it's clipped by an ancestor with `overflow: hidden`.
+- **The expanding style's field** is positioned by its `tmb-search__field--expand` class (`position: absolute`, `top`, `right`, `width: 20rem`, `max-width: calc(100vw - 2rem)`), against the wrapper, which `tmb-search__wrapper--expand` makes `position: relative`. The position needs both classes. Change where it opens and how wide it is in the field's class (or its own Styles). Like any popover, it's clipped by an ancestor with `overflow: hidden`.
+
+#### Search classes
+
+The starting styles' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Styles used in |
+| --- | --- | --- |
+| `tmb-search__wrapper` | The Element around the field and button, or around the icon and its pop-up field | Bar with button, Icon that opens a search |
+| `tmb-search__wrapper--bar` | Field and button side by side | Bar with button |
+| `tmb-search__wrapper--expand` | `position: relative`, so the pop-up field lines up with the icon | Icon that opens a search |
+| `tmb-search__field` | The box around the input, with its `&:focus-within` outline | All |
+| `tmb-search__field--bar`, `--pill`, `--underline` | That style's border and corners | One each |
+| `tmb-search__field--expand` | The pop-up field: position, width, border, shadow | Icon that opens a search |
+| `tmb-search__button` | The search button, and the icon that opens the field | All |
+| `tmb-search__button--bar`, `--pill`, `--underline`, `--expand` | The search button in that style | One each |
+| `tmb-search__button--toggle` | The round icon that opens the field (and its open state) | Icon that opens a search |
+
+The input part has no class: it keeps one local style (`flex-grow`, so it fills the field in the editor), and on the site the real `<input>` gets the plugin's own `tmb-search__input` class. (The plugin also adds `tmb-search__label--block` to a visible label, so the layouts avoid `tmb-search__label…` names.)
 
 ### Search settings
 
@@ -1553,7 +1652,7 @@ For Kyle, and anyone new to block plugins.
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
 - The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, and so on.
-- Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates with GB styles pre-filled (the Countdown's use shared GB Pro Global Styles classes instead, created by `includes/class-thingamablocks-global-styles.php`; see [Countdown styling](#styling)). Once inserted, they're yours to edit like any other GB block.
+- Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates whose parts carry shared GB Pro Global Styles classes (`globalClasses`), created by `includes/class-thingamablocks-global-styles.php` from the defaults in `includes/global-styles/{block}.php`; see [Starting layouts and Global Styles](#starting-layouts-and-global-styles). Once inserted, they're yours to edit like any other GB block.
 - A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
@@ -1608,7 +1707,7 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 - **The input's look** comes from a few lines of CSS (`src/search/style.scss`, a `viewStyle`): a reset strong enough to beat a theme's `input[type="search"]` styles (no border, background or padding; font and colour inherited), a minimum height, and a focus outline on the field (`:focus-within`, zero specificity, so the GB styles' own `&:focus-within` wins).
 - **The expanding style's script** (`src/search/expand.js`, built by a `webpack.config.js` entry since it has no `block.json`) is registered on `init` and enqueued only by a search with both a toggle and a field. It opens and closes the field (an opacity fade with the Web Animations API, none for reduced motion), focuses the input, handles Escape, outside clicks and focus leaving, and nudges a positioned field sideways with `translate` to keep it 8 px inside the screen. Before such a search PHP prints a `<noscript><style>` that shows the field and hides the toggle when JavaScript is off.
 - In the editor (`src/search/edit.js`, `editor.scss`) the input part is shown dimmed like a placeholder, the expanding style's field sits in the page flow under the icon, and the sidebar lists the site's viewable post types (from the REST API) as tick boxes.
-- **Tests:** `tests/e2e/search.spec.js` builds each style in the editor (so GenerateBlocks compiles its CSS) and checks the landmark, the named input and buttons, the theme's input styles being reset, searching everything / only pages (`tmb_types`) / only posts (`post_type`), a forged list only letting public types through, the expanding style's opening, focus, Escape and staying on screen, the no-JavaScript fallback, clicking outside, two expanding searches sharing a field ID, every starting style being valid in the editor, parts keeping their GB class and ID with a heading as the label, that only the expanding style loads a script, and axe. `editor.spec.js` checks the block saves valid.
+- **Tests:** `tests/e2e/search.spec.js` builds each style in the editor (waiting for GenerateBlocks to set up each part) and checks the landmark, the named input and buttons, the theme's input styles being reset, searching everything / only pages (`tmb_types`) / only posts (`post_type`), a forged list only letting public types through, the expanding style's opening, focus, Escape and staying on screen, the no-JavaScript fallback, clicking outside, two expanding searches sharing a field ID, every starting style being valid in the editor, parts keeping their GB class and ID with a heading as the label, that only the expanding style loads a script, and axe. `editor.spec.js` checks the block saves valid.
 
 ### How entrance animations work
 
@@ -1719,7 +1818,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
 - Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
-- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
+- `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the patterns. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `patterns/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved. It uses the system `zip` command and fails with a clear message if `build/` is missing.
 
@@ -1748,7 +1847,8 @@ includes/
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
   class-thingamablocks-faq-schema.php  FAQ schema: collects questions/answers from FAQ accordions as they render, prints one FAQPage in the footer, loads the panel
   class-thingamablocks-video-background.php  Video backgrounds: checks sources (Bunny/Vimeo) and settings, renders the poster, overlay and pause button, the Bunny hostnames option, loads the panel and front-end assets
-  class-thingamablocks-global-styles.php  Default GB Pro Global Styles for the starting layouts (tmb-countdown__*): created once for admins, never overwritten
+  class-thingamablocks-global-styles.php  Creates the starting layouts' GB Pro Global Styles (tmb-*__*) once for admins, never overwritten; prints them itself on the test site
+  global-styles/{block}.php     Each block's default classes (base before modifiers), loaded by Thingamablocks_Global_Styles::defaults()
   settings.php                  Settings → Thingamablocks: the switches (styled only on that page), usage counts, the Bunny hostnames field, thingamablocks_is_enabled(), hiding switched-off blocks from the inserter
 patterns/
   pricing-toggle.php            "Pricing table with monthly/annual toggle" pattern (block markup exported from the editor, text translatable)
@@ -1761,7 +1861,7 @@ src/toggle/
   index.js                      Registers the block, variations and inserter example
   edit.js                       Editor UI: layout picker, sidebar settings, toolbar On/Off, part state sync, previews
   parts.js                      "Toggle part" panel added to GB Element/Text/Shape/Media blocks
-  templates.js                  The four starting layouts (block variations) built from GB blocks
+  templates.js                  The four starting layouts (block variations) built from GB blocks, using tmb-toggle__* Global Styles
   view.js                       Front-end behaviour, tmb-toggle:change event, window.tmbToggle
   icon.js                       Block icon
   style.scss                    Minimal front-end CSS (cursor, hidden class, reduced motion); a viewStyle, so only on pages with a Toggle
@@ -1771,7 +1871,7 @@ src/countdown/
   index.js                      Registers the block, variations, List View label and inserter example
   edit.js                       Editor UI: layout picker, sidebar settings, Running/Ended preview, warnings
   parts.js                      "Countdown part" panel added to GB Element/Text/Shape blocks
-  templates.js                  The three starting layouts (Boxes, Inline text, Large numbers), using the tmb-countdown__* Global Styles classes
+  templates.js                  The three starting layouts (Boxes, Inline text, Large numbers), using tmb-countdown__* Global Styles
   time.js                       Time maths shared by editor and front end: time zones, recurring, splitting units
   view.js                       Front-end ticking, end actions, events, window.tmbCountdown
   icon.js                       Block and layout icons
@@ -1781,7 +1881,7 @@ src/marquee/
   index.js                      Registers the block, variations, List View label and inserter example
   edit.js                       Editor UI: layout picker, sidebar settings, Preview button, warnings
   parts.js                      "Marquee part" panel added to GB Element/Text/Shape/Media blocks
-  templates.js                  The four starting layouts (Logo strip, Message ticker, Big headline, Vertical quotes)
+  templates.js                  The four starting layouts (Logo strip, Message ticker, Big headline, Vertical quotes), using tmb-marquee__* Global Styles
   view.js                       Front-end copies, Web Animations loop, pausing, window.tmbMarquee
   icon.js                       Block and layout icons
   editor.scss                   Sidebar helper styles
@@ -1790,7 +1890,7 @@ src/dropdown/
   index.js                      Registers the block, variations and inserter example
   edit.js                       Editor UI: layout picker, Drawer settings, Preview button, missing-part warning, drawer shown while selected
   parts.js                      "Dropdown part" panel added to GB Element/Text/Shape/Media blocks
-  templates.js                  The three starting layouts (Downloads, Simple links, Panel)
+  templates.js                  The three starting layouts (Downloads, Simple links, Panel), using tmb-dropdown__* Global Styles
   reveal.js                     Reveal animations and speeds, shared by editor and front end
   view.js                       Front-end open/close, placement, keyboard, events, window.tmbDropdown
   icon.js                       Block and layout icons
@@ -1801,7 +1901,7 @@ src/breadcrumbs/
   index.js                      Registers the block, variations and inserter example
   edit.js                       Editor UI: style picker, Trail / Search engines / Accessibility settings, missing-link warning
   parts.js                      "Breadcrumb part" panel added to GB Element/Text/Shape/Media blocks
-  templates.js                  The three starting styles (Chevrons, Slashes, Pills)
+  templates.js                  The three starting styles (Chevrons, Slashes, Pills), using tmb-breadcrumbs__* Global Styles
   view.js                       Front-end collapsing of long trails, window.tmbBreadcrumbs
   icon.js                       Block and style icons
   style.scss                    The row of steps and the "…" button; a viewStyle, so only on pages with Breadcrumbs
@@ -1811,7 +1911,7 @@ src/search/
   index.js                      Registers the block, variations and inserter example
   edit.js                       Editor UI: style picker, Search only / Label settings, missing-input warning
   parts.js                      "Search part" panel added to GB Element/Text/Shape/Media blocks
-  templates.js                  The four starting styles (Bar with button, Pill, Underline, Icon that opens a search)
+  templates.js                  The four starting styles (Bar with button, Pill, Underline, Icon that opens a search), using tmb-search__* Global Styles
   expand.js                     Front-end open/close for the expanding style (loaded only where it's used)
   icon.js                       Block and style icons
   style.scss                    Input reset and field focus outline; a viewStyle, so only on pages with a Search

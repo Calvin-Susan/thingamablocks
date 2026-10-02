@@ -39,6 +39,11 @@
 		{
 			"step": "runPHP",
 			"code": "<?php require '/wordpress/wp-load.php';\nglobal $wp_rewrite; $wp_rewrite->set_permalink_structure('/%postname%/'); $wp_rewrite->flush_rules();\nif ( ! get_page_by_path( 'thingamablocks-demo' ) ) {\n\t$registry = WP_Block_Patterns_Registry::get_instance();\n\t$end      = ( new DateTimeImmutable( '+3 days', wp_timezone() ) )->format( 'Y-m-d\\T17:00:00' );\n\t$content  = '';\n\tforeach ( array( 'sale-banner', 'logo-marquee', 'pricing-toggle', 'launch-countdown' ) as $slug ) {\n\t\t$pattern = $registry->get_registered( 'thingamablocks/' . $slug );\n\t\tif ( $pattern ) {\n\t\t\t$content .= $pattern['content'] . \"\\n\\n\";\n\t\t}\n\t}\n\t// Patterns ship without a date (the editor sets one on insert); give the demo one.\n\t$content = str_replace( 'wp:thingamablocks/countdown {', 'wp:thingamablocks/countdown {\"endDate\":\"' . $end . '\",', $content );\n\t$content = str_replace( 'wp:thingamablocks/countdown {\"endDate\":\"' . $end . '\",}', 'wp:thingamablocks/countdown {\"endDate\":\"' . $end . '\"}', $content );\n\t// Saved through the content filter (kses) an Author or Contributor gets, so\n\t// the editor tests catch attributes it would strip.\n\t$id = wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Thingamablocks demo', 'post_name' => 'thingamablocks-demo', 'post_content' => wp_slash( $content ) ) );\n\t// The Downloads dropdown is added after, unfiltered: its button uses a\n\t// GenerateBlocks icon (an inline SVG), which the filter strips for those\n\t// users on any GB button, a known GenerateBlocks limitation.\n\t$dropdown = $registry->get_registered( 'thingamablocks/downloads-dropdown' );\n\tif ( $id && $dropdown ) {\n\t\tkses_remove_filters();\n\t\twp_update_post( array( 'ID' => $id, 'post_content' => wp_slash( get_post_field( 'post_content', $id ) . \"\\n\\n\" . $dropdown['content'] ) ) );\n\t\tkses_init_filters();\n\t}\n}"
+		},
+		{
+			"step": "writeFile",
+			"path": "/wordpress/wp-content/mu-plugins/thingamablocks-playground.php",
+			"data": "<?php\n// Local test site only: no GenerateBlocks Pro here, so Thingamablocks prints\n// its default layout classes itself (see includes/class-thingamablocks-global-styles.php).\ndefine( 'THINGAMABLOCKS_PRINT_DEFAULT_STYLES', true );\n"
 		}
 	]
 }

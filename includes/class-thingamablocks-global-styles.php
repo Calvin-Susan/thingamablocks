@@ -46,125 +46,60 @@ class Thingamablocks_Global_Styles {
 	 */
 	public static function init() {
 		add_action( 'admin_init', array( __CLASS__, 'maybe_create' ) );
+
+		// Without GB Pro there are no Global Styles. The local test site
+		// (Playground: free GenerateBlocks) sets this constant to print the
+		// default classes itself, so the layouts look and test as they would
+		// with GB Pro. Never on a real site.
+		if ( defined( 'THINGAMABLOCKS_PRINT_DEFAULT_STYLES' ) && THINGAMABLOCKS_PRINT_DEFAULT_STYLES ) {
+			// Front end and the editor canvas.
+			add_action( 'enqueue_block_assets', array( __CLASS__, 'print_defaults' ), 20 );
+		}
+	}
+
+	/**
+	 * Print the default classes as a stylesheet, when GB Pro isn't there to.
+	 */
+	public static function print_defaults() {
+		if ( self::available() ) {
+			return;
+		}
+
+		$css = '';
+
+		foreach ( self::enabled_defaults() as $class_name => $styles ) {
+			$css .= self::compile( '.' . $class_name, $styles );
+		}
+
+		wp_register_style( 'thingamablocks-default-styles', false, array(), THINGAMABLOCKS_VERSION );
+		wp_enqueue_style( 'thingamablocks-default-styles' );
+		wp_add_inline_style( 'thingamablocks-default-styles', $css );
 	}
 
 	/**
 	 * Default classes, per feature switch, base classes before their modifiers.
-	 * Values are GenerateBlocks styles (camelCase properties, longhands).
+	 * Each block's are in includes/global-styles/{feature}.php. Values are
+	 * GenerateBlocks styles (camelCase properties, longhands).
 	 *
 	 * @return array Feature key => array( class name => styles ).
 	 */
 	public static function defaults() {
-		$text   = '#222222';
-		$muted  = '#575760';
-		$subtle = '#b2b2be';
+		static $defaults = null;
 
-		return array(
-			'countdown' => array(
-				'tmb-countdown__timer'          => array(
-					'display'   => 'flex',
-					'flexWrap'  => 'wrap',
-					'columnGap' => '0.75rem',
-					'rowGap'    => '0.75rem',
-				),
-				'tmb-countdown__timer--inline'  => array(
-					'display'    => 'inline-flex',
-					'alignItems' => 'baseline',
-					'columnGap'  => '0.5rem',
-					'color'      => $text,
-				),
-				'tmb-countdown__timer--large'   => array(
-					'alignItems' => 'flex-start',
-					'columnGap'  => '0.5rem',
-					'rowGap'     => '1rem',
-				),
-				'tmb-countdown__unit'           => array(
-					'display'       => 'flex',
-					'flexDirection' => 'column',
-					'alignItems'    => 'center',
-				),
-				'tmb-countdown__unit--boxes'    => array(
-					'minWidth'                => '4.75rem',
-					'paddingTop'              => '1rem',
-					'paddingRight'            => '0.75rem',
-					'paddingBottom'           => '1rem',
-					'paddingLeft'             => '0.75rem',
-					'borderTopLeftRadius'     => '0.5rem',
-					'borderTopRightRadius'    => '0.5rem',
-					'borderBottomRightRadius' => '0.5rem',
-					'borderBottomLeftRadius'  => '0.5rem',
-					'borderTopWidth'          => '1px',
-					'borderRightWidth'        => '1px',
-					'borderBottomWidth'       => '1px',
-					'borderLeftWidth'         => '1px',
-					'borderTopStyle'          => 'solid',
-					'borderRightStyle'        => 'solid',
-					'borderBottomStyle'       => 'solid',
-					'borderLeftStyle'         => 'solid',
-					'borderTopColor'          => '#f0f0f0',
-					'borderRightColor'        => '#f0f0f0',
-					'borderBottomColor'       => '#f0f0f0',
-					'borderLeftColor'         => '#f0f0f0',
-					'backgroundColor'         => '#f7f8f9',
-				),
-				'tmb-countdown__unit--inline'   => array(
-					'display'       => 'inline-flex',
-					'flexDirection' => 'row',
-					'alignItems'    => 'baseline',
-					'columnGap'     => '0.125rem',
-				),
-				'tmb-countdown__unit--large'    => array(
-					'minWidth' => '4.5rem',
-				),
-				'tmb-countdown__number'         => array(
-					'display'            => 'block',
-					'fontVariantNumeric' => 'tabular-nums',
-					'fontWeight'         => '700',
-					'lineHeight'         => '1',
-					'color'              => $text,
-				),
-				'tmb-countdown__number--boxes'  => array(
-					'fontSize' => '2.25rem',
-				),
-				'tmb-countdown__number--inline' => array(
-					'display'    => 'inline',
-					'lineHeight' => 'inherit',
-				),
-				'tmb-countdown__number--large'  => array(
-					'fontSize'      => '3rem',
-					'letterSpacing' => '-0.02em',
-				),
-				'tmb-countdown__label'          => array(
-					'marginTop'     => '0.375rem',
-					'fontSize'      => '0.75rem',
-					'fontWeight'    => '600',
-					'letterSpacing' => '0.08em',
-					'textTransform' => 'uppercase',
-					'color'         => $muted,
-				),
-				'tmb-countdown__label--large'   => array(
-					'marginTop'  => '0.5rem',
-					'fontWeight' => '400',
-				),
-				'tmb-countdown__intro'          => array(
-					'color' => $muted,
-				),
-				'tmb-countdown__suffix'         => array(
-					'color' => $muted,
-				),
-				'tmb-countdown__separator'      => array(
-					'fontSize'   => '3rem',
-					'fontWeight' => '300',
-					'lineHeight' => '1',
-					'color'      => $subtle,
-				),
-				'tmb-countdown__ended'          => array(
-					'marginBottom' => '0',
-					'fontWeight'   => '600',
-					'color'        => $text,
-				),
-			),
-		);
+		if ( null === $defaults ) {
+			$defaults = array();
+
+			foreach ( array( 'toggle', 'countdown', 'marquee', 'dropdown', 'breadcrumbs', 'search' ) as $feature ) {
+				$file = THINGAMABLOCKS_DIR . 'includes/global-styles/' . $feature . '.php';
+
+				if ( file_exists( $file ) ) {
+					$build                = require $file;
+					$defaults[ $feature ] = $build();
+				}
+			}
+		}
+
+		return $defaults;
 	}
 
 	/**
@@ -194,6 +129,12 @@ class Thingamablocks_Global_Styles {
 	 * feature switched on, or an update that adds classes).
 	 */
 	public static function maybe_create() {
+		// Only on an ordinary admin page load: not the background requests an
+		// admin page fires at the same time (AJAX, REST, cron).
+		if ( wp_doing_ajax() || wp_doing_cron() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
+
 		if ( ! self::available() || ! self::can_manage() ) {
 			return;
 		}
@@ -206,8 +147,19 @@ class Thingamablocks_Global_Styles {
 			return;
 		}
 
-		$handled = array_merge( $handled, self::create_missing( $new ) );
-		update_option( self::OPTION, array_values( array_unique( $handled ) ), true );
+		// Re-read the list now that this request holds the lock: another may
+		// have just finished.
+		wp_cache_delete( 'alloptions', 'options' );
+		wp_cache_delete( 'notoptions', 'options' );
+		wp_cache_delete( self::OPTION, 'options' );
+		$handled = get_option( self::OPTION, array() );
+		$handled = is_array( $handled ) ? $handled : array();
+		$new     = array_diff_key( $new, array_flip( $handled ) );
+
+		if ( $new ) {
+			self::create_missing( $new, $handled );
+		}
+
 		delete_option( self::OPTION . '_lock' );
 	}
 
@@ -218,18 +170,24 @@ class Thingamablocks_Global_Styles {
 	 * @return bool Whether this request may create the classes.
 	 */
 	private static function lock() {
+		global $wpdb;
+
 		$key = self::OPTION . '_lock';
 
-		if ( add_option( $key, time(), '', false ) ) {
-			return true;
+		// A lock left by a request that died a while ago.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- must read the database, not the options cache.
+		$since = $wpdb->get_var( $wpdb->prepare( "SELECT option_value FROM {$wpdb->options} WHERE option_name = %s", $key ) );
+
+		// Only delete the lock we read, so two requests can't both clear it.
+		if ( null !== $since && (int) $since < time() - MINUTE_IN_SECONDS ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- compare-and-delete.
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s AND option_value = %s", $key, $since ) );
 		}
 
-		if ( (int) get_option( $key ) < time() - MINUTE_IN_SECONDS ) {
-			update_option( $key, time(), false );
-			return true;
-		}
-
-		return false;
+		// INSERT IGNORE adds the row for exactly one request; add_option()
+		// can't be used, as it quietly succeeds when the row already exists.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- an atomic lock.
+		return 1 === (int) $wpdb->query( $wpdb->prepare( "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %s, 'no')", $key, (string) time() ) );
 	}
 
 	/**
@@ -255,13 +213,26 @@ class Thingamablocks_Global_Styles {
 	 * modifiers in $classes, so they get a lower menu_order (earlier in the
 	 * stylesheet) and the modifiers override them.
 	 *
-	 * @param array $classes Class name => styles.
+	 * GB Pro rebuilds its whole stylesheet after every Global Style is saved;
+	 * that's paused here and done once at the end. Progress is saved after
+	 * each class, so a request that runs out of time carries on next time.
+	 *
+	 * @param array    $classes Class name => styles.
+	 * @param string[] $handled Classes already handled.
 	 * @return string[] Classes handled: created, or already there.
 	 */
-	public static function create_missing( $classes ) {
+	public static function create_missing( $classes, $handled = array() ) {
 		global $wpdb;
 
-		$handled = array();
+		$styles_css = null;
+
+		if ( class_exists( 'GenerateBlocks_Pro_Enqueue_Styles' ) && method_exists( 'GenerateBlocks_Pro_Enqueue_Styles', 'build_css' ) ) {
+			$styles_css = GenerateBlocks_Pro_Enqueue_Styles::get_instance();
+		}
+
+		$paused  = $styles_css && remove_action( 'wp_after_insert_post', array( $styles_css, 'build_css_file_on_save' ), 100 );
+		$created = false;
+
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one read, only when there are new classes.
 		$order = (int) $wpdb->get_var( $wpdb->prepare( "SELECT MAX(menu_order) FROM {$wpdb->posts} WHERE post_type = %s", 'gblocks_styles' ) );
 
@@ -270,6 +241,7 @@ class Thingamablocks_Global_Styles {
 
 			if ( GenerateBlocks_Pro_Styles::get_class_by_name( $selector ) ) {
 				$handled[] = $class_name;
+				update_option( self::OPTION, $handled, true );
 				continue;
 			}
 
@@ -292,10 +264,56 @@ class Thingamablocks_Global_Styles {
 			// A failed insert isn't marked handled, so it's tried again next time.
 			if ( ! is_wp_error( $post_id ) ) {
 				$handled[] = $class_name;
+				$created   = true;
+				update_option( self::OPTION, $handled, true );
 			}
 		}
 
+		if ( $paused ) {
+			add_action( 'wp_after_insert_post', array( $styles_css, 'build_css_file_on_save' ), 100, 2 );
+		}
+
+		// One rebuild of GB Pro's stylesheet (cached CSS and file) for them all.
+		if ( $created && $styles_css ) {
+			$styles_css->build_css();
+		}
+
 		return $handled;
+	}
+
+	/**
+	 * A nested selector, as GenerateBlocks builds it: "&" is the parent, and a
+	 * key without one ("svg", ".gb-shape svg") means a descendant.
+	 *
+	 * @param string $parent_selector Parent selector.
+	 * @param string $key             Nested key, e.g. "&:hover" or ".gb-shape svg".
+	 * @return string Selector.
+	 */
+	private static function nest( $parent_selector, $key ) {
+		// Split on top-level commas only, not those inside :is( … ).
+		$parts = array();
+		$depth = 0;
+		$part  = '';
+
+		foreach ( str_split( $key ) as $char ) {
+			if ( ',' === $char && 0 === $depth ) {
+				$parts[] = $part;
+				$part    = '';
+				continue;
+			}
+
+			$depth += ( '(' === $char ) - ( ')' === $char );
+			$part  .= $char;
+		}
+
+		$parts[] = $part;
+
+		foreach ( $parts as $index => $selector ) {
+			$selector        = trim( $selector );
+			$parts[ $index ] = false !== strpos( $selector, '&' ) ? str_replace( '&', $parent_selector, $selector ) : $parent_selector . ' ' . $selector;
+		}
+
+		return implode( ',', $parts );
 	}
 
 	/**
@@ -315,7 +333,7 @@ class Thingamablocks_Global_Styles {
 				if ( 0 === strpos( $property, '@' ) ) {
 					$nested .= $property . '{' . self::compile( $selector, $value ) . '}';
 				} else {
-					$nested .= self::compile( str_replace( '&', $selector, $property ), $value );
+					$nested .= self::compile( self::nest( $selector, $property ), $value );
 				}
 
 				continue;
