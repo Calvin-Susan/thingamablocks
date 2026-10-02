@@ -51,12 +51,9 @@ class Thingamablocks_Breadcrumbs_Render {
 		$items = '';
 		$last  = count( $steps ) - 1;
 
-		// The home icon is for this block's own trail, not an SEO plugin's.
-		$own_trail = 'own' === Thingamablocks_Breadcrumbs_Trail::source();
-
 		foreach ( $steps as $index => $step ) {
 			$is_current = $index === $last && $options['show_current'];
-			$is_home    = 0 === $index && $own_trail;
+			$is_home    = 0 === $index;
 
 			$items .= '<li class="tmb-breadcrumbs__step">'
 				. self::crumb( $parts, $step, $is_current, $is_home ? $options['home'] : 'text' )
@@ -100,7 +97,7 @@ class Thingamablocks_Breadcrumbs_Render {
 		};
 
 		$home   = $attributes['home'] ?? 'text';
-		$schema = $attributes['schema'] ?? 'auto';
+		$schema = $attributes['schema'] ?? 'on';
 		$label  = sanitize_text_field( $attributes['homeLabel'] ?? '' );
 		$aria   = sanitize_text_field( $attributes['ariaLabel'] ?? '' );
 
@@ -113,8 +110,8 @@ class Thingamablocks_Breadcrumbs_Render {
 			'blog_page'      => $flag( 'showBlogPage', true ),
 			'category'       => $flag( 'showCategory', true ),
 			'collapse'       => $flag( 'collapse', true ),
-			'use_seo_plugin' => $flag( 'useSeoPlugin', true ),
-			'schema'         => in_array( $schema, array( 'auto', 'always', 'never' ), true ) ? $schema : 'auto',
+			// On unless switched off ("never" is the old setting's off).
+			'schema'         => ! in_array( $schema, array( 'off', 'never' ), true ),
 		);
 	}
 
@@ -287,18 +284,15 @@ class Thingamablocks_Breadcrumbs_Render {
 
 	/**
 	 * Breadcrumb structured data (schema.org BreadcrumbList) for search
-	 * engines: when asked, or automatically when no SEO plugin already adds
-	 * it. Printed once, in the footer, for the first breadcrumbs on the page
+	 * engines, unless switched off (e.g. because the SEO plugin adds it).
+	 * Printed once, in the footer, for the first breadcrumbs on the page
 	 * (so a render nobody sees, like an excerpt, can't use it up).
 	 *
 	 * @param array $trail   Trail (including the current page).
 	 * @param array $options Options.
 	 */
 	private static function queue_schema( $trail, $options ) {
-		$wanted = 'always' === $options['schema']
-			|| ( 'auto' === $options['schema'] && ! Thingamablocks_Breadcrumbs_Trail::seo_plugin_adds_schema() );
-
-		if ( ! $wanted || count( $trail ) < 2 || null !== self::$schema_trail ) {
+		if ( ! $options['schema'] || count( $trail ) < 2 || null !== self::$schema_trail ) {
 			return;
 		}
 

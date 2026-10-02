@@ -2,9 +2,7 @@
 /**
  * The breadcrumb trail for the current page.
  *
- * Built from WordPress's own data (or, when asked, taken from Yoast SEO or
- * Rank Math, so what visitors see matches the structured data those plugins
- * give search engines). Each step is a label and a URL; the last step is the
+ * Built from WordPress's own data. Each step is a label and a URL; the last step is the
  * current page. Only pages visitors can see are included.
  *
  * @package Thingamablocks
@@ -19,118 +17,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Thingamablocks_Breadcrumbs_Trail {
 	/**
-	 * Where the last trail came from: 'own' or the SEO plugin's name.
-	 *
-	 * @var string
-	 */
-	private static $source = 'own';
-
-	/**
-	 * The SEO plugin whose breadcrumbs can be used, if one is active.
-	 *
-	 * @return string 'yoast', 'rank-math' or ''.
-	 */
-	public static function seo_plugin() {
-		if ( function_exists( 'YoastSEO' ) && defined( 'WPSEO_VERSION' ) ) {
-			return 'yoast';
-		}
-
-		if ( class_exists( '\RankMath\Frontend\Breadcrumbs' ) ) {
-			return 'rank-math';
-		}
-
-		return '';
-	}
-
-	/**
-	 * Whether an active SEO plugin already gives search engines breadcrumb
-	 * structured data (so adding ours would duplicate it).
-	 *
-	 * @return bool
-	 */
-	public static function seo_plugin_adds_schema() {
-		$plugin = self::seo_plugin();
-		$adds   = false;
-
-		if ( 'yoast' === $plugin ) {
-			// Yoast includes a BreadcrumbList in its schema on every page.
-			$adds = true;
-		} elseif ( 'rank-math' === $plugin ) {
-			// Rank Math adds it when its breadcrumbs are switched on.
-			$adds = self::rank_math_breadcrumbs_on();
-		} else {
-			// These add one by default.
-			$adds = function_exists( 'aioseo' )
-				|| function_exists( 'tsf' )
-				|| function_exists( 'the_seo_framework' )
-				|| defined( 'SLIM_SEO_VER' );
-		}
-
-		/**
-		 * Filter whether an SEO plugin already adds breadcrumb structured data.
-		 * Return true for a plugin that isn't detected, or false if you've
-		 * switched a plugin's own breadcrumb schema off.
-		 *
-		 * @param bool   $adds   Whether it does.
-		 * @param string $plugin Detected plugin whose trail can be used ('' if none).
-		 */
-		return (bool) apply_filters( 'thingamablocks_breadcrumbs_seo_schema', $adds, $plugin );
-	}
-
-	/**
-	 * Whether Rank Math's breadcrumbs are switched on.
-	 *
-	 * @return bool
-	 */
-	private static function rank_math_breadcrumbs_on() {
-		if ( ! class_exists( '\RankMath\Helper' ) ) {
-			return false;
-		}
-
-		if ( method_exists( '\RankMath\Helper', 'is_breadcrumbs_enabled' ) ) {
-			return (bool) \RankMath\Helper::is_breadcrumbs_enabled();
-		}
-
-		return (bool) \RankMath\Helper::get_settings( 'general.breadcrumbs' );
-	}
-
-	/**
-	 * Where the last trail came from: 'own', 'yoast' or 'rank-math'.
-	 *
-	 * @return string
-	 */
-	public static function source() {
-		return self::$source;
-	}
-
-	/**
 	 * The trail.
 	 *
 	 * @param array $options {
 	 *     Options.
 	 *
-	 *     @type bool   $use_seo_plugin Use the SEO plugin's trail when one is active.
-	 *     @type string $home_label     Label for the home step.
-	 *     @type bool   $blog_page      Include the blog page on posts.
-	 *     @type bool   $category       Include the category on posts.
+	 *     @type string $home_label Label for the home step.
+	 *     @type bool   $blog_page  Include the blog page on posts.
+	 *     @type bool   $category   Include the category on posts.
 	 * }
 	 * @return array List of [ 'label' => string, 'url' => string ]. The last is the current page.
 	 */
 	public static function get( $options ) {
-		$trail        = array();
-		self::$source = 'own';
-
-		if ( ! empty( $options['use_seo_plugin'] ) ) {
-			$trail = self::from_seo_plugin();
-
-			if ( ! empty( $trail ) ) {
-				self::$source = self::seo_plugin();
-			}
-		}
-
-		if ( empty( $trail ) ) {
-			$trail = self::build( $options );
-		}
+		$trail = self::build( $options );
 
 		/**
 		 * Filter the breadcrumb trail.
@@ -161,48 +60,6 @@ class Thingamablocks_Breadcrumbs_Trail {
 		}
 
 		return $clean;
-	}
-
-	/**
-	 * The trail from Yoast SEO or Rank Math.
-	 *
-	 * @return array Trail, or an empty array.
-	 */
-	private static function from_seo_plugin() {
-		$plugin = self::seo_plugin();
-		$trail  = array();
-
-		// Another plugin's API must never take the page down: anything
-		// unexpected just means the block's own trail is used.
-		try {
-			if ( 'yoast' === $plugin ) {
-				$crumbs = YoastSEO()->meta->for_current_page()->breadcrumbs;
-
-				foreach ( is_array( $crumbs ) ? $crumbs : array() as $crumb ) {
-					$trail[] = array(
-						'label' => $crumb['text'] ?? '',
-						'url'   => $crumb['url'] ?? '',
-					);
-				}
-			}
-
-			if ( 'rank-math' === $plugin ) {
-				// False while Rank Math's breadcrumbs are switched off.
-				$breadcrumbs = \RankMath\Frontend\Breadcrumbs::get();
-				$crumbs      = is_object( $breadcrumbs ) && method_exists( $breadcrumbs, 'get_crumbs' ) ? $breadcrumbs->get_crumbs() : array();
-
-				foreach ( is_array( $crumbs ) ? $crumbs : array() as $crumb ) {
-					$trail[] = array(
-						'label' => $crumb[0] ?? '',
-						'url'   => $crumb[1] ?? '',
-					);
-				}
-			}
-		} catch ( Throwable $error ) {
-			return array();
-		}
-
-		return $trail;
 	}
 
 	/**
@@ -423,6 +280,11 @@ class Thingamablocks_Breadcrumbs_Trail {
 
 		if ( ! $primary ) {
 			$primary = (int) get_post_meta( $post->ID, 'rank_math_primary_' . $taxonomy, true );
+		}
+
+		// SEOPress sets a primary category (categories only).
+		if ( ! $primary && 'category' === $taxonomy ) {
+			$primary = (int) get_post_meta( $post->ID, '_seopress_robots_primary_cat', true );
 		}
 
 		foreach ( $terms as $term ) {

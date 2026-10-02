@@ -470,6 +470,67 @@ test.describe( 'Breadcrumbs', () => {
 		] );
 	} );
 
+	test( 'structured data is one switch: on by default, old "Never" reads as off', async ( {
+		page,
+	} ) => {
+		await newPost( page );
+
+		const schema = await page.evaluate( async () => {
+			const {
+				createBlock,
+				getBlockVariations,
+				createBlocksFromInnerBlocksTemplate,
+			} = window.wp.blocks;
+			const { dispatch, select } = window.wp.data;
+			const layout = getBlockVariations(
+				'thingamablocks/breadcrumbs',
+				'block'
+			)[ 0 ];
+			const make = ( attributes ) =>
+				createBlock(
+					'thingamablocks/breadcrumbs',
+					attributes,
+					createBlocksFromInnerBlocksTemplate( layout.innerBlocks )
+				);
+			const fresh = make( {} );
+			const old = make( { schema: 'never' } );
+
+			dispatch( 'core/block-editor' ).insertBlocks( [ fresh, old ] );
+
+			return [ fresh, old ].map(
+				( block ) =>
+					select( 'core/block-editor' ).getBlock( block.clientId )
+						.attributes.schema
+			);
+		} );
+		expect( schema ).toEqual( [ 'on', 'never' ] );
+
+		// Select the old one and look at its Search engines panel.
+		await page.evaluate( () => {
+			const { getBlocks } = window.wp.data.select( 'core/block-editor' );
+			window.wp.data
+				.dispatch( 'core/block-editor' )
+				.selectBlock( getBlocks()[ 1 ].clientId );
+			window.wp.data
+				.dispatch( 'core/edit-post' )
+				.openGeneralSidebar( 'edit-post/block' );
+		} );
+		await page.getByRole( 'button', { name: 'Search engines' } ).click();
+
+		const toggle = page.getByLabel( 'Breadcrumb structured data' );
+		await expect( toggle ).not.toBeChecked();
+		await toggle.check();
+
+		expect(
+			await page.evaluate(
+				() =>
+					window.wp.data
+						.select( 'core/block-editor' )
+						.getBlocks()[ 1 ].attributes.schema
+			)
+		).toBe( 'on' );
+	} );
+
 	test( 'with the home icon, the … step gets a real separator, not the icon', async ( {
 		page,
 	} ) => {

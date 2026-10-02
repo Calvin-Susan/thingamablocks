@@ -45,14 +45,10 @@
 			"type": "boolean",
 			"default": true
 		},
-		"useSeoPlugin": {
-			"type": "boolean",
-			"default": true
-		},
 		"schema": {
 			"type": "string",
-			"default": "auto",
-			"enum": [ "auto", "always", "never" ]
+			"default": "on",
+			"enum": [ "on", "off", "auto", "always", "never" ]
 		},
 		"ariaLabel": {
 			"type": "string",

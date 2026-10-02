@@ -68,18 +68,6 @@ function thingamablocks_register_blocks() {
 	}
 }
 
-add_action( 'enqueue_block_editor_assets', 'thingamablocks_breadcrumbs_editor_data' );
-/**
- * Tell the Breadcrumbs block's settings which SEO plugin is active.
- */
-function thingamablocks_breadcrumbs_editor_data() {
-	wp_add_inline_script(
-		generate_block_asset_handle( 'thingamablocks/breadcrumbs', 'editorScript' ),
-		'window.tmbBreadcrumbsEditor = ' . wp_json_encode( array( 'plugin' => Thingamablocks_Breadcrumbs_Trail::seo_plugin() ) ) . ';',
-		'before'
-	);
-}
-
 add_filter( 'block_categories_all', 'thingamablocks_block_category', 20 );
 /**
  * Make sure the GenerateBlocks category exists, so the Toggle sits with the GB

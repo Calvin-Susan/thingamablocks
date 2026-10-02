@@ -6,7 +6,7 @@
  * they're repeated for every step of the trail, which is worked out on the
  * server for whatever page is being viewed.
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	InspectorControls,
 	useBlockProps,
@@ -16,7 +16,6 @@ import {
 import {
 	Notice,
 	PanelBody,
-	SelectControl,
 	TextControl,
 	ToggleControl,
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- stable in practice; used across core.
@@ -29,53 +28,15 @@ import { useSelect } from '@wordpress/data';
 import VariationPlaceholder from '../shared/variation-placeholder';
 import { breadcrumbsIcon } from './icon';
 
-// Which SEO plugin is active, from includes/class-thingamablocks-breadcrumbs-trail.php.
-const seo = () => window.tmbBreadcrumbsEditor || {};
-
-const SEO_NAMES = {
-	yoast: 'Yoast SEO',
-	'rank-math': 'Rank Math',
-};
-
 function TrailSettings( { attributes, setAttributes } ) {
-	const plugin = SEO_NAMES[ seo().plugin ];
-	const usingPlugin = plugin && attributes.useSeoPlugin;
-
 	return (
 		<PanelBody title={ __( 'Trail', 'thingamablocks' ) }>
-			{ plugin && (
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ sprintf(
-						/* translators: %s: SEO plugin name. */
-						__( 'Use %s’s breadcrumbs', 'thingamablocks' ),
-						plugin
-					) }
-					help={ __(
-						'Shows the same trail the SEO plugin gives search engines. Turn off to use this block’s own trail and settings below.',
-						'thingamablocks'
-					) }
-					checked={ attributes.useSeoPlugin }
-					onChange={ ( value ) =>
-						setAttributes( { useSeoPlugin: value } )
-					}
-				/>
-			) }
-
 			<div className="tmb-breadcrumbs-control">
 				<ToggleGroupControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					isBlock
 					label={ __( 'Home', 'thingamablocks' ) }
-					help={
-						usingPlugin
-							? __(
-									'Applies to this block’s own trail only.',
-									'thingamablocks'
-							  )
-							: undefined
-					}
 					value={ attributes.home }
 					onChange={ ( value ) => setAttributes( { home: value } ) }
 				>
@@ -167,51 +128,23 @@ function TrailSettings( { attributes, setAttributes } ) {
 }
 
 function SeoSettings( { attributes, setAttributes } ) {
-	const plugin = SEO_NAMES[ seo().plugin ];
-
 	return (
 		<PanelBody
 			title={ __( 'Search engines', 'thingamablocks' ) }
 			initialOpen={ false }
 		>
-			<SelectControl
-				__next40pxDefaultSize
+			<ToggleControl
 				__nextHasNoMarginBottom
 				label={ __( 'Breadcrumb structured data', 'thingamablocks' ) }
-				value={ attributes.schema }
-				options={ [
-					{
-						value: 'auto',
-						label: __(
-							'Automatic (only if no SEO plugin adds it)',
-							'thingamablocks'
-						),
-					},
-					{
-						value: 'always',
-						label: __( 'Always add it', 'thingamablocks' ),
-					},
-					{
-						value: 'never',
-						label: __( 'Never add it', 'thingamablocks' ),
-					},
-				] }
-				help={
-					plugin
-						? sprintf(
-								/* translators: %s: SEO plugin name. */
-								__(
-									'%s is active. On Automatic, this block leaves the structured data to it, so search engines don’t get it twice.',
-									'thingamablocks'
-								),
-								plugin
-						  )
-						: __(
-								'Tells search engines the path to the page (schema.org BreadcrumbList), once per page.',
-								'thingamablocks'
-						  )
+				help={ __(
+					'Tells search engines the path to the page (schema.org BreadcrumbList), once per page. Turn off if your SEO plugin already adds it (Slim SEO does).',
+					'thingamablocks'
+				) }
+				// "never" is the old setting's off.
+				checked={ ! [ 'off', 'never' ].includes( attributes.schema ) }
+				onChange={ ( value ) =>
+					setAttributes( { schema: value ? 'on' : 'off' } )
 				}
-				onChange={ ( value ) => setAttributes( { schema: value } ) }
 			/>
 		</PanelBody>
 	);

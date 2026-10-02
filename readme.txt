@@ -18,7 +18,7 @@ Thingamablocks adds six blocks to the GenerateBlocks category in the block inser
 * **Countdown** – a countdown timer to a date, a per-visitor (evergreen) deadline, or a time that repeats.
 * **Marquee** – a smooth, endless scrolling strip of logos, messages, headlines or cards.
 * **Dropdown** – a button that opens a drawer of links, downloads or any other blocks.
-* **Breadcrumbs** – the path to the current page (Home › Blog › Category › Post), worked out automatically wherever you place it, with breadcrumb structured data for search engines. Works with Yoast SEO and Rank Math.
+* **Breadcrumbs** – the path to the current page (Home › Blog › Category › Post), worked out automatically wherever you place it, with breadcrumb structured data for search engines. Uses the primary category from Yoast SEO, Rank Math or SEOPress.
 * **Search** – a search form you style with GenerateBlocks, that can search only the content types you choose (just products, just pages…). Four starting styles, including a search icon that opens a field.
 
 It also adds **entrance animations** to every GenerateBlocks block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid one by one.
@@ -255,20 +255,20 @@ Each style is three GenerateBlocks Text blocks, marked in the **Breadcrumb part*
 = Breadcrumbs: the trail =
 
 * Pages: Home › parent pages › Page (private and draft parents are left out).
-* Posts: Home › Blog page › Category (with its parents) › Post. The category is the primary one set in Yoast SEO or Rank Math, otherwise the first.
+* Posts: Home › Blog page › Category (with its parents) › Post. The category is the primary one set in Yoast SEO, Rank Math or SEOPress, otherwise the first.
 * Custom post types: Home › the post type's archive (if it has one) › Item.
 * Category, tag and other term archives with their parent terms; author, date and search pages; and the 404 page.
 * WooCommerce: Home › Shop › Product category › Product, and the shop and product category pages.
 
 = Breadcrumbs: settings =
 
-* **Trail** – Use Yoast SEO's / Rank Math's breadcrumbs (on by default, shown when one is active); Home as Text, Icon or Both, and its label; show the blog page on posts; show the category on posts; show the current page; show on the home page (off by default); collapse when it doesn't fit.
-* **Search engines** – Breadcrumb structured data: Automatic (only if no SEO plugin adds it), Always or Never.
+* **Trail** – Home as Text, Icon or Both, and its label; show the blog page on posts; show the category on posts; show the current page; show on the home page (off by default); collapse when it doesn't fit.
+* **Search engines** – Breadcrumb structured data, on by default (switch it off if your SEO plugin already adds it).
 * **Accessibility** – the label for screen readers ("Breadcrumb" by default).
 
 = Breadcrumbs: SEO plugins =
 
-With Yoast SEO or Rank Math active, the block shows their trail by default, so visitors see the same path search engines are told, and on Automatic it leaves the structured data to them (Yoast always adds it; Rank Math when its breadcrumbs are on). If the SEO plugin's breadcrumbs fail for any reason, the block quietly uses its own trail. All in One SEO, The SEO Framework and Slim SEO are detected too, so Automatic leaves the structured data to them. For any other SEO plugin that adds it, choose **Never**, or return `true` from the `thingamablocks_breadcrumbs_seo_schema` filter.
+The block always builds its own trail, and its breadcrumb structured data is on by default. Slim SEO already adds breadcrumb structured data, so switch the block's **Breadcrumb structured data** off there. SEOPress adds it only with its own (Pro) breadcrumbs switched on, so usually leave it on. On posts, the primary category set in Yoast SEO, Rank Math or SEOPress is used.
 
 = Breadcrumbs: accessibility =
 
@@ -520,7 +520,7 @@ The editor shows the three part templates (a link, a separator and the current p
 
 = Will it duplicate my SEO plugin's breadcrumb schema? =
 
-Not with Yoast SEO, Rank Math, All in One SEO, The SEO Framework or Slim SEO: on **Automatic** (the default) the block adds no structured data when one of them already does (Rank Math: when its breadcrumbs are switched on). If another SEO plugin adds breadcrumb structured data, set **Breadcrumb structured data** to **Never** in the block's Search engines panel, or add `add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );` to tell every block at once. Either way, the block never prints it more than once per page.
+Only if your SEO plugin adds breadcrumb structured data too. Slim SEO does, so switch **Breadcrumb structured data** off in the block's Search engines panel; SEOPress only does with its own (Pro) breadcrumbs switched on. Either way, the block never prints it more than once per page.
 
 = Can I hide blocks I don't use? =
 

@@ -852,7 +852,7 @@ You place it once and it works out the trail for **whatever page is being viewed
 - **A widget** area.
 - **A single page or post**, if you only want it there.
 
-It also gives search engines the same path as breadcrumb structured data (unless your SEO plugin already does), and if you use **Yoast SEO** or **Rank Math** it shows their trail, so what visitors see matches what search engines are told.
+It also gives search engines the same path as breadcrumb structured data (switch that off if your SEO plugin already adds it – see [Breadcrumbs and SEO plugins](#breadcrumbs-and-seo-plugins)).
 
 ### Breadcrumbs quick start
 
@@ -882,7 +882,7 @@ The block builds the trail from WordPress's own data. On each kind of page:
 | Page | Trail |
 | --- | --- |
 | A page | Home › Parent page › … › Page |
-| A post | Home › Blog page › Category › Post. The category is the **primary category** set in Yoast SEO or Rank Math if there is one, otherwise the post's first category, with its parent categories before it. The blog page is the **Posts page** from Settings → Reading (only when the site has a static front page). Either can be switched off. |
+| A post | Home › Blog page › Category › Post. The category is the **primary category** set in Yoast SEO, Rank Math or SEOPress if there is one, otherwise the post's first category, with its parent categories before it. The blog page is the **Posts page** from Settings → Reading (only when the site has a static front page). Either can be switched off. |
 | The blog page | Home › Blog page |
 | A custom post type item | Home › Post type archive (e.g. "Projects", if the post type has an archive) › parent items › Item |
 | A media attachment | The trail of the post it's attached to, then the attachment |
@@ -896,7 +896,7 @@ The block builds the trail from WordPress's own data. On each kind of page:
 | **WooCommerce** product category or tag | Home › Shop › parent categories › Category |
 | **WooCommerce** product | Home › Shop › Product category (the primary one, if Yoast or Rank Math sets it) › Product |
 
-The front page has no trail by default (it would just be "Home"). With **Use Yoast SEO's / Rank Math's breadcrumbs** on, the SEO plugin's trail is used instead of this one – see [Breadcrumbs and SEO plugins](#breadcrumbs-and-seo-plugins).
+The front page has no trail by default (it would just be "Home").
 
 ### How breadcrumb parts and styling work
 
@@ -944,11 +944,10 @@ Select the Breadcrumbs block (the wrapper) to see these in the sidebar.
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Use Yoast SEO's / Rank Math's breadcrumbs | `useSeoPlugin` | `true` | Only shown when one of them is active. Shows the plugin's trail; turn off to use this block's own trail and the settings below. |
-| Home | `home` | `text` | `text`, `icon` (a house) or `both`. Applies to this block's own trail only. |
+| Home | `home` | `text` | `text`, `icon` (a house) or `both`. |
 | Home label | `homeLabel` | "Home" | With **Icon**, it's kept as hidden text so screen readers still hear "Home". |
 | Show the blog page on posts | `showBlogPage` | `true` | Home › Blog › Category › Post. Also puts the blog page before category and tag archives. |
-| Show the category on posts | `showCategory` | `true` | The primary category if your SEO plugin sets one, otherwise the first, with its parents. |
+| Show the category on posts | `showCategory` | `true` | The primary category if Yoast SEO, Rank Math or SEOPress sets one, otherwise the first, with its parents. |
 | Show the current page | `showCurrent` | `true` | As the last step, not a link. Off: the trail ends at the parent, as a link. |
 | Show on the home page | `showOnHome` | `false` | Off: nothing is printed on the front page. |
 | Collapse when it doesn't fit | `collapse` | `true` | See [Collapsing long trails](#collapsing-long-trails). |
@@ -957,7 +956,7 @@ Select the Breadcrumbs block (the wrapper) to see these in the sidebar.
 
 | Setting | Attribute | Default | Notes |
 | --- | --- | --- | --- |
-| Breadcrumb structured data | `schema` | `auto` | **Automatic (only if no SEO plugin adds it)**, **Always add it** or **Never add it**. A schema.org `BreadcrumbList` with the full trail, printed once per page (in the footer) however many Breadcrumbs blocks it has. |
+| Breadcrumb structured data | `schema` | `on` | A switch: `on` or `off`. A schema.org `BreadcrumbList` with the full trail, printed once per page (in the footer) however many Breadcrumbs blocks it has. Turn it off if your SEO plugin already adds one. Blocks saved with the older setting keep working: `always` and `auto` count as on, `never` as off. |
 
 #### Accessibility
 
@@ -973,13 +972,13 @@ Select the Breadcrumbs block (the wrapper) to see these in the sidebar.
 
 ### Breadcrumbs and SEO plugins
 
-**Why it matters:** SEO plugins tell search engines the path to each page with breadcrumb structured data, and Google can show it in search results. If the breadcrumbs visitors see say something different, that's confusing. So when **Yoast SEO** or **Rank Math** is active, the block shows *their* trail by default (**Use Yoast SEO's / Rank Math's breadcrumbs**), and leaves the structured data to them.
+The block always builds its own trail; it doesn't take the trail from an SEO plugin. **Breadcrumb structured data** (Search engines panel) is **on by default**, so search engines get the same path visitors see. The only thing to watch is getting it twice:
 
-- **Yoast SEO**: its trail is used, and on **Automatic** the block adds no structured data (Yoast always includes a `BreadcrumbList`).
-- **Rank Math**: its trail is used when its breadcrumbs are switched on (Rank Math → General Settings → Breadcrumbs); on **Automatic** the block then adds no structured data. With Rank Math's breadcrumbs off, the block uses its own trail and adds the structured data itself.
-- With the SEO plugin's trail, change *what's in it* in the SEO plugin's breadcrumb settings. The block's **Home**, **blog page** and **category** settings apply only to its own trail; **Show the current page**, **Show on the home page** and **Collapse** always apply.
-- **If the SEO plugin's breadcrumbs fail for any reason** (an update changes them, an error), the block quietly uses its own trail. It never takes the page down.
-- **Other SEO plugins.** All in One SEO, The SEO Framework and Slim SEO are detected too (they add breadcrumb structured data by default), so **Automatic** leaves it to them; their trails aren't used. For anything else that adds it (SEOPress with its breadcrumbs on, say), set **Breadcrumb structured data** to **Never add it**, or tell the block site-wide with the [`thingamablocks_breadcrumbs_seo_schema`](#php) filter.
+- **Slim SEO** already adds a `BreadcrumbList` to every page, so switch **Breadcrumb structured data** off there.
+- **SEOPress** adds it only when its own breadcrumbs (a Pro feature) are switched on. Usually they aren't, so leave the switch on; if they are, switch it off.
+- **Any other SEO plugin**: if it adds breadcrumb structured data, switch it off. Either way the block never prints it more than once per page.
+
+**Primary category:** on posts, the category step uses the primary category set in Yoast SEO, Rank Math or SEOPress (SEOPress: categories only), otherwise the post's first category.
 
 ### Collapsing long trails
 
@@ -1603,7 +1602,7 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `modified`).
 - Option `thingamablocks_video_hosts` – the extra Bunny hostnames allowed for video backgrounds (**Your own Bunny hostnames**), as a list of lower-case hostnames. `Thingamablocks_Video_Background::hosts()` returns them cleaned.
 - Filter `thingamablocks_animation_head_markup` – the `<style id="tmb-animate-css">` and inline `<script id="tmb-animate-js">` that hide animated blocks until they animate in. Printed only on pages with an animated block: in `<head>` when the post being viewed uses an animation or a block theme has already rendered one, otherwise just before the first animated block. Return a changed string, or `''` to print your own CSS instead (without it nothing is hidden, so blocks show and then animate from their start state). Filter `thingamablocks_animations_print_css` – return `false` to skip printing it in `<head>` (it's then printed before the first animated block).
-- Filter `thingamablocks_breadcrumbs_trail` – change the breadcrumb trail. Receives `$trail`, a list of steps (`array( 'label' => 'Recipes', 'url' => 'https://…' )`, the last being the current page; a step with an empty `url` isn't a link), and `$options`, the block's cleaned settings. It runs after the trail is built (or taken from the SEO plugin). Labels are stripped of HTML and escaped afterwards, and steps without a label are dropped.
+- Filter `thingamablocks_breadcrumbs_trail` – change the breadcrumb trail. Receives `$trail`, a list of steps (`array( 'label' => 'Recipes', 'url' => 'https://…' )`, the last being the current page; a step with an empty `url` isn't a link), and `$options`, the block's cleaned settings. It runs after the trail is built. Labels are stripped of HTML and escaped afterwards, and steps without a label are dropped.
 
   ```php
   // Projects have no archive, so link them to the "Our work" page.
@@ -1613,12 +1612,6 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
   	}
   	return $trail;
   } );
-  ```
-
-- Filter `thingamablocks_breadcrumbs_seo_schema` ( `$adds`, `$plugin` ) – whether an SEO plugin already adds breadcrumb structured data, so blocks on **Automatic** don't add it again. `$adds` is what the block detected (Yoast, Rank Math with its breadcrumbs on, All in One SEO, The SEO Framework, Slim SEO); return `true` for an SEO plugin it doesn't know, or `false` if you've switched your plugin's breadcrumb schema off.
-
-  ```php
-  add_filter( 'thingamablocks_breadcrumbs_seo_schema', '__return_true' );
   ```
 
 - Filter `thingamablocks_faq_schema` – the `FAQPage` structured data built from the page's FAQ accordions, as an array (`@context`, `@type`, `mainEntity`: a list of `Question`s, each with a `name` and an `acceptedAnswer` whose `text` is the cleaned answer HTML), just before it's printed in the footer. Change it, or return `null` to print nothing (for instance when your SEO plugin already adds an `FAQPage` to the page).
@@ -1693,14 +1686,13 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 
 **Breadcrumbs**
 
-- The trail is worked out in PHP when the page is rendered (`includes/class-thingamablocks-breadcrumbs-trail.php`, `Thingamablocks_Breadcrumbs_Trail`): from Yoast SEO's or Rank Math's breadcrumbs when that's switched on (their APIs are wrapped in a `try`/`catch`, so any failure falls back to the block's own trail), otherwise from WordPress's conditional tags (`is_singular()`, `is_category()`…), page and term ancestors, the Posts page setting, the primary category post meta Yoast and Rank Math save, and WooCommerce's shop page. Then the `thingamablocks_breadcrumbs_trail` filter, then every label is stripped of HTML.
+- The trail is worked out in PHP when the page is rendered (`includes/class-thingamablocks-breadcrumbs-trail.php`, `Thingamablocks_Breadcrumbs_Trail`), always by the block itself: from WordPress's conditional tags (`is_singular()`, `is_category()`…), page and term ancestors, the Posts page setting, the primary category post meta Yoast SEO and Rank Math save (`_yoast_wpseo_primary_{taxonomy}`, `rank_math_primary_{taxonomy}`) or SEOPress saves (`_seopress_robots_primary_cat`, categories only), and WooCommerce's shop page. No SEO plugin is detected or called. Then the `thingamablocks_breadcrumbs_trail` filter, then every label is stripped of HTML.
 - PHP (`includes/class-thingamablocks-breadcrumbs-render.php`) renders each **part template once through GenerateBlocks** (`WP_Block::render()`), so GB prints its CSS as usual. It then **repeats** that HTML for every step with the `WP_HTML_Tag_Processor`: sets the link's `href` (or removes it for a step without a page), adds `aria-current="page"` to the current page and `aria-hidden="true"` to separators, and swaps in the step's escaped title (inside GB's `.gb-text` span when the Text block has an icon). Each step is an `<li>` in `<nav class="tmb-breadcrumbs" aria-label="…"><ol class="tmb-breadcrumbs__list">`. Settings are checked against their allowed values.
-- The structured data is a `<script type="application/ld+json">` `BreadcrumbList` built from the same trail, printed in the footer (`wp_footer`) for the first Breadcrumbs block on the page that wants it, so a render nobody sees (an excerpt, say) can't use it up. On **Automatic** it's skipped when an SEO plugin already adds one (see the `thingamablocks_breadcrumbs_seo_schema` filter). Only GenerateBlocks Text blocks can be the link and current-page parts (they hold text); a separator can also be a Shape.
-- The block's sidebar learns which SEO plugin is active from a small inline script before the editor script (`window.tmbBreadcrumbs = { plugin: 'yoast' | 'rank-math' | '' }`, added in `thingamablocks.php`).
+- The structured data is a `<script type="application/ld+json">` `BreadcrumbList` built from the same trail, printed in the footer (`wp_footer`) for the first Breadcrumbs block on the page that has **Breadcrumb structured data** on, so a render nobody sees (an excerpt, say) can't use it up. The setting is read as on unless it's `off` (or the old `never`). Only GenerateBlocks Text blocks can be the link and current-page parts (they hold text); a separator can also be a Shape.
 - A small stylesheet (`src/breadcrumbs/style.scss`, a `viewStyle`) lays the steps out in a wrapping flex row and styles the "…" button; everything else comes from the GB parts.
 - The front-end script (`src/breadcrumbs/view.js`, a `viewScript`) only collapses long trails: it compares the first and last steps' positions to tell whether the list fits on one line, hides middle steps one at a time until it does, and re-checks with a `ResizeObserver` and when fonts load. The trail shows without it.
 - In the editor (`src/breadcrumbs/edit.js`) the canvas shows the three part templates, not a trail.
-- **Tests:** `tests/e2e/breadcrumbs.spec.js` covers page, post, archive, search and 404 trails, the markup, the home icon, leaving out the blog page and category, hiding on the home page, one `BreadcrumbList` per page, collapsing on a phone, axe checks and editor validity of every style. `tests/e2e/seo-plugins.spec.js` installs Yoast SEO and Rank Math (free) from WordPress.org, checks that the block shows Yoast's trail and leaves the structured data to Yoast, and that it uses its own trail and structured data while Rank Math's breadcrumbs are off, then deactivates them.
+- **Tests:** `tests/e2e/breadcrumbs.spec.js` covers page, post, archive, search and 404 trails, the markup, the home icon, leaving out the blog page and category, hiding on the home page, one `BreadcrumbList` per page, collapsing on a phone, axe checks and editor validity of every style, and that the structured data switch defaults to on, an old `never` block reads as off, and switching it saves `on`.
 
 **Search**
 
@@ -1829,7 +1821,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 ## File map
 
 ```
-thingamablocks.php   Plugin header, block registration, Breadcrumbs editor data (active SEO plugin), GB category fallback, "needs GB 2.0" notice
+thingamablocks.php   Plugin header, block registration, GB category fallback, "needs GB 2.0" notice
 uninstall.php        Removes the plugin's options when it's deleted
 LICENSE              GPL v2
 includes/
@@ -1839,7 +1831,7 @@ includes/
   class-thingamablocks-countdown-render.php    Countdown render: config, server-side numbers and ended state, no-flash CSS
   class-thingamablocks-marquee-render.php      Marquee render: config, inline clipping/fade/height, row sizing, pause button ARIA
   class-thingamablocks-dropdown-render.php     Dropdown render: config, closed drawer with an ID, button ARIA, no-JavaScript <noscript> style
-  class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: SEO plugin detection, Yoast/Rank Math trails, the block's own trail for every kind of page
+  class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: the block's own trail for every kind of page (with Yoast/Rank Math/SEOPress primary categories)
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
   class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, video backgrounds)
@@ -1948,7 +1940,7 @@ webpack.config.js               Default wp-scripts build plus the src/animations
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js; seo-plugins.spec.js installs Yoast SEO and Rank Math from WordPress.org), search (search.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js), search (search.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files: a sample SVG, a malicious SVG and a photo (mask tests), a tiny recorded video (background.webm, video background tests)
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes
