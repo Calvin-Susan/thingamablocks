@@ -1,0 +1,31 @@
+// Editor only.
+
+.tmb-share-notice {
+	padding: 0 16px 16px;
+}
+
+.tmb-share-help {
+	margin: 0 0 12px;
+	color: #757575;
+	font-size: 12px;
+
+	.tmb-share-notice & {
+		margin: 0;
+	}
+}
+
+.tmb-share-networks {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.tmb-share-default-icon {
+	margin-top: 12px;
+}
+
+// Shown in the editor so it can be styled; on the site only where the
+// device has a share sheet.
+.tmb-share [data-share-network="native"][hidden] {
+	display: inline-flex;
+}

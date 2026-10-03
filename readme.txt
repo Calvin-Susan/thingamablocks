@@ -4,7 +4,7 @@ Tags: generateblocks, marquee, countdown timer, dark mode, toggle
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,9 +12,9 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds seven blocks to the GenerateBlocks category in the block inserter, plus entrance animations, image masks, video backgrounds and FAQ schema for the GenerateBlocks blocks you already use.
+Thingamablocks adds eight blocks to the GenerateBlocks category in the block inserter, plus entrance animations, image masks, video backgrounds and FAQ schema for the GenerateBlocks blocks you already use.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field, the table of contents) is an ordinary GenerateBlocks Element, Text, Shape or Media block, styled with the GenerateBlocks Styles panel you already know. The wrapper only holds the behaviour, and the server renders the right roles and state before any JavaScript runs.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field, the table of contents, the share buttons) is an ordinary GenerateBlocks Element, Text, Shape or Media block, styled with the GenerateBlocks Styles panel you already know. The wrapper only holds the behaviour, and the server renders the right roles and state before any JavaScript runs.
 
 Nothing from the plugin loads on pages that don't use it. Each block's small script and CSS load only on pages with that block; image masks and FAQ schema load no script or CSS at all. The one exception is dark mode: once a dark mode toggle is published, a tiny script in `<head>` applies the visitor's choice on every page, so there's no flash of the wrong colours.
 
@@ -48,6 +48,10 @@ A search form built from GenerateBlocks blocks, so it looks like the rest of you
 
 A linked list of the headings in the post or page being viewed, built on the server, so you can place it once in a GeneratePress Element. Headings without an ID get one from their text (hand-set anchors are kept). Links scroll smoothly and move focus to the heading, the section being read is highlighted (`aria-current`), and a scroll offset keeps headings clear of a sticky header. On phones it starts closed, as a button showing the section being read. Optional copy-link buttons copy a link to any heading. Two starting layouts: a plain list and a sidebar line.
 
+= Share =
+
+Share buttons for the post being viewed: X, LinkedIn, Facebook, Email, Bluesky, Threads, Reddit, WhatsApp, Telegram, Pinterest, Copy link and the device's own share sheet. Each button is a plain link built on the server for the post (each post in a Query Loop), with the network's icon as its GenerateBlocks icon. No tracking, no third-party scripts, no share counts. Three starting layouts (icons, pills, brand-coloured icons); add networks from the sidebar. No script unless you use Copy link or the share sheet button.
+
 = Entrance animations =
 
 An Entrance animation panel on every GenerateBlocks 2 and GenerateBlocks Pro block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid or query loop one by one. A ~1.6 KB (gzipped) script using the Web Animations API, only on pages with an animation, with reduced-motion support and a fail-safe that shows everything if the script is blocked.
@@ -70,7 +74,7 @@ Under Settings → Thingamablocks you can switch off any block or feature you do
 
 = Starting layouts and Global Styles =
 
-Each block's starting layouts are styled with shared GenerateBlocks Pro Global Styles (about 85 classes, such as `tmb-search__field` and `tmb-search__field--pill`), created once in a "Thingamablocks" category and never overwritten, so your edits are safe. Edit a class to restyle every block that uses it. Without GenerateBlocks Pro every block still works, but the layouts are unstyled.
+Each block's starting layouts are styled with shared GenerateBlocks Pro Global Styles (about 100 classes, such as `tmb-search__field` and `tmb-search__field--pill`), created once in a "Thingamablocks" category and never overwritten, so your edits are safe. Edit a class to restyle every block that uses it. Without GenerateBlocks Pro every block still works, but the layouts are unstyled.
 
 = Requirements =
 
@@ -89,7 +93,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search** and **Table of Contents** in the GenerateBlocks category; each offers a choice of starting layouts. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search**, **Table of Contents** and **Share** in the GenerateBlocks category; each offers a choice of starting layouts. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need, set what Fast / Normal / Slow mean for dropdowns and entrance animations (Speeds), and add your own Bunny hostnames for video backgrounds.
 
 == Frequently Asked Questions ==
@@ -200,6 +204,14 @@ Probably not as a rich result. Since August 2023 Google only shows FAQ rich resu
 
 No: on a page with a Yoast SEO or Rank Math FAQ block (which add their own FAQPage), Thingamablocks prints nothing. If you add FAQ schema some other way (Rank Math's Schema Generator, say), switch FAQ schema off on that accordion, or use the `thingamablocks_faq_schema` filter and return `null`.
 
+= Does the Share block add Open Graph tags? =
+
+No. The title, image and description shown on LinkedIn, Facebook and Pinterest come from the page's Open Graph tags, which your SEO plugin (Yoast SEO, Rank Math, SEOPress…) already prints. The share buttons only send the post's address (and, where the network takes it, its title).
+
+= Why are an Author's share buttons missing their icons? =
+
+The icons are GenerateBlocks icons (inline SVGs), and WordPress removes SVGs from content saved by users without the "unfiltered HTML" capability, as with any GenerateBlocks button icon. Build share layouts as an Editor or Administrator (in a GeneratePress Element, say).
+
 = Can the Search block search only WooCommerce products? =
 
 Yes. Tick **Products** under **Search only** in the block's sidebar. The search then goes to WooCommerce's own product results page. You can tick several types too (Pages and Posts, say), and the results page shows only those.
@@ -223,6 +235,10 @@ The flip side: a mask is a copy. If you later change a shape in the GenerateBloc
 The picker tells you why. The SVG needs a `viewBox` (or a width and height) so it can be scaled, it needs real shapes (paths, rectangles, circles, ellipses, lines or polygons; text and embedded images don't count), and it must be under 100 KB after cleaning. For text or an icon font, convert it to outlines in your design tool first.
 
 == Changelog ==
+
+= 1.2.0 =
+* New Share block: share buttons for the post (X, LinkedIn, Facebook, Email, Bluesky, Threads, Reddit, WhatsApp, Telegram, Pinterest, Copy link and the device's share sheet), styled with GenerateBlocks, with no tracking or third-party scripts.
+* Table of Contents: works without JavaScript on small screens (the list is shown), leaves out headings in hidden blocks and HTML comments, and loads nothing when it has nothing to show. New `thingamablocks_toc_heading_ids` filter to stop it adding heading IDs.
 
 = 1.1.0 =
 * New Table of Contents block: a linked list of the post's headings, styled with GenerateBlocks. Highlights the section being read, collapses into a button on small screens, has a scroll offset for sticky headers, and can add copy-link buttons to headings.
@@ -248,6 +264,9 @@ First public release.
 * Removes its options when deleted.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Adds the Share block, plus Table of Contents improvements.
 
 = 1.1.0 =
 Adds the Table of Contents block.

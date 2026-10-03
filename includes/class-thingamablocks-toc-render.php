@@ -53,6 +53,14 @@ class Thingamablocks_Toc_Render {
 	private static $rendered = false;
 
 	/**
+	 * Whether a table of contents has been shown (with headings) on this
+	 * page.
+	 *
+	 * @var bool
+	 */
+	private static $shown = false;
+
+	/**
 	 * Whether the scroll offset style has been added.
 	 *
 	 * @var bool
@@ -82,7 +90,7 @@ class Thingamablocks_Toc_Render {
 		$post = self::post();
 
 		if ( ! $post ) {
-			return '';
+			return self::nothing();
 		}
 
 		self::$rendered = true;
@@ -98,8 +106,10 @@ class Thingamablocks_Toc_Render {
 		);
 
 		if ( ! $headings ) {
-			return '';
+			return self::nothing();
 		}
+
+		self::$shown = true;
 
 		// The copy-link icon is a template for the script, not shown here.
 		$icon = self::cut( $content, 'copy' );
@@ -109,24 +119,16 @@ class Thingamablocks_Toc_Render {
 
 		$list      = Thingamablocks_Html::element( $content, 'data-toc-part', 'list' );
 		$templates = self::templates( $content, $list );
+		$index     = 0;
+		$markup    = self::list_html( self::tree( $headings, $index ), $templates, true );
 		$panel     = '';
 
+		// Collapsing: the list goes in a plain box the button opens and
+		// closes (so the list's own display, flex say, is left alone).
 		if ( $options['collapse'] ) {
-			$tags = new WP_HTML_Tag_Processor( $templates['top_open'] );
-			$tags->next_tag();
-			$panel = $tags->get_attribute( 'id' );
-
-			if ( ! is_string( $panel ) || '' === $panel ) {
-				$panel = wp_unique_id( 'tmb-toc-list-' );
-				$tags->set_attribute( 'id', $panel );
-			}
-
-			$tags->add_class( 'tmb-toc__panel' );
-			$templates['top_open'] = $tags->get_updated_html();
+			$panel  = wp_unique_id( 'tmb-toc-panel-' );
+			$markup = '<div class="tmb-toc__panel" id="' . esc_attr( $panel ) . '">' . $markup . '</div>';
 		}
-
-		$index  = 0;
-		$markup = self::list_html( self::tree( $headings, $index ), $templates, true );
 
 		$content = $list
 			? substr_replace( $content, $markup, $list['start'], $list['end'] - $list['start'] )
@@ -169,6 +171,22 @@ class Thingamablocks_Toc_Render {
 			get_block_wrapper_attributes( $wrapper ),
 			$content
 		);
+	}
+
+	/**
+	 * Nothing to show (no headings, or not a single post): take back the
+	 * script and stylesheet WordPress queued for the block, unless another
+	 * table of contents on the page uses them.
+	 *
+	 * @return string ''.
+	 */
+	private static function nothing() {
+		if ( ! self::$shown ) {
+			wp_dequeue_script( 'thingamablocks-toc-view-script' );
+			wp_dequeue_style( 'thingamablocks-toc-view-style' );
+		}
+
+		return '';
 	}
 
 	/**
@@ -247,7 +265,8 @@ class Thingamablocks_Toc_Render {
 		$key = $post->ID . '-' . $page;
 
 		if ( ! isset( $cache[ $key ] ) ) {
-			$cache[ $key ] = self::scan( self::saved_html( parse_blocks( $content ) ) );
+			// Not headings inside HTML comments (in a Custom HTML block, say).
+			$cache[ $key ] = self::scan( (string) preg_replace( '/<!--.*?-->/s', '', self::saved_html( parse_blocks( $content ) ) ) );
 		}
 
 		return $cache[ $key ];
@@ -257,23 +276,34 @@ class Thingamablocks_Toc_Render {
 	 * The saved HTML of some blocks, in order, with synced patterns filled in
 	 * and tables of contents left out (their own title isn't a section).
 	 *
-	 * @param array $blocks Parsed blocks.
-	 * @param int   $depth  Pattern nesting depth.
+	 * @param array $blocks   Parsed blocks.
+	 * @param array $patterns Synced patterns already filled in (as keys).
 	 * @return string HTML.
 	 */
-	private static function saved_html( $blocks, $depth = 0 ) {
+	private static function saved_html( $blocks, &$patterns = array() ) {
 		$html = '';
 
 		foreach ( $blocks as $block ) {
-			if ( 'thingamablocks/toc' === $block['blockName'] ) {
+			// A table of contents' own title isn't a section, and a block
+			// hidden with WordPress's "Hide" setting isn't on the page.
+			if ( 'thingamablocks/toc' === $block['blockName'] || false === ( $block['attrs']['metadata']['blockVisibility'] ?? null ) ) {
 				continue;
 			}
 
 			if ( 'core/block' === $block['blockName'] ) {
-				$pattern = $depth < 5 && ! empty( $block['attrs']['ref'] ) ? get_post( (int) $block['attrs']['ref'] ) : null;
+				$ref = (int) ( $block['attrs']['ref'] ?? 0 );
+
+				// Each pattern once (a pattern can't include itself, over and
+				// over), and only so many.
+				if ( ! $ref || isset( $patterns[ $ref ] ) || count( $patterns ) >= 50 ) {
+					continue;
+				}
+
+				$patterns[ $ref ] = true;
+				$pattern          = get_post( $ref );
 
 				if ( $pattern && 'wp_block' === $pattern->post_type && 'publish' === $pattern->post_status ) {
-					$html .= self::saved_html( parse_blocks( $pattern->post_content ), $depth + 1 );
+					$html .= self::saved_html( parse_blocks( $pattern->post_content ), $patterns );
 				}
 
 				continue;
@@ -285,7 +315,7 @@ class Thingamablocks_Toc_Render {
 				if ( is_string( $chunk ) ) {
 					$html .= $chunk;
 				} elseif ( isset( $block['innerBlocks'][ $index ] ) ) {
-					$html .= self::saved_html( array( $block['innerBlocks'][ $index ] ), $depth );
+					$html .= self::saved_html( array( $block['innerBlocks'][ $index ] ), $patterns );
 					++$index;
 				}
 			}
@@ -417,7 +447,19 @@ class Thingamablocks_Toc_Render {
 	 * @return string
 	 */
 	public static function add_heading_ids( $content ) {
-		if ( ( ! self::$rendered && ! thingamablocks_is_enabled( 'toc' ) ) || ! is_string( $content ) || false === stripos( $content, '<h' ) ) {
+		// Nothing to do without a heading that has no ID.
+		if ( ! is_string( $content ) || ! preg_match( '/<h[1-6](?![^>]*\sid\s*=)[\s>]/i', $content ) || ( ! self::$rendered && ! thingamablocks_is_enabled( 'toc' ) ) ) {
+			return $content;
+		}
+
+		/**
+		 * Whether to give the headings of the post being viewed IDs (on by
+		 * default while the Table of Contents block is switched on). A table
+		 * of contents needs them to link to its headings.
+		 *
+		 * @param bool $add Add IDs.
+		 */
+		if ( ! apply_filters( 'thingamablocks_toc_heading_ids', true ) ) {
 			return $content;
 		}
 
@@ -451,7 +493,7 @@ class Thingamablocks_Toc_Render {
 
 		$index = 0;
 
-		return (string) preg_replace_callback(
+		$updated = preg_replace_callback(
 			self::HEADING,
 			function ( $found ) use ( $headings, &$index, &$queue, &$used ) {
 				$heading = $headings[ $index ] ?? null;
@@ -475,6 +517,9 @@ class Thingamablocks_Toc_Render {
 			},
 			$content
 		);
+
+		// A failed search leaves the content as it was.
+		return null === $updated ? $content : $updated;
 	}
 
 	/**
@@ -649,7 +694,7 @@ class Thingamablocks_Toc_Render {
 			: esc_html( $label );
 
 		$button = sprintf(
-			'<button type="button" class="tmb-toc__toggle" aria-expanded="false" aria-controls="%1$s"><span class="tmb-toc__toggle-text"><span class="tmb-toc__toggle-label">%2$s</span><span class="tmb-toc__toggle-current"></span></span>%3$s</button>',
+			'<button type="button" class="tmb-toc__toggle" aria-expanded="false" aria-controls="%1$s"><span class="tmb-toc__toggle-text"><span class="tmb-toc__toggle-label">%2$s</span><span class="tmb-toc__toggle-current" aria-hidden="true"></span></span>%3$s</button>',
 			esc_attr( $panel ),
 			$text,
 			$chevron
@@ -678,15 +723,25 @@ class Thingamablocks_Toc_Render {
 			return '';
 		}
 
+		$first             = ! $printed;
 		$printed[ $width ] = true;
 		$toc               = '.tmb-toc[data-tmb-collapse="' . $width . '"]';
 
-		return sprintf(
-			'<style id="tmb-toc-collapse-%1$d">@media (max-width:%2$spx){%3$s .tmb-toc__title-text{display:none}%3$s:not([data-open]) .tmb-toc__panel{display:none}}@media (min-width:%1$dpx){%3$s .tmb-toc__toggle,%3$s .tmb-toc__toggle-wrap{display:none}}</style>',
+		// The button's basic look comes with it, so it never shows as a
+		// theme button while the block's stylesheet loads.
+		$css = sprintf(
+			'<style id="tmb-toc-collapse-%1$d">@media (max-width:%2$.2Fpx){%3$s .tmb-toc__title-text{display:none}%3$s:not([data-open]) .tmb-toc__panel{display:none}%3$s .tmb-toc__toggle{display:flex;align-items:center;justify-content:space-between;gap:.5em;width:100%%;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-align:inherit;text-transform:inherit}}@media (min-width:%1$dpx){%3$s .tmb-toc__toggle,%3$s .tmb-toc__toggle-wrap{display:none}}</style>',
 			$width,
 			$width - 0.02,
 			$toc
 		);
+
+		// Without JavaScript the button can't open the list: show the list.
+		if ( $first ) {
+			$css .= '<noscript><style>.tmb-toc .tmb-toc__panel{display:block!important}.tmb-toc .tmb-toc__toggle,.tmb-toc .tmb-toc__toggle-wrap{display:none!important}.tmb-toc .tmb-toc__title-text{display:inline!important}</style></noscript>';
+		}
+
+		return $css;
 	}
 
 	/**

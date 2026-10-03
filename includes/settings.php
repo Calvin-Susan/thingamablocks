@@ -65,6 +65,12 @@ function thingamablocks_switches() {
 			'type'        => 'block',
 			'needle'      => '<!-- wp:thingamablocks/toc ',
 		),
+		'share'       => array(
+			'label'       => __( 'Share', 'thingamablocks' ),
+			'description' => __( 'Share buttons for the post (X, LinkedIn, Facebook, email, copy link…), with no tracking or third-party scripts.', 'thingamablocks' ),
+			'type'        => 'block',
+			'needle'      => '<!-- wp:thingamablocks/share ',
+		),
 		'animations'  => array(
 			'label'       => __( 'Entrance animations', 'thingamablocks' ),
 			'description' => __( 'The “Entrance animation” panel on GenerateBlocks blocks.', 'thingamablocks' ),

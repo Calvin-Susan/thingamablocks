@@ -20,5 +20,7 @@ module.exports = {
 		'video/view': './src/video/view.js',
 		// Only loaded by a Search block using the expanding style.
 		'search/expand': './src/search/expand.js',
+		// Only loaded by a Share block with a Copy link or Share… button.
+		'share/view': './src/share/view.js',
 	} ),
 };

@@ -1,0 +1,45 @@
+// Front end only (block.json "viewStyle": loaded only on pages with a Share
+// block). The look comes from the GenerateBlocks blocks; this covers what
+// PHP and the script add.
+
+// "Share…" stays hidden (and its list item with it) unless the device has a
+// share sheet. Beats a display set on the button's class.
+.tmb-share [data-share-network][hidden],
+.tmb-share li:has(> [data-share-network][hidden]) {
+	display: none !important;
+}
+
+.tmb-share [data-share-network="copy"] {
+	position: relative;
+}
+
+// "Link copied", above the button for a moment: dark on a light page,
+// light on a dark one (follows color-scheme).
+.tmb-share__copied {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	margin-bottom: 0.375rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	background: canvastext;
+	color: canvas;
+	font-size: 0.875rem;
+	font-weight: 400;
+	letter-spacing: normal;
+	line-height: 1.2;
+	text-transform: none;
+	white-space: nowrap;
+	pointer-events: none;
+	transform: translateX(-50%);
+}
+
+// Announces "Link copied" to screen readers only.
+.tmb-share__status {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}

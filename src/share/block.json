@@ -1,0 +1,32 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thingamablocks/share",
+	"version": "1.2.0",
+	"title": "Share",
+	"category": "generateblocks",
+	"description": "Share buttons for the post, built from GenerateBlocks blocks. No tracking, no third-party scripts, no share counts.",
+	"keywords": [ "share", "social", "x", "linkedin", "facebook", "copy link" ],
+	"textdomain": "thingamablocks",
+	"usesContext": [ "postId" ],
+	"attributes": {
+		"ariaLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewStyle": "file:./style-index.css"
+}

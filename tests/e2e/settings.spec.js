@@ -71,6 +71,7 @@ test.describe( 'Settings page', () => {
 			'Breadcrumbs',
 			'Search',
 			'Table of Contents',
+			'Share',
 			'Entrance animations',
 			'Image masks',
 			'FAQ schema',

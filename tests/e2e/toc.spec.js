@@ -596,6 +596,51 @@ test.describe( 'Table of Contents', () => {
 		expect( dialogs ).toEqual( [] );
 	} );
 
+	test( 'a synced pattern that includes itself is read once', async ( {
+		page,
+	} ) => {
+		const pattern = await rest( page, '/wp/v2/blocks', {
+			method: 'POST',
+			data: {
+				title: `TOC loop ${ Date.now() }`,
+				status: 'publish',
+				content: h( 2, 'Looped' ),
+			},
+		} );
+
+		await rest( page, `/wp/v2/blocks/${ pattern.id }`, {
+			method: 'POST',
+			data: {
+				content:
+					h( 2, 'Looped' ) +
+					`<!-- wp:block {"ref":${ pattern.id }} /-->`.repeat( 20 ),
+			},
+		} );
+
+		const url = await testPage(
+			page,
+			'tmb-test-toc-loop',
+			( await tocMarkup( page, {}, 'list' ) ) +
+				`<!-- wp:block {"ref":${ pattern.id }} /-->` +
+				h( 2, 'After', { className: '' } ) +
+				'<!-- wp:heading {"metadata":{"blockVisibility":false}} --><h2 class="wp-block-heading">Hidden</h2><!-- /wp:heading -->'
+		);
+
+		page.on( 'dialog', ( dialog ) => dialog.accept() );
+		await page.goto( url );
+
+		// The pattern's heading once; a heading hidden with WordPress's Hide
+		// setting isn't listed.
+		await expect(
+			page.locator( 'nav.tmb-toc [data-toc-part="link"]' )
+		).toHaveText( [ 'Looped', 'After' ] );
+
+		await rest( page, `/wp/v2/blocks/${ pattern.id }`, {
+			method: 'DELETE',
+			params: { force: 'true' },
+		} );
+	} );
+
 	test( 'no accessibility violations', async ( { page } ) => {
 		await page.goto( site.full );
 		await page.locator( '#install-it' ).hover();

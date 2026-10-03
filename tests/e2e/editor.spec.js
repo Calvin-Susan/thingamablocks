@@ -50,6 +50,7 @@ test.describe( 'Editor', () => {
 			'thingamablocks/dropdown',
 			'thingamablocks/marquee',
 			'thingamablocks/search',
+			'thingamablocks/share',
 			'thingamablocks/toc',
 			'thingamablocks/toggle',
 		] );

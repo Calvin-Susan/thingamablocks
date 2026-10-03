@@ -4,7 +4,7 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, by [OGAL Web Design](https://ogalweb.com) (Kyle Van Deusen).
 
-> **Installing:** download the **`thingamablocks-…zip`** file (e.g. `thingamablocks-1.1.0.zip`) from the [latest release](https://github.com/Calvin-Susan/thingamablocks/releases/latest) and upload it under **Plugins → Add New Plugin → Upload Plugin**. Don't use GitHub's green **Code → Download ZIP** button: that's the source code, without the built files WordPress needs, so the blocks won't work.
+> **Installing:** download the **`thingamablocks-…zip`** file (e.g. `thingamablocks-1.2.0.zip`) from the [latest release](https://github.com/Calvin-Susan/thingamablocks/releases/latest) and upload it under **Plugins → Add New Plugin → Upload Plugin**. Don't use GitHub's green **Code → Download ZIP** button: that's the source code, without the built files WordPress needs, so the blocks won't work.
 
 | Block | Name | What it does |
 | --- | --- | --- |
@@ -15,6 +15,7 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Breadcrumbs**](#breadcrumbs-block) | `thingamablocks/breadcrumbs` | The path to the current page (Home › Blog › Category › Post), worked out automatically for whatever page is being viewed, with breadcrumb structured data for search engines. |
 | [**Search**](#search-block) | `thingamablocks/search` | A search form you style like any other GenerateBlocks blocks, that can search only the content types you choose (just products, just pages…), including an icon that opens a search. |
 | [**Table of Contents**](#table-of-contents-block) | `thingamablocks/toc` | A linked list of the headings in the post or page being viewed, built automatically, that highlights the section being read, folds into a button on phones, and can add copy-link buttons to the headings. |
+| [**Share**](#share-block) | `thingamablocks/share` | Share buttons for the post being viewed (X, LinkedIn, Facebook, email, copy link and more), with each network's icon, and no tracking, third-party scripts or share counts. |
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
@@ -24,11 +25,11 @@ And [**Video backgrounds**](#video-backgrounds) for the GenerateBlocks Element b
 
 And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an "FAQ schema" panel that tells search engines the accordion is a list of questions and answers (schema.org `FAQPage` structured data), built from the accordion's own text.
 
-All seven blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All eight blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free) and with GenerateBlocks Pro 2.x on a live site (the showcase page, FAQ schema, Global Styles and design tokens), plus GB Pro 2.8 locally for the starting layouts' classes. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block. The blocks' starting layouts get their look from GenerateBlocks Pro Global Styles (see [Starting layouts and Global Styles](#starting-layouts-and-global-styles)): with free GenerateBlocks every block works, but the layouts are unstyled. Everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs', Search's and Table of Contents' few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The starting layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add around 20 KB to it, about 3 KB gzipped.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs', Search's, Table of Contents' and Share's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style, and the Share block none unless it has a Copy link or Share… button. (The starting layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add around 20 KB to it, about 3 KB gzipped.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, masks or video backgrounds? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -72,6 +73,11 @@ All seven blocks sit in the GenerateBlocks category of the inserter, and all wor
   - [Table of Contents settings](#table-of-contents-settings)
   - [Small screens](#small-screens)
   - [How headings get their IDs](#how-headings-get-their-ids)
+- [Share block](#share-block)
+  - [Share quick start](#share-quick-start)
+  - [How share parts and styling work](#how-share-parts-and-styling-work)
+  - [Share settings](#share-settings)
+  - [What each button does](#what-each-button-does)
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
@@ -99,7 +105,7 @@ All seven blocks sit in the GenerateBlocks category of the inserter, and all wor
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search** and **Table of Contents** are in the GenerateBlocks category; each offers a choice of starting layouts when inserted. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search**, **Table of Contents** and **Share** are in the GenerateBlocks category; each offers a choice of starting layouts when inserted. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
@@ -107,7 +113,7 @@ All seven blocks sit in the GenerateBlocks category of the inserter, and all wor
 
 **Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has an on/off switch for each block and feature, in two cards. Everything is on by default.
 
-- **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs, Search and Table of Contents. On means the block is in the block inserter. (Table of Contents also gives headings in single posts and pages an ID while it's on; see [How headings get their IDs](#how-headings-get-their-ids).)
+- **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs, Search, Table of Contents and Share. On means the block is in the block inserter. (Table of Contents also gives headings in single posts and pages an ID while it's on; see [How headings get their IDs](#how-headings-get-their-ids).)
 - **Features** – Entrance animations, Image masks, Video backgrounds and FAQ schema. On means the panel shows in the editor.
 
 Each item has its name, a one-line description and where it's used ("In use on 3 items" or "Not used anywhere yet"), with its switch beside it, counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, video backgrounds by containers with a video background, and FAQ schema by accordions with **Add FAQ structured data** on.
@@ -136,7 +142,7 @@ When you insert a block you pick a starting layout. Those layouts don't put styl
 - **A few styles stay local on purpose**, so restyling a class can't break anything: the Countdown's visually hidden unit names, the Marquee row's `display: flex` (and `flex-direction: column` for vertical layouts), which the loop needs, and the Search input's `flex-grow`.
 - **The colours are plain hex values for now**, not your GeneratePress global colours, so they don't follow your palette or dark mode until you change them in the classes.
 
-**Where the classes come from.** The plugin creates them (about 85 in all) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles opens a wp-admin page after installing or updating to a version that adds classes. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so a class you delete stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.)
+**Where the classes come from.** The plugin creates them (about 100 in all) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles opens a wp-admin page after installing or updating to a version that adds classes. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so a class you delete stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.)
 
 Behind the scenes: they're only created on an ordinary admin page load, never in AJAX, REST or cron requests, and a lock stops two admin tabs loading at once from creating duplicates. GB Pro normally rebuilds its stylesheet after every Global Style is saved; that's paused while the classes are created and done once at the end. Progress is saved after each class, so a run that's cut short carries on next time.
 
@@ -1164,9 +1170,9 @@ The sidebar warns you if the list, item or link is missing; without them the hea
 #### Styling
 
 - **Everything visible** – title, chevron, list, item, link – is styled in the GB Styles panel, hover and focus included (the link's class sets `&:is(:hover, :focus-visible)` and `&:focus-visible`).
-- **The section being read**: its link gets `aria-current="true"`, and both layouts style that in the link's `tmb-toc__link--current` class (accent colour, and the accent marker where the link has a left border, as in **Sidebar line**). Edit that class to change the highlight on every table of contents; remove it from a link for no highlight. For your own look, add a style for `&[aria-current]` on the link.
+- **The section being read**: its link gets `aria-current="true"`, and both layouts style that in the link's `tmb-toc__link--current` class (accent colour, and the accent marker where the link has a left border, as in **Sidebar line**). Edit that class to change the highlight on every table of contents; remove it from a link for no highlight. For your own look, add a style for `&[aria-current]` on the link. The highlight is colour only (plus the marker in **Sidebar line**), by choice; screen readers get `aria-current`. If you want a cue that isn't colour in the **List** layout too, add an underline or a heavier weight to `tmb-toc__link--current`.
 - **Each level**: items and links get `data-level="2"`, `"3"` and so on, the heading's level. Nested lists can also be styled from the list's class with `& [data-toc-part="list"]` (that's how the layouts indent sub-headings).
-- **The small-screen button** sits inside the title and takes on its font, colour and size. Its "section being read" line is `.tmb-toc__toggle-current`.
+- **The small-screen button** sits inside the title and takes on its font, colour and size. Its "section being read" line is `.tmb-toc__toggle-current` (hidden from screen readers, so the button's name doesn't change while it has focus).
 
 #### Table of Contents classes
 
@@ -1194,7 +1200,7 @@ Select the Table of Contents block (the wrapper) to see these in the sidebar.
 | --- | --- | --- | --- |
 | Include | `levels` | H2 and H3 | Tick boxes for H1 to H6; at least one stays ticked. Only these levels are listed. |
 
-**Leaving a heading out:** give it the class `tmb-toc-skip` (select the heading, **Advanced → Additional CSS class(es)**). It keeps its ID, so links to it still work; it's just not listed. Headings whose text has a GenerateBlocks dynamic tag (`{{…}}`) or a shortcode are left out too, since their text isn't known until the page is shown.
+**Leaving a heading out:** give it the class `tmb-toc-skip` (select the heading, **Advanced → Additional CSS class(es)**). It keeps its ID, so links to it still work; it's just not listed. Headings whose text has a GenerateBlocks dynamic tag (`{{…}}`) or a shortcode are left out too, since their text isn't known until the page is shown, and so are headings in blocks hidden with WordPress's **Hide** block setting, and headings inside HTML comments.
 
 #### Links
 
@@ -1214,7 +1220,8 @@ How it behaves below that width:
 - **Closed from the first paint.** A tiny `<style>` for that width is printed just before the block (once per width per page), so phones never see the full list flash open.
 - **Tapping a link** closes the list and goes to the heading. **Escape** closes it and puts focus back on the button.
 - **It opens at the Dropdown speed** from **Settings → Thingamablocks → Speeds** (instantly for visitors who prefer reduced motion).
-- **Needs JavaScript to open**, like the Dropdown. Above the width, the title is plain text and the list is always open.
+- **Needs JavaScript to open**, like the Dropdown. Without JavaScript, a `<noscript>` style shows the list and hides the button, so the list is never stuck closed. Above the width, the title is plain text and the list is always open.
+- **The button never flashes as a theme button**: the breakpoint `<style>` also resets its look (no border or background, the title's font and colour) before any other CSS arrives.
 
 #### Accessibility
 
@@ -1237,7 +1244,9 @@ A link can only jump to a heading that has an ID. So while the Table of Contents
 - **IDs you've set yourself are kept** (a GenerateBlocks heading's HTML anchor, a core Heading's **HTML anchor**, or an `id` in your HTML), and never clash with a made-up one.
 - **IDs themes use are never given to a heading** (`content`, `page`, `main`, `primary`, `secondary`, `masthead`, `site-navigation`, `comments`, `respond`, `right-sidebar`, `left-sidebar`, `footer`), so a heading called "Content" gets `#content-2` and can't clash with GeneratePress's own elements.
 
-It reads the headings from the post's saved content, so it finds GenerateBlocks Text headings, core Heading blocks, headings in synced patterns and headings in classic-editor content. The IDs are added as the page is shown, not saved into your post. Each heading on the page is matched to its entry in the list by its text, so the links always match even after WordPress turns quotes and primes into curly ones. Switch the block off and the IDs stop being added (unless a Table of Contents is shown on the page anyway).
+It reads the headings from the post's saved content, so it finds GenerateBlocks Text headings, core Heading blocks, headings in synced patterns (each pattern read once, up to 50 per post, so a pattern that includes itself can't loop) and headings in classic-editor content. The IDs are added as the page is shown, not saved into your post. Each heading on the page is matched to its entry in the list by its text, so the links always match even after WordPress turns quotes and primes into curly ones. When every heading already has an ID, nothing is done at all. Switch the block off and the IDs stop being added (unless a Table of Contents is shown on the page anyway).
+
+**Adding IDs yourself?** Return `false` from the `thingamablocks_toc_heading_ids` filter and the plugin stops adding them (see [PHP](#php)). A Table of Contents then only links properly to headings that have an ID.
 
 Changing a heading's text changes its made-up ID, so links to the old one stop jumping there. For a heading people link to from elsewhere, set its HTML anchor yourself.
 
@@ -1246,7 +1255,8 @@ Changing a heading's text changes its made-up ID, so links to the old one stop j
 - **A labelled navigation landmark**: a `<nav aria-label="Table of contents">` holding your list, so screen reader users can find it and hear how many entries it has; sub-headings are nested lists.
 - **Following a link moves keyboard focus to the heading**, so Tab carries on from there and screen readers read from the new spot. The address updates, so Back returns to where you were.
 - **Reduced motion:** visitors who prefer reduced motion jump straight to the heading instead of scrolling smoothly, and the small-screen list opens without animating.
-- **The current section** is marked with `aria-current="true"` on its link, not just a colour.
+- **The current section** is marked with `aria-current="true"` on its link, so screen readers hear it. On screen the layouts show it with colour (and the marker in **Sidebar line**); add an underline or weight to `tmb-toc__link--current` for a non-colour cue in **List**. The button's "section being read" line is `aria-hidden`, so the button's name stays the same while it has focus.
+- **Without JavaScript** the list is always shown and the small-screen button hidden.
 - **The small-screen button** follows the WAI-ARIA disclosure pattern: a real `<button>` inside the title, with `aria-expanded` and `aria-controls` pointing at the list (both set on the server), and **Escape** to close.
 - **Copy-link buttons** are real buttons named "Copy link", shown when the heading is hovered or the button has keyboard focus (and always on touch screens, which can't hover), with a focus outline and a 24 px target. "Link copied" appears on a solid chip in the page's text colour (it flips in dark mode) and is announced to screen readers once, through a single hidden status message.
 - **Easy to hit:** the layouts' links are at least 24 px tall (WCAG 2.5.8).
@@ -1254,7 +1264,172 @@ Changing a heading's text changes its made-up ID, so links to the old one stop j
 
 #### Loading
 
-A small script (`viewScript`) and a few lines of CSS (`viewStyle`) load only on pages with a Table of Contents. The scroll offset and the small-screen breakpoint are one line of CSS each, added only on pages whose Table of Contents uses them. If you've changed the Dropdown speeds, the `window.tmbSpeeds` line is printed for it too.
+A small script (`viewScript`) and a few lines of CSS (`viewStyle`) load only on pages with a Table of Contents that shows something: one with nothing to list (no headings, or not on a single post or page) takes its script and stylesheet back off the page, unless another Table of Contents on the page uses them. The scroll offset and the small-screen breakpoint are one line of CSS each, added only on pages whose Table of Contents uses them. If you've changed the Dropdown speeds, the `window.tmbSpeeds` line is printed for it too.
+
+## Share block
+
+Share buttons for the post being viewed: **Share: X · LinkedIn · Facebook · Email · Copy link**. Each button is a plain link to that network's own share page, filled in with the post's address and title.
+
+- **No tracking, no third-party scripts, no share counts.** Nothing loads from the networks until a visitor clicks a button, and then it's just a link opening in a new tab.
+- **Twelve buttons to choose from:** X, LinkedIn, Facebook, Email, Bluesky, Threads, Reddit, WhatsApp, Telegram, Pinterest, **Copy link** (copies the post's address) and **Share…** (opens the phone's or computer's own share sheet).
+- **It always shares the right post.** Like Breadcrumbs, you can place it once: in a GeneratePress Element or single post template it shares whichever post is being viewed, and inside a Query Loop each copy shares its own loop post. Where there's no one post to share (an archive's header, say: not a single post and not in a loop), it shows nothing. The shared title is the post's own title, with curly quotes, without WordPress's "Private:" prefix.
+
+It replaces the separate "OGAL Social Share" plugin (`ogal/social-share`). Both can be active at once, so existing share buttons keep working; there's no automatic switch-over, so swap them for this block when you're ready.
+
+**Titles, images and descriptions on the networks** come from the page's Open Graph tags, which your SEO plugin (Yoast SEO, Rank Math, SEOPress…) already prints. The block doesn't add its own: LinkedIn, Facebook and Pinterest read the title and image from those tags, and the others are sent the title in the link.
+
+### Share quick start
+
+When you insert Share you pick a starting style:
+
+| Style | Looks like |
+| --- | --- |
+| **Icons** (default) | A "Share:" label and a row of round, outlined icon buttons in your text colour |
+| **Pills** | Rounded buttons with each network's icon and name |
+| **Brand icons** | Round icon buttons with each network's brand colour on the icon |
+
+All three start with **X, LinkedIn, Facebook, Email and Copy link**. The styles are shared Global Styles classes (see [Share classes](#share-classes)): 40 px round buttons with a grey border, a soft background on hover and a focus ring in the accent colour.
+
+**Adding a network:** select the Share block and open **Add a network** in the sidebar. It lists every network the block doesn't have yet; click one and it's added at the end, as a copy of the first button (same classes and styling, the new network's icon, and its brand class if the block uses brand colours), in its own list item. **Removing or reordering** is done with the blocks themselves: delete an item, or move it in List View (each item is named after its network, "LinkedIn › Button").
+
+**Recipe: share buttons under every post with GeneratePress**
+
+1. **Appearance → Elements → Add New → Block**.
+2. Insert **Share** and choose a style. Add or remove networks from the sidebar.
+3. Under **Element Settings**, set the **Hook** to `generate_after_content` (or wherever you want them), and **Display Rules** to *Posts → All Posts*.
+4. Publish, and view a post. Each button shares that post; hover one to see its link.
+
+**Recipe: a share button on every card in a Query Loop**
+
+Put a Share block inside the Query Loop's post template (a Pills or Icons layout with just Copy link, say). Each card's buttons share that card's post.
+
+> **Build share layouts as an Administrator or Editor.** The button icons are GenerateBlocks icons, which are inline SVGs, and WordPress strips SVGs from content saved by Authors and Contributors (the same happens to any GenerateBlocks button with an icon). Their buttons then show without icons, or the editor reports them as invalid. Authors can still use a Share block someone else built, for example in a GeneratePress Element.
+
+### How share parts and styling work
+
+#### Share parts
+
+The layout is ordinary GenerateBlocks blocks:
+
+```
+Share (the wrapper: settings only)
+└─ Row          Element, <div>                tmb-share__row
+   ├─ Label     Text, <p>   "Share:"          data-share-part="label"
+   └─ Buttons   Element, <ul>                 data-share-part="list"
+      ├─ X          Element, <li>
+      │  └─ Button  Text, <a>                 data-share-network="x"
+      ├─ LinkedIn   Element, <li>
+      │  └─ Button  Text, <a>                 data-share-network="linkedin"
+      └─ …
+```
+
+Select a GenerateBlocks Element or Text block inside a Share block and you'll get a **Share part** panel with one setting, *This block is*:
+
+| Option | Value | What it does |
+| --- | --- | --- |
+| Not a part (shown as it is) | *(none)* | Nothing special – the row, the list items, or anything else you add |
+| Label | `data-share-part="label"` | A **Text** block ("Share:") that names the list of buttons for screen readers |
+| List | `data-share-part="list"` | An **Element** set to `<ul>`, with an `<li>` Element around each button. Named by the label (or the **Label** setting) |
+| Share button: X, LinkedIn… | `data-share-network="x"` etc. | A **Text** block that becomes that network's button: set to `<a>` for the networks and Email, `<button>` for Copy link and Share…. A network button set to `<button>` (which couldn't go anywhere) is left out of the page. |
+
+The network keys are `x`, `linkedin`, `facebook`, `email`, `bluesky`, `threads`, `reddit`, `whatsapp`, `telegram`, `pinterest`, `copy` and `native` (Share…). As with the other blocks, the value lives in GB's own HTML attributes.
+
+**Changing a button's network** in its Share part panel switches its tag (`<a>` or `<button>`), its brand class, its text if it was the old network's name, and the name of the list item around it. An `aria-label` you'd set on it is cleared, so an icon-only button gets the new network's name on the site. Its icon changes too, but only if it's still one of the plugin's default icons: an icon you chose yourself is kept, and a **Use the X icon** button appears under the setting to go back to the network's own.
+
+**What you type in a button doesn't matter much**: its link is always made by the plugin for the post being viewed. A button can be icon only (the layouts' **Icons** and **Brand icons**) or icon and name (**Pills**); icon-only buttons are named for screen readers ("Share on LinkedIn").
+
+#### Icons
+
+Each button's icon **is** its GenerateBlocks Text icon, already filled in with the network's logo (from [Simple Icons](https://simpleicons.org), CC0; the brand names and marks belong to their owners). So:
+
+- **Change it** in the button's GB icon picker, like any GB Text icon.
+- **The plugin adds a "Share" set** to GB's icon picker with all twelve icons, so you can switch back, or use them on any other GenerateBlocks block (a "Follow us" row, say).
+- **Size and colour** come from the button's styles: the icons fill with the text colour, and the base class sizes them to 1.125rem (`.gb-shape svg`).
+
+#### Styling
+
+- **Everything visible** – row, label, list, items, buttons – is styled in the GB Styles panel, hover and focus included (the button class sets `&:is(:hover, :focus-visible)` and `&:focus-visible`, and resets GeneratePress's background on a clicked `<button>` with `&:focus`).
+- **Brand colours** colour only the icon (`.gb-shape`), never the text: brand marks need to be recognisable, and several brand colours are too light for text. WhatsApp (`#128c7e`) and Telegram (`#0088cc`) use their darker brand shades, so the icons keep their contrast on the hover background. X, Threads, Email, Copy link and Share… have no brand class and use the button's colour.
+- **After Copy link copies**, the button has `data-copied` for 2 seconds: style it with `&[data-copied]` (the base class turns the border green). The "Link copied" chip above it is `.tmb-share__copied`; it's dark on a light page and light on a dark one (the system colours `canvastext` / `canvas`, so it follows `color-scheme`).
+- **Share… stays hidden** (with its list item) until the script finds a share sheet, whatever display its classes set.
+
+#### Share classes
+
+The starting styles' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Styles used in |
+| --- | --- | --- |
+| `tmb-share__row` | Label and buttons side by side, wrapping | All |
+| `tmb-share__label` | The "Share:" label: text colour, semi-bold, no bottom margin | All |
+| `tmb-share__list` | The list: a wrapping row with a small gap, no bullets, margins or padding | All |
+| `tmb-share__item` | Each list item (no bottom margin) | All |
+| `tmb-share__button` | Each button: 40 px round, grey border, text colour, a soft background and darker border on hover/focus, focus ring, green border with `&[data-copied]`, icon 1.125rem | All |
+| `tmb-share__button--pill` | More padding at the sides, for icon and name | Pills |
+| `tmb-share__button--linkedin`, `--facebook`, `--bluesky`, `--reddit`, `--whatsapp`, `--telegram`, `--pinterest` | That network's brand colour on the icon | Brand icons (and buttons added to it) |
+
+That's 13 classes. (The plugin adds `tmb-share__copied` and `tmb-share__status` itself, so the layouts avoid those names.)
+
+### Share settings
+
+Select the Share block (the wrapper) to see these in the sidebar.
+
+| Panel | Setting | Attribute | Notes |
+| --- | --- | --- | --- |
+| Add a network | *(a button per unused network)* | – | Adds a copy of the first button for that network; see the quick start. Hidden once every network is in. |
+| Accessibility | Label | `ariaLabel` | Names the list of buttons for screen readers **when there's no label block** (or it's empty). Empty: "Share this post". |
+
+The sidebar warns you if the block has no share buttons yet.
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the wrapper's `id`.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+### What each button does
+
+| Button | Opens |
+| --- | --- |
+| X | `x.com/intent/post` with the title and address |
+| LinkedIn | `linkedin.com/sharing/share-offsite` with the address (LinkedIn reads the rest from Open Graph tags) |
+| Facebook | `facebook.com/sharer/sharer.php` with the address (likewise) |
+| Email | A new email (`mailto:`) with the title as the subject and the address as the body, in the visitor's own email app |
+| Bluesky | `bsky.app/intent/compose` with the title and address |
+| Threads | `threads.net/intent/post` with the title and address |
+| Reddit | `reddit.com/submit` with the address and title |
+| WhatsApp | `api.whatsapp.com/send` with the title and address |
+| Telegram | `t.me/share/url` with the address and title |
+| Pinterest | `pinterest.com/pin/create/button` with the address and title (Pinterest takes the image from the page) |
+| Copy link | Copies the post's address |
+| Share… | The device's own share sheet, with the title and address |
+
+Network links open in a new tab (`target="_blank"`, `rel="noopener noreferrer nofollow"`); Email opens in the same one.
+
+#### Copy link
+
+Clicking **Copy link** copies the post's address. A small "Link copied" chip appears above the button for 2 seconds, the button gets `data-copied` for the same time, and screen readers hear "Link copied" once. The button's own visible name never changes, so voice-control users can say what they see.
+
+If the browser won't allow copying (a site not on https, say), it tries the older copy method. If that fails too, a button on another page (a Query Loop card, say) goes to the post, so its address is in the address bar to copy; on the post itself, the chip says "Copy the address from the address bar" for 5 seconds (announced once; no `data-copied`). Without JavaScript a Copy link button set to `<a>` is a link to the post.
+
+#### Share…
+
+**Share…** opens the device's own share sheet (the Web Share API: phones, tablets and some desktop browsers), offering every app the visitor has – Messages, Slack, their notes app. It's printed hidden, and the script shows it only where the browser has a share sheet; its list item is hidden with it, so there's no gap. In the editor it's always shown, so you can style it.
+
+It isn't in the starting layouts. Add it from **Add a network** – it suits a phone-first site, or as the only button on a Query Loop card.
+
+### Share accessibility behaviour
+
+- **A named list:** the buttons are a real list (`<ul>`/`<li>`), so screen readers say how many there are, named by the label block ("Share:", via `aria-labelledby`) or the **Label** setting ("Share this post").
+- **Icon-only buttons are named:** "Share on X", "Share on LinkedIn"…, "Share by email", "Copy link", "Share". Buttons with visible text keep it as their name (an `aria-label` you've set yourself is kept). The icons are `aria-hidden`.
+- **Real links and buttons:** networks and Email are links (they go somewhere); Copy link and Share… are `<button type="button">`s (they do something). All work from the keyboard with a visible focus ring.
+- **"Link copied" (or "Copy the address from the address bar") is announced once** through one hidden `role="status"` message printed by the server (so screen readers are already listening), not a chatty live region. The visible chip is `aria-hidden`, so it isn't read twice.
+- **Easy to hit:** the layouts' buttons are 40 px (WCAG 2.5.8 asks for 24 px).
+- **Colours:** the icons and text use the text colour; the button border (`#b2b2be`) is decorative, since the icon itself shows where the button is. The "Link copied" chip uses the system's own text and background colours, so it has full contrast in light and dark mode.
+- **Server-rendered:** every link, name and role is in the HTML before any JavaScript runs.
+
+#### Loading
+
+A few lines of CSS (`viewStyle`) load only on pages with a Share block that shows something (in `<head>` on a post or page whose content uses it); one with nothing to show takes its stylesheet back off the page, unless another Share block uses it. The network buttons need **no script at all**. A small deferred script (`build/share/view.js`) loads only when a block has a **Copy link** or **Share…** button.
 
 ---
 
@@ -1690,6 +1865,17 @@ window.tmbToc.init( container ); // set up tables of contents added later, e.g. 
 
 The Table of Contents fires no events.
 
+### Share: `window.tmbShare`
+
+```js
+window.tmbShare.init( container ); // show the Share… buttons in Share blocks added later, e.g. by AJAX
+```
+
+- `init( root )` shows every hidden **Share…** button inside `root` (default `document`) where the browser has a share sheet; calling it more than once is safe. The script, and so `window.tmbShare`, is only on pages with a Copy link or Share… button. Copy link needs no setting up: clicks are handled on `document`, so buttons added later work as they are.
+- Network buttons are plain links from the server, with nothing to set up.
+
+The Share block fires no events.
+
 ### Entrance animations: `window.tmbAnimate`
 
 ```js
@@ -1729,10 +1915,11 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 - `.tmb-breadcrumbs` – the Breadcrumbs wrapper (a `<nav>`), with `data-tmb-breadcrumbs` when collapsing is on. `.tmb-breadcrumbs__list` – the `<ol>`; `.tmb-breadcrumbs__step` – each `<li>` (`hidden` while collapsed away); `.tmb-breadcrumbs__more` – the "…" button (in an `li.tmb-breadcrumbs__more-step`).
 - `[data-breadcrumb-part="item|separator|current"]` – the parts, repeated for each step; the current page has `aria-current="page"`, separators `aria-hidden="true"`.
 - `nav.tmb-toc` – the Table of Contents wrapper, with `data-tmb-toc` (the copy-link button labels, for the script), and when it collapses `data-tmb-collapse="768"` (the width) plus `data-open` while open. `[data-toc-part="title|chevron|list|item|link"]` – the parts; items and links are repeated for each heading and have `data-level="1"`–`"6"`, and the current section's link `aria-current="true"`. `ul.tmb-toc__fallback-list` – the plain list used when a part is missing. `.tmb-toc-skip` – put it on a heading to leave it out.
-- Small screens (added by PHP when the block collapses): `.tmb-toc__panel` – the outer list (given an ID); `button.tmb-toc__toggle` – the open/close button inside the title (`aria-expanded`, `aria-controls`), holding `.tmb-toc__toggle-text` > `.tmb-toc__toggle-label` (the title's text) and `.tmb-toc__toggle-current` (the section being read, while closed), then the chevron; `.tmb-toc__title-text` – the title's own text, shown on wide screens; `.tmb-toc__toggle-wrap` – holds the button when there's no title part. `style#tmb-toc-collapse-768` – the breakpoint CSS, one per width.
+- Small screens (added by PHP when the block collapses): `div.tmb-toc__panel` – a plain wrapper around the outer list, with an ID (the list's own `display` is untouched); `button.tmb-toc__toggle` – the open/close button inside the title (`aria-expanded`, `aria-controls`), holding `.tmb-toc__toggle-text` > `.tmb-toc__toggle-label` (the title's text) and `.tmb-toc__toggle-current` (the section being read, while closed), then the chevron; `.tmb-toc__title-text` – the title's own text, shown on wide screens; `.tmb-toc__toggle-wrap` – holds the button when there's no title part. `style#tmb-toc-collapse-768` – the breakpoint CSS (and the button's reset), one per width, plus a `<noscript>` style that shows the list without JavaScript.
 - `.tmb-toc__copy-button` – a copy-link button (added at the end of each listed heading), with `data-copied` for a moment after copying, holding `.tmb-toc__copied` ("Link copied").
 - `.tmb-search` – the Search wrapper (a `<form role="search">`). `input.tmb-search__input` – the real input that replaces the input part (it keeps `data-search-part="input"`).
 - `[data-search-part="field|input|submit|label|toggle"]` – the parts; the expanding style's toggle has `aria-expanded` and `aria-controls`, and its field an inline `display: none` while closed.
+- `.tmb-share` – the Share wrapper, with `data-tmb-share` (the post's address and title and the "Link copied" text, for the script) when it has a Copy link or Share… button. `[data-share-part="label|list"]` – the label (given an ID) and the list (`aria-labelledby` or `aria-label`). `[data-share-network="x|linkedin|facebook|email|bluesky|threads|reddit|whatsapp|telegram|pinterest|copy|native"]` – the buttons; Share… (`native`) has `hidden` until the script finds a share sheet, and Copy link gets `data-copied` for 2 seconds after copying, holding `.tmb-share__copied` ("Link copied", or the address-bar message for 5 seconds without `data-copied`; `aria-hidden`). `.tmb-share__status` – the hidden `role="status"` message, the wrapper's last child.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
 - `html.tmb-animate-js` – JavaScript is running; only then are animated blocks hidden. `html.tmb-animate-ready` – the animation script has loaded (switches off the fail-safe).
 - `.tmb-has-video` – a container with a video background (with `data-tmb-video`, the cleaned settings for the script). It gets `position: relative` and `isolation: isolate` at zero specificity, so a position set in GB wins.
@@ -1742,7 +1929,7 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 
 ### PHP
 
-- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `toc`, `animations`, `masks`, `video`, `faq`.
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `toc`, `share`, `animations`, `masks`, `video`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (the no-flash script).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `modified`).
@@ -1760,6 +1947,13 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
   } );
   ```
 
+- Filter `thingamablocks_toc_heading_ids` – return `false` to stop the plugin giving headings IDs (on by default while the Table of Contents is switched on). A Table of Contents then only links properly to headings that already have an ID.
+
+  ```php
+  // Our theme adds heading IDs itself.
+  add_filter( 'thingamablocks_toc_heading_ids', '__return_false' );
+  ```
+
 - Filter `thingamablocks_faq_schema` – the `FAQPage` structured data built from the page's FAQ accordions, as an array (`@context`, `@type`, `mainEntity`: a list of `Question`s, each with a `name` and an `acceptedAnswer` whose `text` is the cleaned answer HTML), just before it's printed in the footer. Change it, or return `null` to print nothing (for instance when your SEO plugin already adds an `FAQPage` to the page).
 
   ```php
@@ -1770,6 +1964,8 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
   ```
 
 - URL parameter `tmb_types` – a comma-separated list of content types to limit the main search query to (`/?s=lemon&tmb_types=page,post`), sent by Search blocks that search Pages or several types. Only viewable types are used; anything else is ignored. It's read in `pre_get_posts` rather than registered as a query variable, so it never changes which page WordPress shows.
+- Script handle `thingamablocks-share` – the Share block's Copy link / Share… script (`build/share/view.js`, deferred), registered on every page, enqueued only by a Share block with one of those buttons.
+- `Thingamablocks_Share_Render::share_url( $network, $url, $title )` returns a network's share link (`''` for an unknown network), and `Thingamablocks_Share_Render::networks()` the list of networks, if you want the same links elsewhere.
 - Script handle `thingamablocks-search-expand` – the Search block's expanding-style script (`build/search/expand.js`), registered on every page, enqueued only by a search that uses it.
 - Script handle `thingamablocks-animations` – the entrance animation script (`build/animations/view.js`), registered on every page, enqueued only where needed.
 - Script and style handles `thingamablocks-video` – the video background script and CSS (`build/video/view.js`, `view.css`), registered on every page, enqueued only by a container with a usable video background.
@@ -1792,15 +1988,15 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`, `thingamablocks/toc`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, which headings to list, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`, `thingamablocks/toc`, `thingamablocks/share`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, which headings to list, which post to share, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates whose parts carry shared GB Pro Global Styles classes (`globalClasses`), created by `includes/class-thingamablocks-global-styles.php` from the defaults in `includes/global-styles/{block}.php`; see [Starting layouts and Global Styles](#starting-layouts-and-global-styles). Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`, `data-toc-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" / "Table of contents part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`, `data-toc-part`, `data-share-part`, `data-share-network`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" / "Table of contents part" / "Share part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-All seven blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, the Breadcrumbs' and Table of Contents' `<nav>`, or the Search's `<form>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All eight blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, the Breadcrumbs' and Table of Contents' `<nav>`, or the Search's `<form>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -1851,15 +2047,26 @@ All seven blocks save only their inner blocks (`save` returns `<InnerBlocks.Cont
 
 **Table of Contents**
 
-- PHP (`includes/class-thingamablocks-toc-render.php`, `Thingamablocks_Toc_Render`) prints nothing unless a single post or page is being viewed (`is_singular()`) and it isn't password protected. It reads that post's headings from its **saved** content without rendering it (`parse_blocks()`, with synced patterns filled in and other tables of contents left out), so no block runs twice, and works out each heading's ID: its own if it has one, otherwise one from its text (`sanitize_title()`, `-2`, `-3`… for repeats, hand-set IDs and theme IDs like `content` and `masthead` reserved first). On a post split with `<!--nextpage-->`, only the current page is read. Headings with a dynamic tag (`{{…}}`) or a shortcode are left out of the list.
-- A `the_content` filter (priority 20, after blocks, `wpautop` and shortcodes) adds those IDs to the headings of the main post's content, while the block is switched on in Settings (or once a table of contents has rendered on the page). Each rendered heading takes the ID of the saved heading with the same text (compared after `wptexturize()`, so curly quotes and primes don't break the match); headings only there once rendered get a new one.
+- PHP (`includes/class-thingamablocks-toc-render.php`, `Thingamablocks_Toc_Render`) prints nothing unless a single post or page is being viewed (`is_singular()`) and it isn't password protected. It reads that post's headings from its **saved** content without rendering it (`parse_blocks()`, with synced patterns filled in, each once and at most 50, and other tables of contents, blocks hidden with the **Hide** setting (`metadata.blockVisibility` false) and HTML comments left out), so no block runs twice, and works out each heading's ID: its own if it has one, otherwise one from its text (`sanitize_title()`, `-2`, `-3`… for repeats, hand-set IDs and theme IDs like `content` and `masthead` reserved first). On a post split with `<!--nextpage-->`, only the current page is read. Headings with a dynamic tag (`{{…}}`) or a shortcode are left out of the list. With nothing to show, it dequeues the block's script and stylesheet (unless another table of contents on the page has shown).
+- A `the_content` filter (priority 20, after blocks, `wpautop` and shortcodes) adds those IDs to the headings of the main post's content, while the block is switched on in Settings (or once a table of contents has rendered on the page). It returns straight away when every heading already has an ID, or when the `thingamablocks_toc_heading_ids` filter returns `false`. Each rendered heading takes the ID of the saved heading with the same text (compared after `wptexturize()`, so curly quotes and primes don't break the match); headings only there once rendered get a new one.
 - The inner blocks render through GenerateBlocks as usual, so GB prints their CSS. PHP then cuts out the list, item and link templates with `Thingamablocks_Html` and **repeats** them for every heading as a tree (a skipped level just nests one deeper): the link gets the heading's `href="#id"`, `data-level` and escaped text (`Thingamablocks_Html::replace_text()`, shared with Breadcrumbs, which keeps a GB icon), template IDs are removed so they aren't repeated, and nested lists are copies of the list. Missing parts fall back to a plain `<ul>`. The wrapper is `<nav class="tmb-toc" aria-label="…" data-tmb-toc="{…}">`. Settings are checked: levels 1–6 only, the offset 0–500.
 - The copy-link icon (a Shape marked `copy`) is moved into a `<template>` for the script, only when **Copy-link buttons** is on. The scroll offset is one inline style (`:where(h1,…,h6)[id]{scroll-margin-top:…px}`), printed once per page.
-- **Collapsing** (`collapseBelow` above 0): the outer list gets `tmb-toc__panel` and an ID, the title's text is wrapped in `.tmb-toc__title-text` and a `<button class="tmb-toc__toggle" aria-expanded="false" aria-controls="…">` is added inside the title, with the chevron Shape moved into it (without collapsing, the chevron is left out). A `<style id="tmb-toc-collapse-{width}">` printed right before the block (once per width) hides the list and title text below the width and the button above it, so a phone gets it closed from the first paint.
+- **Collapsing** (`collapseBelow` above 0): the outer list is wrapped in a plain `<div class="tmb-toc__panel" id="tmb-toc-panel-N">` (so the list's own display, flex say, is untouched), the title's text is wrapped in `.tmb-toc__title-text` and a `<button class="tmb-toc__toggle" aria-expanded="false" aria-controls="tmb-toc-panel-N">` is added inside the title (its current-section line `aria-hidden`), with the chevron Shape moved into it (without collapsing, the chevron is left out). A `<style id="tmb-toc-collapse-{width}">` printed right before the block (once per width) hides the panel and title text below the width and the button above it, and resets the button's look, so a phone gets it closed from the first paint without a theme-styled button flashing. A `<noscript><style>` shows the panel and hides the button when JavaScript is off.
 - A small stylesheet (`src/toc/style.scss`, a `viewStyle`) styles the fallback list, the copy-link buttons (always visible on touch screens; "Link copied" on a `canvastext`/`canvas` chip, so it flips in dark mode) and the small-screen button (which inherits the title's look); everything else comes from the GB parts.
 - The front-end script (`src/toc/view.js`, a `viewScript`) handles link clicks (smooth `scrollIntoView`, `pushState`, focus on the heading with `tabindex="-1"`), works out the current section on scroll (the last heading past the top quarter of the window or the offset, batched with `requestAnimationFrame`; the clicked link stays current until scrolling ends), scrolls a sticky table of contents' own box to keep it in view, opens and closes the small-screen list (a height animation at the Dropdown speed via `duration()` from `src/shared/speeds.js`, Escape, closing when a link is followed, the current section shown in the button), and adds the copy-link buttons (`navigator.clipboard`, one shared `role="status"` message).
 - In the editor (`src/toc/edit.js`) the canvas shows the templates, not real headings. Switching **Copy-link buttons** on inserts the icon Shape; off removes it.
 - **Tests:** `tests/e2e/toc.spec.js` covers the nested list and the IDs headings get (duplicates, accents, hand-set IDs, skipped headings, a prime in the text, a reserved ID, a dynamic tag), scrolling below the offset, focus and `aria-current`, copying a link and the "Link copied" chip's background, collapsing below the breakpoint (the button, the section being read, closing on a link and Escape), no buttons without the setting, printing nothing without headings or away from a single post, forged settings and heading markup, an axe check, and editor validity of both layouts and the copy-link setting.
+
+**Share**
+
+- PHP (`includes/class-thingamablocks-share-render.php`, `Thingamablocks_Share_Render`) works out the post to share: the block's `postId` context (each post inside a Query Loop), otherwise the current post, but only on a single post or inside the loop (`is_singular()` / `in_the_loop()`). With no post, or no share button, it prints nothing and dequeues its stylesheet (unless another Share block has shown). The title is the raw `post_title` run through `wptexturize()` (so no "Private:" prefix, and curly quotes), as plain text.
+- The inner blocks render through GenerateBlocks as usual. PHP then finds each share button (an `<a>` or `<button>` with `data-share-network`) and fills it in with `WP_HTML_Tag_Processor`: network buttons get an `href` built from a **fixed pattern per network** (`share_url()`), with the address and the plain-text title `rawurlencode()`d into it and the result passed through `esc_url_raw()` allowing only `https` and `mailto`. So a saved or forged `href` never reaches the page, a button with an unknown network just loses its link, and a network button that's a `<button>` (it would do nothing) is left out. Network links get `target="_blank"` and `rel="noopener noreferrer nofollow"` (Email has no `target`). Copy link and Share… get `type="button"` (or, as an `<a>`, the post's address); Share… is printed `hidden`. A button with no text once its SVG is ignored gets an `aria-label` ("Share on LinkedIn"), unless it has one already.
+- The list (`data-share-part="list"`) is named with `aria-labelledby` pointing at the label part (given an ID if it has none, found with `Thingamablocks_Html`), or, with no label or an empty one, `aria-label` from the **Label** setting (`sanitize_text_field()`, "Share this post" by default).
+- Only with a Copy link or Share… button: the wrapper gets `data-tmb-share` (the address, title and "Link copied" text, as JSON via `wp_json_encode()`), an empty `<span class="tmb-share__status" role="status">` is added for the announcement, and the script is enqueued.
+- A small stylesheet (`src/share/style.scss`, a `viewStyle`) keeps Share… and its `<li>` hidden (`:has()`, `!important`, so a display set by a class can't show it), positions the "Link copied" chip (`canvastext`/`canvas`) and hides the status message visually.
+- The front-end script (`src/share/view.js`, registered in PHP on `init` and built by a `webpack.config.js` entry) re-checks the settings before using them (the JSON must parse and the address must be `http(s)`, since data attributes can be forged), copies with `navigator.clipboard.writeText()`, falling back to `document.execCommand( 'copy' )` and then to going to the post (or, on the post itself, a 5-second "Copy the address from the address bar" message), adds the chip and `data-copied` for 2 seconds, fills the status message once, calls `navigator.share()` for Share…, and un-hides Share… where `navigator.share` exists. One click listener on `document` covers every block.
+- In the editor (`src/share/edit.js`) **Add a network** copies the first button (`fresh()` clears its GB `uniqueId` so GB gives it a new one, and drops any HTML `id`) with `withNetwork()` (`src/share/network-attributes.js`, which also clears an `aria-label`) applied, and its `<li>` too when each button has one. `src/share/parts.js` adds the **Share part** panel; `src/share/icons.js` adds the "Share" set to GB's icon picker (the `generateblocks.editor.iconSVGSets` filter). The icons' paths live in `src/share/networks.js`, which matches `networks()` in PHP.
+- **Tests:** `tests/e2e/share.spec.js` builds each layout in the editor and checks each button's link (address and a title with `&`, quotes and HTML), `target`/`rel`, the names of icon-only buttons and the list, that buttons with visible text get no extra name, copying (the clipboard, the chip, `data-copied` and the announcement), Share… showing only with `navigator.share` (and calling it), that the script loads only with Copy link or Share…, that saved or forged links (`https://evil.example/`, `javascript:`) never reach the page, axe on every layout, and in the editor that all layouts are valid, adding a network (copying the first button, with its icon and brand class, in its own item) and switching a button's network. `editor.spec.js` and `settings.spec.js` include the new block.
 
 ### How entrance animations work
 
@@ -1935,7 +2142,7 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 A few details that keep the front end cheap:
 
-- **Block stylesheets in `<head>`.** WordPress adds a block's stylesheet when the block renders, which on a classic theme like GeneratePress can be after `<head>`, so the block could show unstyled for a moment. `thingamablocks_head_block_styles()` (`thingamablocks.php`) enqueues the Toggle's, Dropdown's, Breadcrumbs', Search's and Table of Contents' `viewStyle` in `<head>` on a single post or page whose content uses them. Blocks elsewhere (an Element, a widget) still get theirs the usual way.
+- **Block stylesheets in `<head>`.** WordPress adds a block's stylesheet when the block renders, which on a classic theme like GeneratePress can be after `<head>`, so the block could show unstyled for a moment. `thingamablocks_head_block_styles()` (`thingamablocks.php`) enqueues the Toggle's, Dropdown's, Breadcrumbs', Search's, Table of Contents' and Share's `viewStyle` in `<head>` on a single post or page whose content uses them. Blocks elsewhere (an Element, a widget) still get theirs the usual way.
 - **Options created up front.** `get_option()` on an option that doesn't exist costs a database query on every page view, so `thingamablocks_add_options()` (on `admin_init`) creates the options the front end reads (`thingamablocks_video_hosts`, `thingamablocks_speeds`, `thingamablocks_color_scheme`) as empty, autoloaded options, and the dark mode option is emptied rather than deleted.
 - **No `wp-i18n` on the front end.** The entrance animation, dropdown and Table of Contents scripts share `duration()` (`src/shared/speeds.js`) with the editor; the Speed controls' translated help text lives in the editor-only `src/shared/speeds-help.js`, so the front-end scripts don't depend on `wp-i18n`.
 - **The Marquee** re-measures on `window` `load` only in browsers without `ResizeObserver` (which already catches images changing the row's size).
@@ -1945,9 +2152,9 @@ A few details that keep the front end cheap:
 Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
-- `includes/class-thingamablocks-html.php` – `Thingamablocks_Html`: a `WP_HTML_Tag_Processor` subclass that finds a whole element (nested tags of the same name included) by an attribute, or the end of an opening tag, using bookmarks. Used by the Search block (to swap in the input and turn a part into a `<label>`), the Table of Contents (to cut out its list, item and link templates) and video backgrounds (to insert the background inside the container and find your own pause button). `Thingamablocks_Html::replace_text()` puts new text into a one-element part template (a GB Text block, keeping its icon), for Breadcrumbs and the Table of Contents.
+- `includes/class-thingamablocks-html.php` – `Thingamablocks_Html`: a `WP_HTML_Tag_Processor` subclass that finds a whole element (nested tags of the same name included) by an attribute, or the end of an opening tag, using bookmarks. Used by the Search block (to swap in the input and turn a part into a `<label>`), the Table of Contents (to cut out its list, item and link templates), the Share block (to find its label and list) and video backgrounds (to insert the background inside the container and find your own pause button). `Thingamablocks_Html::replace_text()` puts new text into a one-element part template (a GB Text block, keeping its icon), for Breadcrumbs and the Table of Contents.
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all seven blocks).
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all eight blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews, `nameBlocks()` / `partOf()` for naming layout blocks in List View).
 - `src/shared/speeds.js` – `duration()`: turns Fast / Normal / Slow into milliseconds, using the site's Speeds (`window.tmbSpeeds`). Shared by the editor and the dropdown, animation and Table of Contents front ends. `src/shared/speeds-help.js` (editor only) builds the Speed controls' help text.
@@ -1979,7 +2186,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/`, `src/search/` and `src/toc/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/`, `build/search/` and `build/toc/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/`, `src/search/`, `src/toc/` and `src/share/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/`, `build/search/`, `build/toc/` and `build/share/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`) and the Share block's front-end script (`src/share/view.js` → `build/share/view.js`, registered in PHP so it loads only with a Copy link or Share… button), which have no `block.json` of their own.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the demo sections in `playground/demo/` (block markup exported from the editor; `functions.php` holds a helper for their JSON strings). They're test content for the local site only, not part of the plugin, and the browser tests use that page. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip. It uses the system `zip` command and fails with a clear message if `build/` is missing.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved.
@@ -2003,7 +2210,8 @@ includes/
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
   class-thingamablocks-toc-render.php          Table of Contents render: the post's headings and their IDs (added to the content), parts repeated per heading and nested, <nav>, small-screen button and breakpoint CSS, copy-link icon template, scroll offset
-  class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, Table of Contents, video backgrounds); replace_text() for part templates (Breadcrumbs, Table of Contents)
+  class-thingamablocks-share-render.php        Share render: the post to share (postId context), each button's link from a fixed pattern, target/rel, icon-only names, the list's name, the status message, the Copy link / Share… script
+  class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, Table of Contents, Share, video backgrounds); replace_text() for part templates (Breadcrumbs, Table of Contents)
   color-scheme.php              Dark mode: tracks settings per post, prints the no-flash <head> script
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
@@ -2083,6 +2291,19 @@ src/toc/
   icon.js                       Block and layout icons
   style.scss                    Fallback list, copy-link buttons and "Link copied" chip, small-screen button; a viewStyle, so only on pages with a Table of Contents
   editor.scss                   Sidebar helper styles
+src/share/
+  block.json                    Block name, attributes (ariaLabel), postId context, supports, asset files
+  index.js                      Registers the block, variations and inserter example
+  edit.js                       Editor UI: style picker, "Add a network" (copies the first button), Accessibility label, no-buttons warning
+  parts.js                      "Share part" panel added to GB Element/Text blocks (label, list, network), "Use the X icon" button
+  networks.js                   The twelve networks: names, type (link/copy/native), default icons (Simple Icons paths), brand list; matches networks() in PHP
+  network-attributes.js         withNetwork(): turns a Text block into a network's button (tag, icon if still a default, brand class, name)
+  templates.js                  The three starting styles (Icons, Pills, Brand icons), using tmb-share__* Global Styles
+  icons.js                      The "Share" set in GenerateBlocks' icon picker
+  view.js                       Front-end Copy link and Share…, showing Share… where there's a share sheet, window.tmbShare (loaded only with those buttons)
+  icon.js                       Block and style icons
+  style.scss                    Share… hidden until shown, "Link copied" chip, status message; a viewStyle, so only on pages with a Share block
+  editor.scss                   Share… always shown in the canvas, sidebar helper styles
 src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
@@ -2112,12 +2333,12 @@ build/                          Compiled output (git-ignored; created by npm run
 playground/blueprint.json       WordPress Playground setup for npm run playground
 playground/demo/                Demo sections for the test site's "Thingamablocks demo" page (not in the plugin zip)
 scripts/zip.mjs                 Packages dist/thingamablocks.zip
-webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/, src/video/ and src/search/expand.js entries
+webpack.config.js               Default wp-scripts build plus the src/animations/, src/mask/, src/faq/, src/video/, src/search/expand.js and src/share/view.js entries
 .eslintrc.js, .editorconfig, .nvmrc   JS lint rules, editor settings, Node version
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js), search (search.spec.js), table of contents (toc.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js), search (search.spec.js), table of contents (toc.spec.js), share (share.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files: a sample SVG, a malicious SVG and a photo (mask tests), a tiny recorded video (background.webm, video background tests)
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

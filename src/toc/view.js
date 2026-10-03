@@ -140,9 +140,9 @@ function setCurrent( toc, entry ) {
  *
  * @param {Object} toc Table of contents record.
  */
-function update( toc ) {
+function currentFor( toc ) {
 	if ( toc.pinned ) {
-		return;
+		return toc.current;
 	}
 
 	const height = window.innerHeight;
@@ -161,14 +161,21 @@ function update( toc ) {
 		current = entry;
 	}
 
-	setCurrent( toc, current );
+	return current;
 }
+
+const update = ( toc ) => setCurrent( toc, currentFor( toc ) );
 
 function schedule() {
 	if ( ! frame ) {
 		frame = window.requestAnimationFrame( () => {
 			frame = 0;
-			tocs.forEach( update );
+
+			// Read every table of contents' position first, then change
+			// them (no layout work in between).
+			const next = tocs.map( currentFor );
+
+			tocs.forEach( ( toc, index ) => setCurrent( toc, next[ index ] ) );
 		} );
 	}
 }

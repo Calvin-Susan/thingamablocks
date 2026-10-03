@@ -14,7 +14,6 @@ import {
 } from '@wordpress/block-editor';
 import { createBlocksFromInnerBlocksTemplate } from '@wordpress/blocks';
 import {
-	BaseControl,
 	CheckboxControl,
 	Notice,
 	PanelBody,
@@ -76,15 +75,10 @@ function HeadingSettings( { attributes, setAttributes } ) {
 
 	return (
 		<PanelBody title={ __( 'Headings', 'thingamablocks' ) }>
-			<BaseControl
-				__nextHasNoMarginBottom
-				id="tmb-toc-levels"
-				label={ __( 'Include', 'thingamablocks' ) }
-				help={ __(
-					'Headings of the post being viewed. Leave one out by giving it the class tmb-toc-skip (Advanced → Additional CSS class).',
-					'thingamablocks'
-				) }
-			>
+			<fieldset className="tmb-toc-fieldset">
+				<legend className="tmb-toc-legend">
+					{ __( 'Include', 'thingamablocks' ) }
+				</legend>
 				<div className="tmb-toc-levels">
 					{ LEVELS.map( ( level ) => (
 						<CheckboxControl
@@ -106,7 +100,13 @@ function HeadingSettings( { attributes, setAttributes } ) {
 						/>
 					) ) }
 				</div>
-			</BaseControl>
+				<p className="tmb-toc-help">
+					{ __(
+						'Headings of the post being viewed; at least one level. Leave one out by giving it the class tmb-toc-skip (Advanced → Additional CSS class).',
+						'thingamablocks'
+					) }
+				</p>
+			</fieldset>
 		</PanelBody>
 	);
 }
