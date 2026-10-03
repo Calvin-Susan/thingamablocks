@@ -59,6 +59,12 @@ function thingamablocks_switches() {
 			'type'        => 'block',
 			'needle'      => '<!-- wp:thingamablocks/search ',
 		),
+		'toc'         => array(
+			'label'       => __( 'Table of Contents', 'thingamablocks' ),
+			'description' => __( 'A list of the post’s headings that marks the section being read, with optional copy-link buttons on headings. While on, headings in single posts and pages get an ID if they have none.', 'thingamablocks' ),
+			'type'        => 'block',
+			'needle'      => '<!-- wp:thingamablocks/toc ',
+		),
 		'animations'  => array(
 			'label'       => __( 'Entrance animations', 'thingamablocks' ),
 			'description' => __( 'The “Entrance animation” panel on GenerateBlocks blocks.', 'thingamablocks' ),

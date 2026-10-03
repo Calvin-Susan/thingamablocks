@@ -14,6 +14,7 @@ Blocks for [GenerateBlocks](https://wordpress.org/plugins/generateblocks/) 2.x, 
 | [**Dropdown**](#dropdown-block) | `thingamablocks/dropdown` | A button that opens a drawer of links, downloads or any other blocks. |
 | [**Breadcrumbs**](#breadcrumbs-block) | `thingamablocks/breadcrumbs` | The path to the current page (Home › Blog › Category › Post), worked out automatically for whatever page is being viewed, with breadcrumb structured data for search engines. |
 | [**Search**](#search-block) | `thingamablocks/search` | A search form you style like any other GenerateBlocks blocks, that can search only the content types you choose (just products, just pages…), including an icon that opens a search. |
+| [**Table of Contents**](#table-of-contents-block) | `thingamablocks/toc` | A linked list of the headings in the post or page being viewed, built automatically, that highlights the section being read, folds into a button on phones, and can add copy-link buttons to the headings. |
 
 Plus [**Entrance animations**](#entrance-animations) for every GenerateBlocks block: an "Entrance animation" panel that fades, slides or zooms a block in when it scrolls into view, or animates the blocks inside it one by one.
 
@@ -23,11 +24,11 @@ And [**Video backgrounds**](#video-backgrounds) for the GenerateBlocks Element b
 
 And [**FAQ schema**](#faq-schema) for the GenerateBlocks Pro Accordion block: an "FAQ schema" panel that tells search engines the accordion is a list of questions and answers (schema.org `FAQPage` structured data), built from the accordion's own text.
 
-All six blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
+All seven blocks sit in the GenerateBlocks category of the inserter, and all work the same way as the Accordion and Tabs blocks in GenerateBlocks Pro: the block itself is a **settings-only wrapper**. Everything you see is a real GenerateBlocks Element, Text, Shape or Media block, styled in the GB Styles panel, with global styles, the same way as the rest of the page. The wrapper only holds behaviour.
 
 **Requirements:** WordPress 6.6+ (tested up to 7.1), PHP 7.4+, GenerateBlocks 2.0+. Tested with GenerateBlocks 2.4.1 (free) and with GenerateBlocks Pro 2.x on a live site (the showcase page, FAQ schema, Global Styles and design tokens), plus GB Pro 2.8 locally for the starting layouts' classes. FAQ schema needs GenerateBlocks Pro 2.x, since the Accordion block is a Pro block. The blocks' starting layouts get their look from GenerateBlocks Pro Global Styles (see [Starting layouts and Global Styles](#starting-layouts-and-global-styles)): with free GenerateBlocks every block works, but the layouts are unstyled. Everything else works with free GenerateBlocks.
 
-**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs' and Search's few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The starting layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add around 18 KB to it, under 3 KB gzipped.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
+**Light on pages that don't use it:** nothing from the plugin loads on a page without one of its blocks or an entrance animation. Image masks load nothing at all on the front end: the mask is part of the image's GenerateBlocks CSS. FAQ schema adds no script or CSS either, just the structured data itself (a `<script type="application/ld+json">` in the footer) on pages with an FAQ accordion. Video backgrounds load their small script and CSS only on pages with a video background, and the video itself only after the page has loaded. Each block's script (and the Toggle's, Dropdown's, Breadcrumbs', Search's and Table of Contents' few lines of CSS) loads only on pages with that block. The Search block has no script at all unless it uses the expanding style. (The starting layouts' classes are GenerateBlocks Pro Global Styles, which GB Pro loads as one stylesheet on every page; they add around 20 KB to it, about 3 KB gzipped.) The one exception is dark mode: once a site has a published dark mode toggle, every page gets a tiny `<head>` script so the visitor's choice applies everywhere (see [The dark mode head output](#the-dark-mode-head-output)).
 
 **Light on the editor, too:** don't need the Marquee, masks or video backgrounds? Switch them off under **Settings → Thingamablocks** and they leave the inserter and sidebar, without breaking anything already built with them (see [Settings](#settings)).
 
@@ -65,6 +66,12 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
   - [How search parts and styling work](#how-search-parts-and-styling-work)
   - [Search settings](#search-settings)
   - [Searching only some content types](#searching-only-some-content-types)
+- [Table of Contents block](#table-of-contents-block)
+  - [Table of Contents quick start](#table-of-contents-quick-start)
+  - [How table of contents parts and styling work](#how-table-of-contents-parts-and-styling-work)
+  - [Table of Contents settings](#table-of-contents-settings)
+  - [Small screens](#small-screens)
+  - [How headings get their IDs](#how-headings-get-their-ids)
 - [Entrance animations](#entrance-animations)
   - [Entrance animation recipes](#entrance-animation-recipes)
   - [Entrance animation settings](#entrance-animation-settings)
@@ -92,7 +99,7 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 1. Install and activate GenerateBlocks 2.0 or newer. (The plugin header declares `Requires Plugins: generateblocks`, so WordPress won't activate this plugin without it. If GB is later deactivated or is a 1.x version, an admin notice says so.)
 2. Upload `thingamablocks.zip` under **Plugins → Add New → Upload Plugin** and activate it.
    To build the zip yourself, see [Development](#development).
-3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** are in the GenerateBlocks category; each offers a choice of starting layouts when inserted. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+3. In the block editor, open the inserter. **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search** and **Table of Contents** are in the GenerateBlocks category; each offers a choice of starting layouts when inserted. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block (a container) to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 
 ---
 
@@ -100,7 +107,7 @@ All six blocks sit in the GenerateBlocks category of the inserter, and all work 
 
 **Settings → Thingamablocks** (or the **Settings** link under the plugin on the Plugins screen; administrators only) has an on/off switch for each block and feature, in two cards. Everything is on by default.
 
-- **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs and Search. On means the block is in the block inserter.
+- **Blocks** – Toggle, Countdown, Marquee, Dropdown, Breadcrumbs, Search and Table of Contents. On means the block is in the block inserter. (Table of Contents also gives headings in single posts and pages an ID while it's on; see [How headings get their IDs](#how-headings-get-their-ids).)
 - **Features** – Entrance animations, Image masks, Video backgrounds and FAQ schema. On means the panel shows in the editor.
 
 Each item has its name, a one-line description and where it's used ("In use on 3 items" or "Not used anywhere yet"), with its switch beside it, counting posts, pages, templates, synced patterns and GeneratePress Elements in any status except the trash. Animations are counted by blocks with an entrance animation, masks by GenerateBlocks blocks with an image mask in their styles, video backgrounds by containers with a video background, and FAQ schema by accordions with **Add FAQ structured data** on.
@@ -114,7 +121,7 @@ The switches are ordinary checkboxes styled as switches (with `role="switch"`, s
 
 Switch it back on whenever you like. Deleting the plugin removes this setting.
 
-Below the switches, a **Speeds** card sets what **Fast**, **Normal** and **Slow** mean, in milliseconds, for the whole site: one row for **Dropdown speed** (defaults 150 / 250 / 400) and one for **Entrance animation speed** (400 / 700 / 1100). The blocks keep their simple Fast / Normal / Slow choice, and each Speed control shows the site's current values under it. Leave a field empty for the default; values from 0 to 3000 are allowed. Changing one changes every dropdown or animation already using that speed. Nothing is added to pages unless a value is changed, and then only a line of script on pages with a dropdown or animation (`window.tmbSpeeds`, option `thingamablocks_speeds`).
+Below the switches, a **Speeds** card sets what **Fast**, **Normal** and **Slow** mean, in milliseconds, for the whole site: one row for **Dropdown speed** (defaults 150 / 250 / 400) and one for **Entrance animation speed** (400 / 700 / 1100). The blocks keep their simple Fast / Normal / Slow choice, and each Speed control shows the site's current values under it. Leave a field empty for the default; values from 0 to 3000 are allowed. Changing one changes every dropdown or animation already using that speed (the Table of Contents opens on small screens at the Dropdown speed). Nothing is added to pages unless a value is changed, and then only a line of script on pages with a dropdown, animation or Table of Contents (`window.tmbSpeeds`, option `thingamablocks_speeds`).
 
 A **Video backgrounds** card has one field, **Your own Bunny hostnames**. Bunny's own addresses (`*.b-cdn.net`) and Vimeo always work. If a Bunny pull zone uses your own hostname (like `video.example.com`), add it here, one per line. Only videos from these places can be used, so nobody editing a page can point a background at anything else. (A pasted address is cut down to its hostname.)
 
@@ -129,11 +136,11 @@ When you insert a block you pick a starting layout. Those layouts don't put styl
 - **A few styles stay local on purpose**, so restyling a class can't break anything: the Countdown's visually hidden unit names, the Marquee row's `display: flex` (and `flex-direction: column` for vertical layouts), which the loop needs, and the Search input's `flex-grow`.
 - **The colours are plain hex values for now**, not your GeneratePress global colours, so they don't follow your palette or dark mode until you change them in the classes.
 
-**Where the classes come from.** The plugin creates them (about 75 in all) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles opens a wp-admin page after installing or updating to a version that adds classes. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so a class you delete stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.)
+**Where the classes come from.** The plugin creates them (about 85 in all) as ordinary Global Styles in a **Thingamablocks** category, the first time someone who can manage GB styles opens a wp-admin page after installing or updating to a version that adds classes. From then on they're the site's: the plugin never overwrites them, so your edits are safe, but improved defaults in a later version won't reach classes that already exist. Each class is created once, so a class you delete stays deleted. Classes for switched-off blocks are created when you switch the block on. (The category shows in GB Pro 2.8+; older versions list the classes ungrouped.)
 
 Behind the scenes: they're only created on an ordinary admin page load, never in AJAX, REST or cron requests, and a lock stops two admin tabs loading at once from creating duplicates. GB Pro normally rebuilds its stylesheet after every Global Style is saved; that's paused while the classes are created and done once at the end. Progress is saved after each class, so a run that's cut short carries on next time.
 
-**Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks every block works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the plugin's classes add around 18 KB to it (under 3 KB gzipped).
+**Needs GenerateBlocks Pro.** Global Styles are a Pro feature. With free GenerateBlocks every block works, but the layouts insert unstyled: style the parts yourself in the Styles panel. GB Pro loads all Global Styles as one stylesheet on every page; the plugin's classes add around 20 KB to it (about 3 KB gzipped).
 
 Blocks inserted with an older version keep the styles they were inserted with.
 
@@ -1098,6 +1105,159 @@ A few lines of CSS (`viewStyle`) load only on pages with a Search block. There's
 
 ---
 
+## Table of Contents block
+
+A linked list of the headings in the post or page being viewed – **On this page: Getting started · Installing · Settings** – that highlights the section the visitor is reading as they scroll. Clicking a link scrolls smoothly to that heading. On phones it folds up into a button that shows the section being read.
+
+Like Breadcrumbs, you style it once and it builds itself, so it belongs anywhere shared by many posts:
+
+- **A GeneratePress Element** (a Block Element on a hook such as `generate_before_content` or in a sidebar, or a Content Template) – the usual choice: every post gets a table of contents, set up once.
+- **A single post or page**, placed in the content where you want it.
+- **A sticky sidebar** – the **Sidebar line** layout is made for it.
+
+It lists the headings of the **single post or page being viewed** (on a post split with page breaks, just the current page's). Anywhere else (an archive, the blog page, search results), on a password-protected post, or on a post with no headings, it prints nothing at all.
+
+### Table of Contents quick start
+
+When you insert a Table of Contents you pick a starting layout:
+
+| Layout | Looks like |
+| --- | --- |
+| **List** (default) | A small "On this page" title and a plain list of muted links, sub-headings indented; the link for the section being read turns your accent colour and bold |
+| **Sidebar line** | The same, with a thin line down the left side; the current link also gets an accent-coloured marker on the line |
+
+Each layout is a title (a GenerateBlocks Text block), a chevron icon (a Shape, only shown on small screens) and a list: an Element (`<ul>`) holding one item (an Element, `<li>`) holding one link (a Text block, `<a>`, reading "Heading"). **The editor shows this template, not the real list** – the headings depend on the post being viewed, so the list is built on the front end. Style the title, list, item and link the way you want every entry to look, then view a post.
+
+Both layouts collapse on screens narrower than 768 px (see [Small screens](#small-screens)). The layouts are shared Global Styles classes (see [Table of Contents classes](#table-of-contents-classes)).
+
+**Recipe: a sticky table of contents in the sidebar of every post with GeneratePress**
+
+1. **Appearance → Elements → Add New → Block**.
+2. Insert a GenerateBlocks Element (a container) and, in its Styles panel, set **Position** to *Sticky* with a **Top** of, say, `2rem`. For a long list, also give it a **Max height** such as `calc(100vh - 4rem)` and **Overflow-y** *Auto*, so it scrolls in its own box.
+3. Inside it, insert **Table of Contents** and choose **Sidebar line**.
+4. Under **Element Settings**, set the **Hook** to `generate_before_right_sidebar_content` (your posts need a right sidebar), and **Display Rules** to *Posts → All Posts*.
+5. If your header is sticky, select the Table of Contents and set **Scroll offset** to the header's height (say `80`), so headings don't end up under it.
+6. Publish, and view a post. As you scroll, the marker follows the section you're reading, and the list scrolls itself to keep the current link in view.
+
+**On phones** one block does both jobs: below the **Collapse below** width (768 px in both layouts) it starts closed, as a button showing the section being read. What matters is *where* it sits on a phone. GeneratePress's own sidebar drops below the content on phones, so a table of contents there ends up at the bottom. For one that's sticky beside the post on desktop and at the top on phones, build the post layout as a GenerateBlocks grid in your single post template (a GP Element), with the table of contents' column first and the content column second, and on desktop move the table of contents' column to the side (GB's order or grid-column settings) and make it sticky.
+
+### How table of contents parts and styling work
+
+#### Table of contents parts
+
+Select a GenerateBlocks Element, Text or Shape block inside the Table of Contents and you'll get a **Table of contents part** panel with one setting, *This block is*:
+
+| Option | `data-toc-part` value | What it does |
+| --- | --- | --- |
+| Not a part | *(none)* | Shown as it is – a note or an icon, say |
+| Title | `title` | Shown as it is on wider screens. Below the **Collapse below** width it becomes the button that opens and closes the list. |
+| Chevron | `chevron` | The icon in that button (a **Shape**), turned over while the list is open. Not shown on wider screens, or when the block doesn't collapse. |
+| List | `list` | The list of headings: an **Element** set to `<ul>` or `<ol>`. Sub-headings get a nested copy of it, inside their parent's item. |
+| Item (each heading) | `item` | Repeated for every heading: an **Element** set to `<li>`, inside the list. |
+| Link | `link` | The heading's link, inside the item: a **Text** block set to `<a>`. Gets each heading's text and `#id`. |
+| Copy-link icon | `copy` | The icon for the copy-link buttons (added and removed by the **Copy-link buttons** setting): a **Shape**. Not shown in the table of contents itself. |
+
+**They're templates.** You style each one once, and on the site the item is repeated for every heading with that heading's text and link; headings under it (an H3 under an H2) go in a nested copy of the list. The text you type in the link is only a placeholder. Unlike Breadcrumbs, blocks that aren't parts are shown, so you can add a note or an icon.
+
+The sidebar warns you if the list, item or link is missing; without them the headings are shown as a plain list.
+
+#### Styling
+
+- **Everything visible** – title, chevron, list, item, link – is styled in the GB Styles panel, hover and focus included (the link's class sets `&:is(:hover, :focus-visible)` and `&:focus-visible`).
+- **The section being read**: its link gets `aria-current="true"`, and both layouts style that in the link's `tmb-toc__link--current` class (accent colour, and the accent marker where the link has a left border, as in **Sidebar line**). Edit that class to change the highlight on every table of contents; remove it from a link for no highlight. For your own look, add a style for `&[aria-current]` on the link.
+- **Each level**: items and links get `data-level="2"`, `"3"` and so on, the heading's level. Nested lists can also be styled from the list's class with `& [data-toc-part="list"]` (that's how the layouts indent sub-headings).
+- **The small-screen button** sits inside the title and takes on its font, colour and size. Its "section being read" line is `.tmb-toc__toggle-current`.
+
+#### Table of Contents classes
+
+The starting layouts' [Global Styles](#starting-layouts-and-global-styles):
+
+| Class | Styles | Layouts used in |
+| --- | --- | --- |
+| `tmb-toc__title` | The small uppercase "On this page" title | All |
+| `tmb-toc__chevron` | The small-screen button's chevron | All |
+| `tmb-toc__list` | The list: no bullets or margins, a small gap between entries, nested lists indented | All |
+| `tmb-toc__list--line` | The line down the side (nested lists indent their links instead, so the marker stays on the line) | Sidebar line |
+| `tmb-toc__item` | Each entry | All |
+| `tmb-toc__link` | Each link: muted, accent colour and underline on hover/focus, focus ring, at least 24 px tall | All |
+| `tmb-toc__link--line` | Each link's place on the line (a transparent marker) | Sidebar line |
+| `tmb-toc__link--current` | Only the current link (`&[aria-current]`): accent colour, accent marker where there's a border | All |
+| `tmb-toc__copy-icon` | The copy-link icon: muted, accent on hover, sized to the heading | Added by **Copy-link buttons** |
+
+### Table of Contents settings
+
+Select the Table of Contents block (the wrapper) to see these in the sidebar.
+
+#### Headings
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Include | `levels` | H2 and H3 | Tick boxes for H1 to H6; at least one stays ticked. Only these levels are listed. |
+
+**Leaving a heading out:** give it the class `tmb-toc-skip` (select the heading, **Advanced → Additional CSS class(es)**). It keeps its ID, so links to it still work; it's just not listed. Headings whose text has a GenerateBlocks dynamic tag (`{{…}}`) or a shortcode are left out too, since their text isn't known until the page is shown.
+
+#### Links
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Scroll offset (px) | `offset` | `0` | Room left above a heading when a link jumps to it, so a sticky header doesn't cover it. 0 to 500. It's CSS (`scroll-margin-top` on headings with an ID), so it also works for links to a heading shared from elsewhere. |
+| Copy-link buttons | `copyLinks` | Off | Adds a small button at the end of each listed heading that copies a link to it (the page address with `#heading-id`) and shows "Link copied" above it for a moment. Turning it on adds a **Copy-link icon** Shape block inside the Table of Contents: that's the button's icon, so swap or style it like any Shape. Turning it off removes it. Where the browser won't allow copying (a site not on https), the button jumps to the heading instead, so the link is in the address bar. |
+
+#### Small screens
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Collapse below (px) | `collapseBelow` | `768` in both layouts (`0` for a block with no value) | On screens narrower than this, the list starts closed and the title becomes a button that opens it. While closed, the button also shows the section being read under the title. Empty or 0: never collapse. Up to 3000. |
+
+How it behaves below that width:
+
+- **Closed from the first paint.** A tiny `<style>` for that width is printed just before the block (once per width per page), so phones never see the full list flash open.
+- **Tapping a link** closes the list and goes to the heading. **Escape** closes it and puts focus back on the button.
+- **It opens at the Dropdown speed** from **Settings → Thingamablocks → Speeds** (instantly for visitors who prefer reduced motion).
+- **Needs JavaScript to open**, like the Dropdown. Above the width, the title is plain text and the list is always open.
+
+#### Accessibility
+
+| Setting | Attribute | Default | Notes |
+| --- | --- | --- | --- |
+| Label | `ariaLabel` | "Table of contents" | Names the navigation for screen readers. Change it if a page has two tables of contents, or for a translation. Also the button's text when there's no title part. |
+
+#### Also supported
+
+- **Advanced → HTML anchor** – printed as the `<nav>`'s `id`.
+- **Advanced → Additional CSS class(es)**.
+- **Margin** (block spacing support).
+
+### How headings get their IDs
+
+A link can only jump to a heading that has an ID. So while the Table of Contents block is switched on in **Settings → Thingamablocks**, headings in the content of single posts and pages that don't have one get one from their text:
+
+- "Getting started" → `#getting-started`; a second "Getting started" → `#getting-started-2`.
+- Accents are removed ("Café menu" → `#cafe-menu`); letters from other alphabets are kept as they are. Very long headings are cut to 60 characters.
+- **IDs you've set yourself are kept** (a GenerateBlocks heading's HTML anchor, a core Heading's **HTML anchor**, or an `id` in your HTML), and never clash with a made-up one.
+- **IDs themes use are never given to a heading** (`content`, `page`, `main`, `primary`, `secondary`, `masthead`, `site-navigation`, `comments`, `respond`, `right-sidebar`, `left-sidebar`, `footer`), so a heading called "Content" gets `#content-2` and can't clash with GeneratePress's own elements.
+
+It reads the headings from the post's saved content, so it finds GenerateBlocks Text headings, core Heading blocks, headings in synced patterns and headings in classic-editor content. The IDs are added as the page is shown, not saved into your post. Each heading on the page is matched to its entry in the list by its text, so the links always match even after WordPress turns quotes and primes into curly ones. Switch the block off and the IDs stop being added (unless a Table of Contents is shown on the page anyway).
+
+Changing a heading's text changes its made-up ID, so links to the old one stop jumping there. For a heading people link to from elsewhere, set its HTML anchor yourself.
+
+#### Accessibility behaviour
+
+- **A labelled navigation landmark**: a `<nav aria-label="Table of contents">` holding your list, so screen reader users can find it and hear how many entries it has; sub-headings are nested lists.
+- **Following a link moves keyboard focus to the heading**, so Tab carries on from there and screen readers read from the new spot. The address updates, so Back returns to where you were.
+- **Reduced motion:** visitors who prefer reduced motion jump straight to the heading instead of scrolling smoothly, and the small-screen list opens without animating.
+- **The current section** is marked with `aria-current="true"` on its link, not just a colour.
+- **The small-screen button** follows the WAI-ARIA disclosure pattern: a real `<button>` inside the title, with `aria-expanded` and `aria-controls` pointing at the list (both set on the server), and **Escape** to close.
+- **Copy-link buttons** are real buttons named "Copy link", shown when the heading is hovered or the button has keyboard focus (and always on touch screens, which can't hover), with a focus outline and a 24 px target. "Link copied" appears on a solid chip in the page's text colour (it flips in dark mode) and is announced to screen readers once, through a single hidden status message.
+- **Easy to hit:** the layouts' links are at least 24 px tall (WCAG 2.5.8).
+- **Server-rendered:** the whole list is in the HTML before any JavaScript runs; without JavaScript the links are ordinary jump links.
+
+#### Loading
+
+A small script (`viewScript`) and a few lines of CSS (`viewStyle`) load only on pages with a Table of Contents. The scroll offset and the small-screen breakpoint are one line of CSS each, added only on pages whose Table of Contents uses them. If you've changed the Dropdown speeds, the `window.tmbSpeeds` line is printed for it too.
+
+---
+
 ## Entrance animations
 
 Not a block: an **Entrance animation** panel added to the sidebar of every GenerateBlocks block. Pick an animation and the block fades, slides or zooms in the first time it scrolls into view. On a block that holds other blocks, you can instead have the blocks inside it animate in one after another.
@@ -1520,6 +1680,16 @@ window.tmbBreadcrumbs.init( container ); // set up breadcrumbs added later, e.g.
 
 The Breadcrumbs block fires no events. Its PHP filters are under [PHP](#php).
 
+### Table of Contents: `window.tmbToc`
+
+```js
+window.tmbToc.init( container ); // set up tables of contents added later, e.g. by AJAX
+```
+
+- `init( root )` sets up every Table of Contents inside `root` (default `document`) that isn't set up yet; calling it more than once is safe. The list itself is plain HTML from the server; the script adds the smooth scrolling, the current-section highlight, the small-screen open/close button and the copy-link buttons.
+
+The Table of Contents fires no events.
+
 ### Entrance animations: `window.tmbAnimate`
 
 ```js
@@ -1558,6 +1728,9 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 - `[data-dropdown-part="button|drawer"]` – the button (with `aria-expanded` and `aria-controls`) and the drawer (an inline `display: none` while closed); `[data-dropdown-owned]` once a dropdown has claimed them.
 - `.tmb-breadcrumbs` – the Breadcrumbs wrapper (a `<nav>`), with `data-tmb-breadcrumbs` when collapsing is on. `.tmb-breadcrumbs__list` – the `<ol>`; `.tmb-breadcrumbs__step` – each `<li>` (`hidden` while collapsed away); `.tmb-breadcrumbs__more` – the "…" button (in an `li.tmb-breadcrumbs__more-step`).
 - `[data-breadcrumb-part="item|separator|current"]` – the parts, repeated for each step; the current page has `aria-current="page"`, separators `aria-hidden="true"`.
+- `nav.tmb-toc` – the Table of Contents wrapper, with `data-tmb-toc` (the copy-link button labels, for the script), and when it collapses `data-tmb-collapse="768"` (the width) plus `data-open` while open. `[data-toc-part="title|chevron|list|item|link"]` – the parts; items and links are repeated for each heading and have `data-level="1"`–`"6"`, and the current section's link `aria-current="true"`. `ul.tmb-toc__fallback-list` – the plain list used when a part is missing. `.tmb-toc-skip` – put it on a heading to leave it out.
+- Small screens (added by PHP when the block collapses): `.tmb-toc__panel` – the outer list (given an ID); `button.tmb-toc__toggle` – the open/close button inside the title (`aria-expanded`, `aria-controls`), holding `.tmb-toc__toggle-text` > `.tmb-toc__toggle-label` (the title's text) and `.tmb-toc__toggle-current` (the section being read, while closed), then the chevron; `.tmb-toc__title-text` – the title's own text, shown on wide screens; `.tmb-toc__toggle-wrap` – holds the button when there's no title part. `style#tmb-toc-collapse-768` – the breakpoint CSS, one per width.
+- `.tmb-toc__copy-button` – a copy-link button (added at the end of each listed heading), with `data-copied` for a moment after copying, holding `.tmb-toc__copied` ("Link copied").
 - `.tmb-search` – the Search wrapper (a `<form role="search">`). `input.tmb-search__input` – the real input that replaces the input part (it keeps `data-search-part="input"`).
 - `[data-search-part="field|input|submit|label|toggle"]` – the parts; the expanding style's toggle has `aria-expanded` and `aria-controls`, and its field an inline `display: none` while closed.
 - `[data-tmb-animate]` (with `data-tmb-speed`, `data-tmb-delay`, `data-tmb-animate-children`) – a block with an entrance animation. It gets `.tmb-in` when it starts animating (straight away for reduced motion), and keeps it.
@@ -1569,7 +1742,7 @@ document.querySelector( '#hero' ).tmbVideo.pause();       // pause one (and .pla
 
 ### PHP
 
-- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `animations`, `masks`, `video`, `faq`.
+- Function `thingamablocks_is_enabled( $key )` – whether a block or feature is switched on in **Settings → Thingamablocks** (`true` unless it's been switched off). Keys: `toggle`, `countdown`, `marquee`, `dropdown`, `breadcrumbs`, `search`, `toc`, `animations`, `masks`, `video`, `faq`.
 - Option `thingamablocks_settings` – the switches, as an array of key => `true`/`false`. A missing key counts as on. Removed when the plugin is deleted.
 - Filter `thingamablocks_print_color_scheme_script` – return `false` to stop printing the dark mode `<head>` output (the no-flash script).
 - Option `thingamablocks_color_scheme` – the dark mode settings per post ID (`followSystem`, `htmlClass`, `modified`).
@@ -1619,15 +1792,15 @@ For Kyle, and anyone new to block plugins.
 
 A block plugin could draw its own switch or timer and give you a set of colour and size controls. That would mean a second styling system next to GenerateBlocks, and it would never quite match. Instead every block follows the pattern GB Pro uses for Accordion and Tabs:
 
-- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, and so on.
+- The **block** (`thingamablocks/toggle`, `thingamablocks/countdown`, `thingamablocks/marquee`, `thingamablocks/dropdown`, `thingamablocks/breadcrumbs`, `thingamablocks/search`, `thingamablocks/toc`) has no visual settings. It holds behaviour: what happens when toggled or when time runs out, the starting state, the end date, the speed and direction, how the drawer opens, what goes in the trail, what to search, which headings to list, and so on.
 - Its **inner blocks** are normal GenerateBlocks blocks. The starting layouts (`src/*/templates.js`) are just block templates whose parts carry shared GB Pro Global Styles classes (`globalClasses`), created by `includes/class-thingamablocks-global-styles.php` from the defaults in `includes/global-styles/{block}.php`; see [Starting layouts and Global Styles](#starting-layouts-and-global-styles). Once inserted, they're yours to edit like any other GB block.
-- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
+- A block plays a role by being marked as a **part** (`data-toggle-part`, `data-countdown-part`, `data-countdown-unit`, `data-marquee-part`, `data-dropdown-part`, `data-breadcrumb-part`, `data-search-part`, `data-toc-part`), stored in GB's own `htmlAttributes`. The plugin adds the "Toggle part" / "Countdown part" / "Marquee part" / "Dropdown part" / "Breadcrumb part" / "Search part" / "Table of contents part" panels to GB blocks with a standard WordPress editor filter (`editor.BlockEdit`), so nothing about GB itself is modified.
 
 GenerateBlocks exposes some editor globals (`window.gb.*`). This plugin doesn't use them; everything goes through standard WordPress block APIs and GB's saved block attributes, so it doesn't depend on GB internals that could change.
 
 ### What's saved vs. what's rendered
 
-All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, the Breadcrumbs' `<nav>`, or the Search's `<form>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
+All seven blocks save only their inner blocks (`save` returns `<InnerBlocks.Content />`) plus their settings as block attributes. The wrapper (a `<div>`, the Breadcrumbs' and Table of Contents' `<nav>`, or the Search's `<form>`) is rendered in PHP, which means a settings change never causes a "This block contains unexpected content" error.
 
 **Toggle**
 
@@ -1675,6 +1848,18 @@ All six blocks save only their inner blocks (`save` returns `<InnerBlocks.Conten
 - **The expanding style's script** (`src/search/expand.js`, built by a `webpack.config.js` entry since it has no `block.json`) is registered on `init` and enqueued only by a search with both a toggle and a field. It opens and closes the field (an opacity fade with the Web Animations API, none for reduced motion), focuses the input, handles Escape, outside clicks and focus leaving, and nudges a positioned field sideways with `translate` to keep it 8 px inside the screen. Before such a search PHP prints a `<noscript><style>` that shows the field and hides the toggle when JavaScript is off.
 - In the editor (`src/search/edit.js`, `editor.scss`) the input part is shown dimmed like a placeholder, the expanding style's field sits in the page flow under the icon, and the sidebar lists the site's viewable post types (from the REST API) as tick boxes.
 - **Tests:** `tests/e2e/search.spec.js` builds each style in the editor (waiting for GenerateBlocks to set up each part) and checks the landmark, the named input and buttons, the theme's input styles being reset, searching everything / only pages (`tmb_types`) / only posts (`post_type`), a forged list only letting public types through, the expanding style's opening, focus, Escape and staying on screen, the no-JavaScript fallback, clicking outside, two expanding searches sharing a field ID, every starting style being valid in the editor, parts keeping their GB class and ID with a heading as the label, that only the expanding style loads a script, and axe. `editor.spec.js` checks the block saves valid.
+
+**Table of Contents**
+
+- PHP (`includes/class-thingamablocks-toc-render.php`, `Thingamablocks_Toc_Render`) prints nothing unless a single post or page is being viewed (`is_singular()`) and it isn't password protected. It reads that post's headings from its **saved** content without rendering it (`parse_blocks()`, with synced patterns filled in and other tables of contents left out), so no block runs twice, and works out each heading's ID: its own if it has one, otherwise one from its text (`sanitize_title()`, `-2`, `-3`… for repeats, hand-set IDs and theme IDs like `content` and `masthead` reserved first). On a post split with `<!--nextpage-->`, only the current page is read. Headings with a dynamic tag (`{{…}}`) or a shortcode are left out of the list.
+- A `the_content` filter (priority 20, after blocks, `wpautop` and shortcodes) adds those IDs to the headings of the main post's content, while the block is switched on in Settings (or once a table of contents has rendered on the page). Each rendered heading takes the ID of the saved heading with the same text (compared after `wptexturize()`, so curly quotes and primes don't break the match); headings only there once rendered get a new one.
+- The inner blocks render through GenerateBlocks as usual, so GB prints their CSS. PHP then cuts out the list, item and link templates with `Thingamablocks_Html` and **repeats** them for every heading as a tree (a skipped level just nests one deeper): the link gets the heading's `href="#id"`, `data-level` and escaped text (`Thingamablocks_Html::replace_text()`, shared with Breadcrumbs, which keeps a GB icon), template IDs are removed so they aren't repeated, and nested lists are copies of the list. Missing parts fall back to a plain `<ul>`. The wrapper is `<nav class="tmb-toc" aria-label="…" data-tmb-toc="{…}">`. Settings are checked: levels 1–6 only, the offset 0–500.
+- The copy-link icon (a Shape marked `copy`) is moved into a `<template>` for the script, only when **Copy-link buttons** is on. The scroll offset is one inline style (`:where(h1,…,h6)[id]{scroll-margin-top:…px}`), printed once per page.
+- **Collapsing** (`collapseBelow` above 0): the outer list gets `tmb-toc__panel` and an ID, the title's text is wrapped in `.tmb-toc__title-text` and a `<button class="tmb-toc__toggle" aria-expanded="false" aria-controls="…">` is added inside the title, with the chevron Shape moved into it (without collapsing, the chevron is left out). A `<style id="tmb-toc-collapse-{width}">` printed right before the block (once per width) hides the list and title text below the width and the button above it, so a phone gets it closed from the first paint.
+- A small stylesheet (`src/toc/style.scss`, a `viewStyle`) styles the fallback list, the copy-link buttons (always visible on touch screens; "Link copied" on a `canvastext`/`canvas` chip, so it flips in dark mode) and the small-screen button (which inherits the title's look); everything else comes from the GB parts.
+- The front-end script (`src/toc/view.js`, a `viewScript`) handles link clicks (smooth `scrollIntoView`, `pushState`, focus on the heading with `tabindex="-1"`), works out the current section on scroll (the last heading past the top quarter of the window or the offset, batched with `requestAnimationFrame`; the clicked link stays current until scrolling ends), scrolls a sticky table of contents' own box to keep it in view, opens and closes the small-screen list (a height animation at the Dropdown speed via `duration()` from `src/shared/speeds.js`, Escape, closing when a link is followed, the current section shown in the button), and adds the copy-link buttons (`navigator.clipboard`, one shared `role="status"` message).
+- In the editor (`src/toc/edit.js`) the canvas shows the templates, not real headings. Switching **Copy-link buttons** on inserts the icon Shape; off removes it.
+- **Tests:** `tests/e2e/toc.spec.js` covers the nested list and the IDs headings get (duplicates, accents, hand-set IDs, skipped headings, a prime in the text, a reserved ID, a dynamic tag), scrolling below the offset, focus and `aria-current`, copying a link and the "Link copied" chip's background, collapsing below the breakpoint (the button, the section being read, closing on a link and Escape), no buttons without the setting, printing nothing without headings or away from a single post, forged settings and heading markup, an axe check, and editor validity of both layouts and the copy-link setting.
 
 ### How entrance animations work
 
@@ -1750,9 +1935,9 @@ Dark mode needs to be applied before the page paints, or visitors who chose dark
 
 A few details that keep the front end cheap:
 
-- **Block stylesheets in `<head>`.** WordPress adds a block's stylesheet when the block renders, which on a classic theme like GeneratePress can be after `<head>`, so the block could show unstyled for a moment. `thingamablocks_head_block_styles()` (`thingamablocks.php`) enqueues the Toggle's, Dropdown's, Breadcrumbs' and Search's `viewStyle` in `<head>` on a single post or page whose content uses them. Blocks elsewhere (an Element, a widget) still get theirs the usual way.
+- **Block stylesheets in `<head>`.** WordPress adds a block's stylesheet when the block renders, which on a classic theme like GeneratePress can be after `<head>`, so the block could show unstyled for a moment. `thingamablocks_head_block_styles()` (`thingamablocks.php`) enqueues the Toggle's, Dropdown's, Breadcrumbs', Search's and Table of Contents' `viewStyle` in `<head>` on a single post or page whose content uses them. Blocks elsewhere (an Element, a widget) still get theirs the usual way.
 - **Options created up front.** `get_option()` on an option that doesn't exist costs a database query on every page view, so `thingamablocks_add_options()` (on `admin_init`) creates the options the front end reads (`thingamablocks_video_hosts`, `thingamablocks_speeds`, `thingamablocks_color_scheme`) as empty, autoloaded options, and the dark mode option is emptied rather than deleted.
-- **No `wp-i18n` on the front end.** The entrance animation and dropdown scripts share `duration()` (`src/shared/speeds.js`) with the editor; the Speed controls' translated help text lives in the editor-only `src/shared/speeds-help.js`, so the front-end scripts don't depend on `wp-i18n`.
+- **No `wp-i18n` on the front end.** The entrance animation, dropdown and Table of Contents scripts share `duration()` (`src/shared/speeds.js`) with the editor; the Speed controls' translated help text lives in the editor-only `src/shared/speeds-help.js`, so the front-end scripts don't depend on `wp-i18n`.
 - **The Marquee** re-measures on `window` `load` only in browsers without `ResizeObserver` (which already catches images changing the row's size).
 
 ### Shared code
@@ -1760,12 +1945,12 @@ A few details that keep the front end cheap:
 Things the blocks share live in one place, so a new block can reuse them:
 
 - `includes/class-thingamablocks-sanitize.php` – `Thingamablocks_Sanitize`: cleans targets, class names and the no-flash `<style>`. A target selector is only kept if it uses plain selector characters with balanced brackets and quotes, and has no `<`, `\`, `{`, `}`, `;`, `@`, `/*` comment or `url(` anywhere – not even inside quotes, since a browser and the check could disagree about where a quoted string ends. So nothing typed into a target field can break out of the `<style>` or turn into an `@import`; the editor (`src/shared/targets-control.js`, which mirrors the check) warns about targets that will be ignored. Class names go through `sanitize_html_class`. (The Toggle's older `Thingamablocks_Toggle_Render::clean_selectors()` etc. still work and call through to it.)
-- `includes/class-thingamablocks-html.php` – `Thingamablocks_Html`: a `WP_HTML_Tag_Processor` subclass that finds a whole element (nested tags of the same name included) by an attribute, or the end of an opening tag, using bookmarks. Used by the Search block (to swap in the input and turn a part into a `<label>`) and video backgrounds (to insert the background inside the container and find your own pause button).
+- `includes/class-thingamablocks-html.php` – `Thingamablocks_Html`: a `WP_HTML_Tag_Processor` subclass that finds a whole element (nested tags of the same name included) by an attribute, or the end of an opening tag, using bookmarks. Used by the Search block (to swap in the input and turn a part into a `<label>`), the Table of Contents (to cut out its list, item and link templates) and video backgrounds (to insert the background inside the container and find your own pause button). `Thingamablocks_Html::replace_text()` puts new text into a one-element part template (a GB Text block, keeping its icon), for Breadcrumbs and the Table of Contents.
 - `src/shared/targets-control.js` – the ID/selector field with page-ID suggestions and "not found" warnings.
-- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all six blocks).
+- `src/shared/variation-placeholder.js` – the "Choose a starting layout" picker (all seven blocks).
 - `src/shared/canvas-style.js` – puts editor-only preview CSS into the editor canvas iframe's `<head>`.
 - `src/shared/gb.js` – helpers for fitting in with GenerateBlocks (its icon colour class, style shorthands for the layouts, inserter previews, `nameBlocks()` / `partOf()` for naming layout blocks in List View).
-- `src/shared/speeds.js` – `duration()`: turns Fast / Normal / Slow into milliseconds, using the site's Speeds (`window.tmbSpeeds`). Shared by the editor and the dropdown and animation front ends. `src/shared/speeds-help.js` (editor only) builds the Speed controls' help text.
+- `src/shared/speeds.js` – `duration()`: turns Fast / Normal / Slow into milliseconds, using the site's Speeds (`window.tmbSpeeds`). Shared by the editor and the dropdown, animation and Table of Contents front ends. `src/shared/speeds-help.js` (editor only) builds the Speed controls' help text.
 - `src/shared/color-palette.js` – the colour picker's palette: GenerateBlocks Pro Design Tokens when there are any, otherwise the theme palette (used by the video overlay).
 
 ---
@@ -1794,7 +1979,7 @@ composer run lint:php    # PHP_CodeSniffer (also: npm run lint:php)
 - PHP is checked against `phpcs.xml.dist`: the WordPress-Extra and WordPress-Docs coding standards, plus PHPCompatibilityWP for PHP 7.4 and up. `composer run fix:php` fixes what it can automatically.
 - **GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every pull request: JS/CSS lint, build and zip; a PHP syntax check on PHP 7.4 and 8.4; PHPCS; the official WordPress **Plugin Check** against the built zip; and the browser tests (`tests/e2e/`) against a fresh Playground site.
 
-- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/` and `src/search/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/` and `build/search/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
+- Built with `@wordpress/scripts` (`wp-scripts`), the standard WordPress build tool. It finds each `block.json` under `src/` and compiles `src/toggle/`, `src/countdown/`, `src/marquee/`, `src/dropdown/`, `src/breadcrumbs/`, `src/search/` and `src/toc/` into `build/toggle/`, `build/countdown/`, `build/marquee/`, `build/dropdown/`, `build/breadcrumbs/`, `build/search/` and `build/toc/` (code in `src/shared/` is bundled into each). WordPress loads each block from its `build/<block>/block.json`, so **the plugin does nothing until you've built it** – `build/` is git-ignored. A block whose build folder is missing is simply skipped. `webpack.config.js` adds the entrance animation scripts (`src/animations/` → `build/animations/`), the image mask panel (`src/mask/editor.js` → `build/mask/`), the FAQ schema panel (`src/faq/editor.js` → `build/faq/`), the video background panel and front-end script (`src/video/` → `build/video/`) and the Search block's expanding-style script (`src/search/expand.js` → `build/search/expand.js`), which have no `block.json` of their own.
 - `npm run playground` starts [WordPress Playground](https://wordpress.github.io/wordpress-playground/) locally with this folder mounted as the plugin. The blueprint (`playground/blueprint.json`) installs and activates GenerateBlocks (latest from wordpress.org) and GeneratePress, activates this plugin, turns on pretty permalinks, and creates a **Thingamablocks demo** page built from the demo sections in `playground/demo/` (block markup exported from the editor; `functions.php` holds a helper for their JSON strings). They're test content for the local site only, not part of the plugin, and the browser tests use that page. Free GenerateBlocks has no Global Styles, so the blueprint also adds a must-use plugin defining `THINGAMABLOCKS_PRINT_DEFAULT_STYLES`: the plugin then prints the default layout classes itself (an inline style, handle `thingamablocks-default-styles`, on the front end and in the editor), so the layouts look and test as they would with GB Pro. Never used on a real site; the asset-loading tests ignore that style. You're logged in as admin. Run `npm start` in another terminal so edits rebuild; refresh the editor to pick them up.
 - `npm run zip` produces `dist/thingamablocks.zip` with a single `thingamablocks/` folder containing only the runtime files: `thingamablocks.php`, `readme.txt`, `uninstall.php`, `includes/`, `build/` and `LICENSE`. The human-readable source (`src/`, build config) lives in the GitHub repository ([Calvin-Susan/thingamablocks](https://github.com/Calvin-Susan/thingamablocks), private for now) rather than the zip. It uses the system `zip` command and fails with a clear message if `build/` is missing.
 - **Uninstall:** deleting the plugin (not just deactivating it) runs `uninstall.php`, which removes the plugin's options. Content made with the blocks stays in your posts as saved.
@@ -1817,7 +2002,8 @@ includes/
   class-thingamablocks-breadcrumbs-trail.php   Breadcrumbs trail: the block's own trail for every kind of page (with Yoast/Rank Math/SEOPress primary categories)
   class-thingamablocks-breadcrumbs-render.php  Breadcrumbs render: options, parts rendered once and repeated per step, <nav>/<ol>, BreadcrumbList structured data
   class-thingamablocks-search-render.php       Search render: <form role="search">, the real input, label/button names, content-type fields, tmb_types search limit, expanding-style ARIA and script
-  class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, video backgrounds)
+  class-thingamablocks-toc-render.php          Table of Contents render: the post's headings and their IDs (added to the content), parts repeated per heading and nested, <nav>, small-screen button and breakpoint CSS, copy-link icon template, scroll offset
+  class-thingamablocks-html.php                Finds a whole element (nested tags included) or an opening tag's end, with WP_HTML_Tag_Processor bookmarks (Search, Table of Contents, video backgrounds); replace_text() for part templates (Breadcrumbs, Table of Contents)
   color-scheme.php              Dark mode: tracks settings per post, prints the no-flash <head> script
   animations.php                Entrance animations: registers the scripts, loads them and the hide/fail-safe CSS on pages that use one
   mask.php                      Image masks: loads the Mask panel in the block editor (nothing on the front end)
@@ -1887,6 +2073,16 @@ src/search/
   icon.js                       Block and style icons
   style.scss                    Input reset and field focus outline; a viewStyle, so only on pages with a Search
   editor.scss                   Input shown as a placeholder, expanding field in the page flow, sidebar helper styles
+src/toc/
+  block.json                    Block name, attributes, supports, asset files
+  index.js                      Registers the block, variations and inserter example
+  edit.js                       Editor UI: layout picker, Headings / Links / Small screens / Accessibility settings, missing-part warning, adds/removes the copy-link icon
+  parts.js                      "Table of contents part" panel added to GB Element/Text/Shape blocks
+  templates.js                  The two starting layouts (List, Sidebar line; collapse below 768 px) and the copy-link icon, using tmb-toc__* Global Styles
+  view.js                       Front-end smooth scrolling and focus, current section (aria-current), small-screen open/close, copy-link buttons, window.tmbToc
+  icon.js                       Block and layout icons
+  style.scss                    Fallback list, copy-link buttons and "Link copied" chip, small-screen button; a viewStyle, so only on pages with a Table of Contents
+  editor.scss                   Sidebar helper styles
 src/animations/
   editor.js                     "Entrance animation" panel on GB 2 / GB Pro blocks, Preview button
   presets.js                    The animations (start states), speeds and easing, shared by editor and front end
@@ -1921,7 +2117,7 @@ webpack.config.js               Default wp-scripts build plus the src/animations
 phpcs.xml.dist, composer.json   PHP coding standards (PHPCS) and its Composer dev tools
 .github/workflows/ci.yml        GitHub Actions: lint, build, zip, PHP checks, Plugin Check, browser tests
 playwright.config.js            Browser test setup (starts Playground if needed)
-tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js), search (search.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
+tests/e2e/                      Browser tests: assets, front end, security, editor, accessibility, image masks (mask.spec.js), FAQ schema (faq.spec.js), dropdown (dropdown.spec.js), breadcrumbs (breadcrumbs.spec.js), search (search.spec.js), table of contents (toc.spec.js), video backgrounds (video.spec.js), settings page (settings.spec.js)
 tests/e2e/fixtures/             Test files: a sample SVG, a malicious SVG and a photo (mask tests), a tiny recorded video (background.webm, video background tests)
 readme.txt                      wordpress.org plugin readme
 CHANGELOG.md                    Release notes

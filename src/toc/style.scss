@@ -1,0 +1,164 @@
+// Front end only (block.json "viewStyle": loaded only on pages with a Table
+// of Contents). The look comes from the GenerateBlocks parts; this covers
+// what the script adds to headings, and the plain list used when a part is
+// missing.
+
+.tmb-toc__fallback-list {
+	margin: 0;
+	padding-left: 1.25em;
+}
+
+// The copy-link button the script adds to headings: an icon, shown when the
+// heading is hovered or the button focused (always on touch screens, which
+// can't hover).
+.tmb-toc__copy-button {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	// An easy target to hit (WCAG 2.5.8).
+	min-width: 24px;
+	min-height: 24px;
+	margin: 0 0 0 0.25em;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	line-height: 1;
+	vertical-align: middle;
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 0.15s;
+
+	// GeneratePress styles buttons and their hover.
+	&:hover,
+	&:focus {
+		background: none;
+		color: inherit;
+	}
+
+	:hover > &,
+	&:focus-visible,
+	&[data-copied] {
+		opacity: 1;
+	}
+
+	&:focus-visible {
+		outline: 2px solid currentcolor;
+		outline-offset: 2px;
+	}
+
+	@media (hover: none) {
+		opacity: 1;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}
+
+// "Link copied", above the icon for a moment (to its left, so it can't run
+// off the edge of a phone screen).
+.tmb-toc__copied {
+	position: absolute;
+	right: 0;
+	bottom: 100%;
+	margin-bottom: 0.25em;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	// Dark on a light page, light on a dark one (follows color-scheme), so
+	// it reads over whatever text is behind it.
+	background: canvastext;
+	color: canvas;
+	font-size: 0.875rem;
+	font-weight: 400;
+	letter-spacing: normal;
+	line-height: 1.2;
+	text-transform: none;
+	white-space: nowrap;
+	pointer-events: none;
+
+	&[hidden] {
+		display: none;
+	}
+}
+
+// Announces "Link copied" to screen readers only.
+.tmb-toc__status {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+// The toggle that opens and closes the list on small screens (the
+// Collapse setting). It sits inside the title and takes on its look; the
+// breakpoint CSS is printed with the block.
+.tmb-toc__toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5em;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+	line-height: inherit;
+	text-align: inherit;
+	text-transform: inherit;
+	cursor: pointer;
+
+	// GeneratePress styles buttons and their hover.
+	&:hover,
+	&:focus {
+		background: none;
+		color: inherit;
+	}
+
+	&:focus-visible {
+		outline: 2px solid currentcolor;
+		outline-offset: 2px;
+	}
+}
+
+.tmb-toc__toggle-text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+// The section being read, under the title while the list is closed.
+.tmb-toc__toggle-current {
+	overflow: hidden;
+	font-size: 0.9375em;
+	font-weight: 400;
+	letter-spacing: normal;
+	text-overflow: ellipsis;
+	text-transform: none;
+	white-space: nowrap;
+
+	&:empty,
+	[aria-expanded="true"] & {
+		display: none;
+	}
+}
+
+[data-toc-part="chevron"] {
+	flex-shrink: 0;
+	transition: transform 0.2s;
+
+	.tmb-toc__toggle[aria-expanded="true"] & {
+		transform: rotate(180deg);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+	}
+}

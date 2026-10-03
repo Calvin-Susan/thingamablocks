@@ -1,7 +1,8 @@
 <?php
 /**
  * HTML helper: finds a whole element in block markup, or where an opening
- * tag ends (used by the Search block and video backgrounds).
+ * tag ends (used by the Search block and video backgrounds), and puts new
+ * text into a part template (Breadcrumbs, Table of Contents).
  *
  * @package Thingamablocks
  */
@@ -156,6 +157,27 @@ class Thingamablocks_Html extends WP_HTML_Tag_Processor {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Replace the text of a one-element template (a GB Text block, say) with
+	 * $text_html, keeping its tag and any icon.
+	 *
+	 * @param string $html      Template markup.
+	 * @param string $text_html Escaped text HTML.
+	 * @return string HTML.
+	 */
+	public static function replace_text( $html, $text_html ) {
+		$literal = str_replace( array( '\\', '$' ), array( '\\\\', '\\$' ), $text_html );
+
+		// A GB Text block with an icon keeps its text in an inner span.
+		$replaced = preg_replace( '#(<span class="gb-text">).*?(</span>)#s', '${1}' . $literal . '${2}', $html, 1, $count );
+
+		if ( $count ) {
+			return $replaced;
+		}
+
+		return (string) preg_replace( '#^(\s*<[^>]+>).*(</[a-zA-Z0-9]+>\s*)$#s', '${1}' . $literal . '${2}', $html );
 	}
 
 	/**

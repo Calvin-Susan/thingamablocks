@@ -1,0 +1,58 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "thingamablocks/toc",
+	"version": "1.1.0",
+	"title": "Table of Contents",
+	"category": "generateblocks",
+	"description": "A list of the post’s headings, linked to each one and styled with GenerateBlocks. Marks the section being read, and can add copy-link buttons to the headings.",
+	"keywords": [
+		"table of contents",
+		"toc",
+		"contents",
+		"headings",
+		"anchor",
+		"jump links"
+	],
+	"textdomain": "thingamablocks",
+	"attributes": {
+		"levels": {
+			"type": "array",
+			"default": [ 2, 3 ],
+			"items": {
+				"type": "integer"
+			}
+		},
+		"offset": {
+			"type": "number",
+			"default": 0
+		},
+		"collapseBelow": {
+			"type": "number",
+			"default": 0
+		},
+		"copyLinks": {
+			"type": "boolean",
+			"default": false
+		},
+		"ariaLabel": {
+			"type": "string",
+			"default": ""
+		},
+		"anchor": {
+			"type": "string"
+		}
+	},
+	"supports": {
+		"anchor": true,
+		"html": false,
+		"className": true,
+		"spacing": {
+			"margin": true
+		}
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"viewScript": "file:./view.js",
+	"viewStyle": "file:./style-index.css"
+}

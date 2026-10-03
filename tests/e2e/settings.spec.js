@@ -70,6 +70,7 @@ test.describe( 'Settings page', () => {
 			'Dropdown',
 			'Breadcrumbs',
 			'Search',
+			'Table of Contents',
 			'Entrance animations',
 			'Image masks',
 			'FAQ schema',

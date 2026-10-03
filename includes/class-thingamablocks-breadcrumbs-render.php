@@ -260,26 +260,7 @@ class Thingamablocks_Breadcrumbs_Render {
 			}
 		}
 
-		$html = $processor->get_updated_html();
-
-		// A GB Text block with an icon keeps its text in an inner span.
-		$replaced = preg_replace( '#(<span class="gb-text">).*?(</span>)#s', '${1}' . self::literal( $label_html ) . '${2}', $html, 1, $count );
-
-		if ( $count ) {
-			return $replaced;
-		}
-
-		return (string) preg_replace( '#^(\s*<[^>]+>).*(</[a-zA-Z0-9]+>\s*)$#s', '${1}' . self::literal( $label_html ) . '${2}', $html );
-	}
-
-	/**
-	 * Escape a string for use as a preg_replace() replacement.
-	 *
-	 * @param string $text Text.
-	 * @return string
-	 */
-	private static function literal( $text ) {
-		return str_replace( array( '\\', '$' ), array( '\\\\', '\\$' ), $text );
+		return Thingamablocks_Html::replace_text( $processor->get_updated_html(), $label_html );
 	}
 
 	/**

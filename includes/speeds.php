@@ -5,7 +5,8 @@
  * Blocks keep a simple speed choice; Settings → Thingamablocks can change the
  * milliseconds behind each one, for dropdowns opening and for entrance
  * animations. Only changed values are stored, and they're only printed (a
- * line of inline script) on pages that load the dropdown or animation script,
+ * line of inline script) on pages that load the dropdown, animation or table
+ * of contents script (its collapsing list opens at the dropdown speed),
  * and in the editor for its previews.
  *
  * @package Thingamablocks
@@ -130,7 +131,7 @@ add_action( 'enqueue_block_editor_assets', 'thingamablocks_add_speeds_script', 2
 /**
  * Attach the speeds to the scripts that use them. The scripts are registered
  * by now and only print on pages that enqueue them, so pages without a
- * dropdown or animation get nothing.
+ * dropdown, animation or table of contents get nothing.
  */
 function thingamablocks_add_speeds_script() {
 	$script = thingamablocks_speeds_script();
@@ -141,7 +142,7 @@ function thingamablocks_add_speeds_script() {
 
 	$handles = is_admin()
 		? array( 'thingamablocks-dropdown-editor-script', 'thingamablocks-animations-editor' )
-		: array( 'thingamablocks-dropdown-view-script', 'thingamablocks-animations' );
+		: array( 'thingamablocks-dropdown-view-script', 'thingamablocks-animations', 'thingamablocks-toc-view-script' );
 
 	foreach ( $handles as $handle ) {
 		if ( wp_script_is( $handle, 'registered' ) ) {

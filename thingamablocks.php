@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Thingamablocks
  * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  generateblocks
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'THINGAMABLOCKS_VERSION', '1.0.0' );
+define( 'THINGAMABLOCKS_VERSION', '1.1.0' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once THINGAMABLOCKS_DIR . 'includes/settings.php';
@@ -34,6 +34,7 @@ require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-tra
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-breadcrumbs-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-html.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-search-render.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-toc-render.php';
 require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 require_once THINGAMABLOCKS_DIR . 'includes/mask.php';
@@ -53,6 +54,7 @@ function thingamablocks_register_blocks() {
 		'dropdown'    => array( 'Thingamablocks_Dropdown_Render', 'render' ),
 		'breadcrumbs' => array( 'Thingamablocks_Breadcrumbs_Render', 'render' ),
 		'search'      => array( 'Thingamablocks_Search_Render', 'render' ),
+		'toc'         => array( 'Thingamablocks_Toc_Render', 'render' ),
 	);
 
 	foreach ( $blocks as $folder => $render ) {
@@ -82,7 +84,7 @@ function thingamablocks_head_block_styles() {
 		return;
 	}
 
-	foreach ( array( 'toggle', 'dropdown', 'breadcrumbs', 'search' ) as $name ) {
+	foreach ( array( 'toggle', 'dropdown', 'breadcrumbs', 'search', 'toc' ) as $name ) {
 		$handle = generate_block_asset_handle( 'thingamablocks/' . $name, 'viewStyle' );
 
 		if ( has_block( 'thingamablocks/' . $name, $post ) && wp_style_is( $handle, 'registered' ) ) {

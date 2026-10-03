@@ -4,10 +4,12 @@
 WordPress plugin by OGAL Web Design (Kyle). Read README.md for the full guide;
 the essentials:
 
-- **What's in it**: six blocks — Toggle (`thingamablocks/toggle`), Countdown
+- **What's in it**: seven blocks — Toggle (`thingamablocks/toggle`), Countdown
   (`thingamablocks/countdown`), Marquee (`thingamablocks/marquee`), Dropdown
   (`thingamablocks/dropdown`), Breadcrumbs (`thingamablocks/breadcrumbs`),
-  Search (`thingamablocks/search`) — plus entrance animations added to every
+  Search (`thingamablocks/search`), Table of Contents (`thingamablocks/toc`;
+  also adds heading IDs to single posts/pages via `the_content` while its
+  switch is on) — plus entrance animations added to every
   GenerateBlocks 2 / GB Pro block, image masks (a "Mask" panel on the GB Image
   block, saved as `mask-*` in its GB styles), video backgrounds (Bunny/Vimeo, a
   "Video background" panel on the GB Element block, `data-tmb-video`), FAQ
@@ -17,8 +19,8 @@ the essentials:
   Accordion/Tabs). Everything visible inside is a real GenerateBlocks block
   (Element, Text, Shape, Media), styled with GB's own Styles panel. Parts are
   marked in the GB block's `htmlAttributes` (`data-toggle-part`,
-  `data-countdown-part` / `data-countdown-unit`, `data-marquee-part`), via a
-  "… part" panel the plugin adds with an `editor.BlockEdit` filter. Animations
+  `data-countdown-part` / `data-countdown-unit`, `data-marquee-part`,
+  `data-toc-part`), via a "… part" panel the plugin adds with an `editor.BlockEdit` filter. Animations
   are stored the same way (`data-tmb-animate` etc.). Don't rebuild GB's Styles
   Builder: `window.gb.*` exists but is undocumented.
 - **Rendering**: blocks are dynamic. `save()` returns `InnerBlocks.Content`; PHP
@@ -29,8 +31,8 @@ the essentials:
 - **Naming**: blocks `thingamablocks/*`; PHP `thingamablocks_` / `Thingamablocks_`;
   front end `tmb-` (classes, events, storage keys, data attributes) and
   `window.tmbToggle` / `tmbCountdown` / `tmbMarquee` / `tmbDropdown` /
-  `tmbBreadcrumbs` / `tmbAnimate` / `tmbVideo`, plus data globals PHP prints
-  as inline script: `window.tmbSpeeds` (only when changed) and
+  `tmbBreadcrumbs` / `tmbToc` / `tmbAnimate` / `tmbVideo`, plus data globals PHP prints
+  as inline script: `window.tmbSpeeds` (only when changed; Dropdown, animations, ToC) and
   `window.tmbVideoHosts`. Text domain `thingamablocks`.
 - **Security**: contributors can save block attributes. Anything reaching a
   `<style>` goes through `Thingamablocks_Sanitize` (`includes/class-thingamablocks-sanitize.php`):
@@ -51,14 +53,17 @@ the essentials:
   `display:flex`/`flex-direction`, the Search input's `flex-grow`. GB nested
   selectors must start with `&` or be a descendant (no ancestor selectors), so
   state styling is on the part: `&[aria-checked="true"]`,
-  `&[data-active="true"]`, `&[aria-pressed="true"]`; a look that needs two
+  `&[data-active="true"]`, `&[aria-pressed="true"]`, `&[aria-current]` (ToC link, in its own `tmb-toc__link--current` class); a look that needs two
   parts spans two classes (e.g. `tmb-toggle__switch--dark-mode` +
   `tmb-toggle__icon--on`).
-- **Global Styles for layouts** (all six blocks): classes are named
+- **Global Styles for layouts** (all seven blocks): classes are named
   `tmb-<block>__<part>--<modifier>` (base per part, modifier per layout).
   Don't reuse class names the PHP renderers add themselves
   (`tmb-breadcrumbs__separator` → the template uses `__divider`;
-  `tmb-search__input`, `tmb-search__label--block`). Defaults live in
+  `tmb-search__input`, `tmb-search__label--block`; `tmb-toc__fallback-list`,
+  `tmb-toc__copy-button` / `__copied` / `__copy-template` / `__status` /
+  `__panel` / `__toggle` / `__toggle-wrap` / `__toggle-text` /
+  `__toggle-label` / `__toggle-current` / `__title-text`). Defaults live in
   `includes/global-styles/{feature}.php` (returns a static function returning
   `array( class => GB styles )`), loaded by
   `Thingamablocks_Global_Styles::defaults()`
@@ -68,8 +73,8 @@ the essentials:
   an atomic lock (`INSERT IGNORE` of `thingamablocks_global_styles_lock`), with
   GB Pro's per-save stylesheet rebuild paused and run once at the end; the
   `thingamablocks_global_styles` option (saved after each class) lists names
-  already handled, so runs resume and deleted classes stay deleted. ~75
-  classes, ~18 KB raw in GB Pro's site-wide stylesheet; keep additions lean.
+  already handled, so runs resume and deleted classes stay deleted. ~85
+  classes, ~20 KB raw in GB Pro's site-wide stylesheet; keep additions lean.
   **To add a class** (new block or layout): add it to that block's defaults
   file, base before modifiers, and use it in the template; it's created on
   the next admin load. **Never rely on editing an existing default**: the

@@ -89,7 +89,7 @@ class Thingamablocks_Global_Styles {
 		if ( null === $defaults ) {
 			$defaults = array();
 
-			foreach ( array( 'toggle', 'countdown', 'marquee', 'dropdown', 'breadcrumbs', 'search' ) as $feature ) {
+			foreach ( array( 'toggle', 'countdown', 'marquee', 'dropdown', 'breadcrumbs', 'search', 'toc' ) as $feature ) {
 				$file = THINGAMABLOCKS_DIR . 'includes/global-styles/' . $feature . '.php';
 
 				if ( file_exists( $file ) ) {

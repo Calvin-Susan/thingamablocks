@@ -4,7 +4,7 @@ Tags: generateblocks, marquee, countdown timer, dark mode, toggle
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,9 +12,9 @@ A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
 
 == Description ==
 
-Thingamablocks adds six blocks to the GenerateBlocks category in the block inserter, plus entrance animations, image masks, video backgrounds and FAQ schema for the GenerateBlocks blocks you already use.
+Thingamablocks adds seven blocks to the GenerateBlocks category in the block inserter, plus entrance animations, image masks, video backgrounds and FAQ schema for the GenerateBlocks blocks you already use.
 
-Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field) is an ordinary GenerateBlocks Element, Text, Shape or Media block, styled with the GenerateBlocks Styles panel you already know. The wrapper only holds the behaviour, and the server renders the right roles and state before any JavaScript runs.
+Like the Accordion and Tabs blocks in GenerateBlocks Pro, each block is a settings-only wrapper. Everything you see (the switch, the numbers, the logos, the button and drawer, the breadcrumb links, the search field, the table of contents) is an ordinary GenerateBlocks Element, Text, Shape or Media block, styled with the GenerateBlocks Styles panel you already know. The wrapper only holds the behaviour, and the server renders the right roles and state before any JavaScript runs.
 
 Nothing from the plugin loads on pages that don't use it. Each block's small script and CSS load only on pages with that block; image masks and FAQ schema load no script or CSS at all. The one exception is dark mode: once a dark mode toggle is published, a tiny script in `<head>` applies the visitor's choice on every page, so there's no flash of the wrong colours.
 
@@ -44,6 +44,10 @@ The path to the current page (Home › Blog › Category › Post), worked out o
 
 A search form built from GenerateBlocks blocks, so it looks like the rest of your site. Tick the content types to search (just products, just pages…), and results show on your theme's normal search results page. Four starting styles, including a search icon that opens a field. No script unless you use that expanding style.
 
+= Table of Contents =
+
+A linked list of the headings in the post or page being viewed, built on the server, so you can place it once in a GeneratePress Element. Headings without an ID get one from their text (hand-set anchors are kept). Links scroll smoothly and move focus to the heading, the section being read is highlighted (`aria-current`), and a scroll offset keeps headings clear of a sticky header. On phones it starts closed, as a button showing the section being read. Optional copy-link buttons copy a link to any heading. Two starting layouts: a plain list and a sidebar line.
+
 = Entrance animations =
 
 An Entrance animation panel on every GenerateBlocks 2 and GenerateBlocks Pro block: fade, slide or zoom a block in as it scrolls into view, or animate the cards in a grid or query loop one by one. A ~1.6 KB (gzipped) script using the Web Animations API, only on pages with an animation, with reduced-motion support and a fail-safe that shows everything if the script is blocked.
@@ -66,7 +70,7 @@ Under Settings → Thingamablocks you can switch off any block or feature you do
 
 = Starting layouts and Global Styles =
 
-Each block's starting layouts are styled with shared GenerateBlocks Pro Global Styles (about 75 classes, such as `tmb-search__field` and `tmb-search__field--pill`), created once in a "Thingamablocks" category and never overwritten, so your edits are safe. Edit a class to restyle every block that uses it. Without GenerateBlocks Pro every block still works, but the layouts are unstyled.
+Each block's starting layouts are styled with shared GenerateBlocks Pro Global Styles (about 85 classes, such as `tmb-search__field` and `tmb-search__field--pill`), created once in a "Thingamablocks" category and never overwritten, so your edits are safe. Edit a class to restyle every block that uses it. Without GenerateBlocks Pro every block still works, but the layouts are unstyled.
 
 = Requirements =
 
@@ -85,7 +89,7 @@ The plugin zip contains the compiled JavaScript and CSS in `build/`. The human-r
 1. Install and activate GenerateBlocks 2.0 or newer.
 2. Upload the `thingamablocks` folder to `/wp-content/plugins/`, or upload the zip under Plugins → Add New → Upload Plugin.
 3. Activate **Thingamablocks**.
-4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs** and **Search** in the GenerateBlocks category; each offers a choice of starting layouts. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
+4. In the block editor, open the inserter and find **Toggle**, **Countdown**, **Marquee**, **Dropdown**, **Breadcrumbs**, **Search** and **Table of Contents** in the GenerateBlocks category; each offers a choice of starting layouts. Select any GenerateBlocks block to find the **Entrance animation** panel in its sidebar, a GenerateBlocks Image block to find the **Mask** panel, a GenerateBlocks Element block to find the **Video background** panel, and (with GenerateBlocks Pro) an Accordion block to find the **FAQ schema** panel.
 5. Optional: under **Settings → Thingamablocks** (also linked from the Plugins screen), switch off any blocks or features you don't need, set what Fast / Normal / Slow mean for dropdowns and entrance animations (Speeds), and add your own Bunny hostnames for video backgrounds.
 
 == Frequently Asked Questions ==
@@ -220,6 +224,10 @@ The picker tells you why. The SVG needs a `viewBox` (or a width and height) so i
 
 == Changelog ==
 
+= 1.1.0 =
+* New Table of Contents block: a linked list of the post's headings, styled with GenerateBlocks. Highlights the section being read, collapses into a button on small screens, has a scroll offset for sticky headers, and can add copy-link buttons to headings.
+* Headings in single posts and pages get an ID from their text while the Table of Contents is switched on.
+
 = 1.0.0 =
 First public release.
 
@@ -240,6 +248,9 @@ First public release.
 * Removes its options when deleted.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds the Table of Contents block.
 
 = 1.0.0 =
 First public release.
