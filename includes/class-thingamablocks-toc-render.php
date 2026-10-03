@@ -453,12 +453,12 @@ class Thingamablocks_Toc_Render {
 
 		return (string) preg_replace_callback(
 			self::HEADING,
-			function ( $match ) use ( $headings, &$index, &$queue, &$used ) {
+			function ( $found ) use ( $headings, &$index, &$queue, &$used ) {
 				$heading = $headings[ $index ] ?? null;
 				++$index;
 
 				if ( ! $heading || $heading['own'] ) {
-					return $match[0];
+					return $found[0];
 				}
 
 				$id = empty( $queue[ $heading['key'] ] )
@@ -467,7 +467,7 @@ class Thingamablocks_Toc_Render {
 
 				$used[ $id ] = true;
 
-				$tags = new WP_HTML_Tag_Processor( $match[0] );
+				$tags = new WP_HTML_Tag_Processor( $found[0] );
 				$tags->next_tag();
 				$tags->set_attribute( 'id', $id );
 
@@ -507,10 +507,10 @@ class Thingamablocks_Toc_Render {
 	 * fall back to a plain list.
 	 *
 	 * @param string     $content Rendered inner blocks.
-	 * @param array|null $list    The list part's position (Thingamablocks_Html::find()).
+	 * @param array|null $part    The list part's position (Thingamablocks_Html::find()).
 	 * @return array Markup pieces.
 	 */
-	private static function templates( $content, $list ) {
+	private static function templates( $content, $part ) {
 		$templates = array(
 			'top_open'   => '<ul class="tmb-toc__fallback-list">',
 			'list_open'  => '<ul class="tmb-toc__fallback-list">',
@@ -522,17 +522,17 @@ class Thingamablocks_Toc_Render {
 			'after'      => '',
 		);
 
-		if ( ! $list ) {
+		if ( ! $part ) {
 			return $templates;
 		}
 
-		$open = substr( $content, $list['start'], $list['inner_start'] - $list['start'] );
+		$open = substr( $content, $part['start'], $part['inner_start'] - $part['start'] );
 
 		$templates['top_open']   = $open;
 		$templates['list_open']  = self::set_attributes( $open, array( 'id' => null ) );
-		$templates['list_close'] = substr( $content, $list['inner_end'], $list['end'] - $list['inner_end'] );
+		$templates['list_close'] = substr( $content, $part['inner_end'], $part['end'] - $part['inner_end'] );
 
-		$inner = substr( $content, $list['inner_start'], $list['inner_end'] - $list['inner_start'] );
+		$inner = substr( $content, $part['inner_start'], $part['inner_end'] - $part['inner_start'] );
 		$item  = Thingamablocks_Html::element( $inner, 'data-toc-part', 'item' );
 
 		if ( $item ) {

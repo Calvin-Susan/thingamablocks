@@ -113,12 +113,12 @@ return static function () {
 			),
 		),
 		'tmb-toc__copy-icon'     => array(
-			'display'  => 'inline-flex',
-			'color'    => $muted,
-			'&:hover'  => array(
+			'display' => 'inline-flex',
+			'color'   => $muted,
+			'&:hover' => array(
 				'color' => $accent,
 			),
-			'svg'      => array(
+			'svg'     => array(
 				'width'  => '0.7em',
 				'height' => '0.7em',
 			),
