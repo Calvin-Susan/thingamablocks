@@ -4,7 +4,7 @@ Tags: generateblocks, marquee, countdown timer, dark mode, toggle
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -236,6 +236,9 @@ The picker tells you why. The SVG needs a `viewBox` (or a width and height) so i
 
 == Changelog ==
 
+= 1.2.1 =
+* FAQ schema: an FAQ accordion in a GenerateBlocks Query Loop item no longer adds an extra question with the page's own title, and answers no longer contain HTML comments (such as the block comments `{{post_content}}` brings along).
+
 = 1.2.0 =
 * New Share block: share buttons for the post (X, LinkedIn, Facebook, Email, Bluesky, Threads, Reddit, WhatsApp, Telegram, Pinterest, Copy link and the device's share sheet), styled with GenerateBlocks, with no tracking or third-party scripts.
 * Table of Contents: works without JavaScript on small screens (the list is shown), leaves out headings in hidden blocks and HTML comments, and loads nothing when it has nothing to show. New `thingamablocks_toc_heading_ids` filter to stop it adding heading IDs.
@@ -264,6 +267,9 @@ First public release.
 * Removes its options when deleted.
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+Fixes FAQ schema for accordions inside a GenerateBlocks Query Loop.
 
 = 1.2.0 =
 Adds the Share block, plus Table of Contents improvements.

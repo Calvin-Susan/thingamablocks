@@ -2,6 +2,18 @@
 
 All notable changes to Thingamablocks are listed here.
 
+## 1.2.1 – 2026-11-12
+
+### Fixed
+
+- FAQ schema in a GenerateBlocks 2 Query Loop: an FAQ accordion in each loop item no longer adds a phantom first question (the page's own title, answered with the page's raw block markup). GenerateBlocks renders a Looper's inner blocks once in the page's context and throws that output away before rendering each loop item; accordions rendered in that thrown-away pass are now ignored (spotted by their parent: WordPress renders them with the Looper as parent, GenerateBlocks renders the real loop items with none).
+- FAQ schema: HTML comments are removed from answers (and questions). A Text block showing `{{post_content}}` printed the post's `<!-- wp:… -->` block comments, which ended up in `acceptedAnswer.text`.
+- FAQ schema: a block render left unfinished (another plugin short-circuiting it after Thingamablocks) can no longer affect FAQ accordions rendered after the FAQPage is printed.
+
+### Tests
+
+- `tests/e2e/faq.spec.js`: a real (free GenerateBlocks) Query Loop over three posts with an FAQ accordion per item, checking exactly three questions with clean answers; HTML comments in answers. The test site's mu-plugin adds a stand-in `{{post_content}}` dynamic tag (raw post content) where GenerateBlocks has none.
+
 ## 1.2.0 – 2026-10-03
 
 ### Added

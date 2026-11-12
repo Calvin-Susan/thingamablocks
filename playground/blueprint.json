@@ -43,7 +43,7 @@
 		{
 			"step": "writeFile",
 			"path": "/wordpress/wp-content/mu-plugins/thingamablocks-playground.php",
-			"data": "<?php\n// Local test site only: no GenerateBlocks Pro here, so Thingamablocks prints\n// its default layout classes itself (see includes/class-thingamablocks-global-styles.php).\ndefine( 'THINGAMABLOCKS_PRINT_DEFAULT_STYLES', true );\n"
+			"data": "<?php\n// Local test site only: no GenerateBlocks Pro here, so Thingamablocks prints\n// its default layout classes itself (see includes/class-thingamablocks-global-styles.php).\ndefine( 'THINGAMABLOCKS_PRINT_DEFAULT_STYLES', true );\n\n// Free GenerateBlocks has no {{post_content}} tag; a stand-in that, like the\n// one on real sites, returns the post's raw content (FAQ schema loop test).\nadd_action(\n\t'init',\n\tfunction () {\n\t\tif ( class_exists( 'GenerateBlocks_Register_Dynamic_Tag' ) && ! isset( GenerateBlocks_Register_Dynamic_Tag::get_tags()['post_content'] ) ) {\n\t\t\tnew GenerateBlocks_Register_Dynamic_Tag(\n\t\t\t\tarray(\n\t\t\t\t\t'title'  => 'Post Content',\n\t\t\t\t\t'tag'    => 'post_content',\n\t\t\t\t\t'type'   => 'post',\n\t\t\t\t\t'return' => function () {\n\t\t\t\t\t\treturn (string) get_post_field( 'post_content', get_the_ID() );\n\t\t\t\t\t},\n\t\t\t\t)\n\t\t\t);\n\t\t}\n\t},\n\t20\n);\n"
 		}
 	]
 }

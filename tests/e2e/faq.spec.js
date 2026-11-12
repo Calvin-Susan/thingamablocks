@@ -5,14 +5,14 @@
  * stand-ins for the Accordion blocks.
  */
 const { test, expect } = require( '@playwright/test' );
-const { testPage, newPost } = require( './utils' );
+const { rest, testPage, newPost } = require( './utils' );
 
 let counter = 0;
 const uid = () => ( 0xa0000000 + ++counter ).toString( 16 );
 
-const text = ( content ) => {
+const text = ( content, tagName = 'span' ) => {
 	const id = uid();
-	return `<!-- wp:generateblocks/text {"uniqueId":"${ id }","tagName":"span"} --><span class="gb-text gb-text-${ id }">${ content }</span><!-- /wp:generateblocks/text -->`;
+	return `<!-- wp:generateblocks/text {"uniqueId":"${ id }","tagName":"${ tagName }"} --><${ tagName } class="gb-text gb-text-${ id }">${ content }</${ tagName }><!-- /wp:generateblocks/text -->`;
 };
 
 const paragraph = ( html ) =>
@@ -46,6 +46,61 @@ const accordion = ( faq, items ) => {
 		faq ? ' data-tmb-faq="true"' : ''
 	}>${ items.join( '' ) }</div><!-- /wp:generateblocks-pro/accordion -->`;
 };
+
+/**
+ * A GenerateBlocks Query Loop (free GenerateBlocks, so it really runs here)
+ * over the given posts, in that order.
+ *
+ * @param {number[]} ids      Post IDs.
+ * @param {string}   loopItem Markup inside each loop item.
+ * @return {string} Block markup.
+ */
+const queryLoop = ( ids, loopItem ) => {
+	const [ query, looper, loopItemId ] = [ uid(), uid(), uid() ];
+	const attributes = {
+		uniqueId: query,
+		tagName: 'div',
+		query: {
+			post_type: [ 'post' ],
+			post__in: ids,
+			orderby: 'post__in',
+			posts_per_page: ids.length,
+		},
+	};
+
+	return (
+		`<!-- wp:generateblocks/query ${ JSON.stringify(
+			attributes
+		) } --><div class="gb-query gb-query-${ query }">` +
+		`<!-- wp:generateblocks/looper {"uniqueId":"${ looper }","tagName":"div"} --><div class="gb-looper-${ looper }">` +
+		`<!-- wp:generateblocks/loop-item {"uniqueId":"${ loopItemId }","tagName":"div"} --><div class="gb-loop-item gb-loop-item-${ loopItemId }">${ loopItem }</div><!-- /wp:generateblocks/loop-item -->` +
+		`</div><!-- /wp:generateblocks/looper -->` +
+		`</div><!-- /wp:generateblocks/query -->`
+	);
+};
+
+/**
+ * Create a published test post, or update it if it exists.
+ *
+ * @param {import('@playwright/test').Page} page    Any page in the context.
+ * @param {string}                          slug    Post slug.
+ * @param {string}                          title   Title.
+ * @param {string}                          content Raw post content.
+ * @return {Promise<number>} The post's ID.
+ */
+async function testPost( page, slug, title, content ) {
+	const [ existing ] = await rest( page, '/wp/v2/posts', {
+		params: { slug, status: 'publish,draft', context: 'edit' },
+	} );
+	const data = { slug, title, status: 'publish', content };
+	const saved = await rest(
+		page,
+		existing ? `/wp/v2/posts/${ existing.id }` : '/wp/v2/posts',
+		{ method: 'POST', data }
+	);
+
+	return saved.id;
+}
 
 /**
  * Every JSON-LD FAQPage on the page.
@@ -148,6 +203,74 @@ test.describe( 'FAQ schema', () => {
 
 		// The question text in the page is untouched; nothing ran.
 		expect( dialogs ).toEqual( [] );
+	} );
+
+	test( 'answers drop HTML comments', async ( { page } ) => {
+		const withComments = await testPage(
+			page,
+			'tmb-test-faq-comments',
+			accordion( true, [
+				item(
+					'Comments?',
+					'<!-- wp:html --><p>Kept <!-- not this --> text <!--> too</p><!-- /wp:html -->'
+				),
+			] )
+		);
+
+		await page.goto( withComments );
+		const [ faq ] = await faqPages( page );
+		expect( faq.mainEntity[ 0 ].acceptedAnswer.text ).toBe(
+			'<p>Kept text too</p>'
+		);
+	} );
+
+	test( 'an FAQ accordion in each Query Loop item: one question per post', async ( {
+		page,
+	} ) => {
+		// Like a loop over an "faq" post type showing {{post_content}}: the
+		// tag gives the raw content, block comments and all.
+		const ids = [];
+		for ( const n of [ 1, 2, 3 ] ) {
+			ids.push(
+				await testPost(
+					page,
+					`tmb-test-faq-post-${ n }`,
+					`Loop question ${ n }?`,
+					`<!-- wp:paragraph -->\n<p>Loop answer ${ n } with <strong>bold</strong>.</p>\n<!-- /wp:paragraph -->`
+				)
+			);
+		}
+
+		const loop = await testPage(
+			page,
+			'tmb-test-faq-loop',
+			queryLoop(
+				ids,
+				accordion( true, [
+					item( '{{post_title}}', text( '{{post_content}}', 'div' ) ),
+				] )
+			)
+		);
+
+		await page.goto( loop );
+		await expect( page.locator( '.gb-accordion' ) ).toHaveCount( 3 );
+
+		// GenerateBlocks also renders the loop item once in the page's own
+		// context ({{post_title}} = "Test: tmb-test-faq-loop") and throws it
+		// away: that accordion isn't on the page, so it isn't in the schema.
+		const faqs = await faqPages( page );
+		expect( faqs ).toHaveLength( 1 );
+		expect(
+			faqs[ 0 ].mainEntity.map( ( question ) => [
+				question.name,
+				question.acceptedAnswer.text,
+			] )
+		).toEqual(
+			[ 1, 2, 3 ].map( ( n ) => [
+				`Loop question ${ n }?`,
+				`<p>Loop answer ${ n } with <strong>bold</strong>.</p>`,
+			] )
+		);
 	} );
 
 	test( 'no FAQ accordion, no FAQPage', async ( { page } ) => {

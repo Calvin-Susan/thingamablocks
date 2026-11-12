@@ -20,6 +20,14 @@
  * as they render, in a stack (accordions can be nested), and handed to the
  * accordion when it finishes.
  *
+ * GenerateBlocks' Query Loop: WordPress renders a block's inner blocks
+ * before calling its render function, and the Looper block
+ * (generateblocks/looper) then renders each loop item again itself, once per
+ * post, and throws that first output away. That thrown-away pass runs in the
+ * page's own context ({{post_title}} is the page's title), so accordions
+ * rendered in it are ignored. (Core's Post Template block avoids that pass
+ * with skip_inner_blocks; GenerateBlocks 2.x doesn't.)
+ *
  * @package Thingamablocks
  */
 
@@ -36,6 +44,7 @@ class Thingamablocks_Faq_Schema {
 	const ITEM      = 'generateblocks-pro/accordion-item';
 	const TOGGLE    = 'generateblocks-pro/accordion-toggle';
 	const CONTENT   = 'generateblocks-pro/accordion-content';
+	const LOOPER    = 'generateblocks/looper';
 
 	/**
 	 * One frame per accordion being rendered: its finished items, and the
@@ -53,13 +62,22 @@ class Thingamablocks_Faq_Schema {
 	private static $entities = array();
 
 	/**
+	 * Looper blocks whose inner blocks WordPress is rendering just to be
+	 * thrown away (see the top of this file), innermost last.
+	 *
+	 * @var WP_Block[]
+	 */
+	private static $discarded = array();
+
+	/**
 	 * Hook in.
 	 */
 	public static function init() {
 		// Last of all: after anything that short-circuits a block, and after
 		// block conditions (which empty a hidden block) have run. The
 		// block-specific render filters run after the general one.
-		add_filter( 'pre_render_block', array( __CLASS__, 'before' ), PHP_INT_MAX, 2 );
+		add_filter( 'pre_render_block', array( __CLASS__, 'before' ), PHP_INT_MAX, 3 );
+		add_filter( 'render_block', array( __CLASS__, 'rendered' ), PHP_INT_MAX, 3 );
 
 		foreach ( array( self::ACCORDION, self::ITEM, self::TOGGLE, self::CONTENT ) as $name ) {
 			add_filter( 'render_block_' . $name, array( __CLASS__, 'after' ), PHP_INT_MAX, 2 );
@@ -71,14 +89,26 @@ class Thingamablocks_Faq_Schema {
 	}
 
 	/**
-	 * An accordion is about to render: start collecting its items.
+	 * An accordion is about to render: start collecting its items. Or a
+	 * Looper's inner block is about to render for nothing: ignore what's in it.
 	 *
-	 * @param string|null $pre   Short-circuited output.
-	 * @param array       $block Parsed block.
+	 * @param string|null   $pre          Short-circuited output.
+	 * @param array         $block        Parsed block.
+	 * @param WP_Block|null $parent_block The block it's rendered inside, if any.
 	 * @return string|null
 	 */
-	public static function before( $pre, $block ) {
-		if ( null === $pre && self::ACCORDION === ( $block['blockName'] ?? '' ) ) {
+	public static function before( $pre, $block, $parent_block = null ) {
+		if ( null !== $pre ) {
+			return $pre;
+		}
+
+		// WordPress rendering a Looper's inner blocks itself (GenerateBlocks
+		// renders the real loop items with no parent).
+		if ( $parent_block instanceof WP_Block && self::LOOPER === $parent_block->name ) {
+			self::$discarded[] = $parent_block;
+		}
+
+		if ( self::ACCORDION === ( $block['blockName'] ?? '' ) ) {
 			self::$stack[] = array(
 				'items'    => array(),
 				'question' => '',
@@ -87,6 +117,34 @@ class Thingamablocks_Faq_Schema {
 		}
 
 		return $pre;
+	}
+
+	/**
+	 * Any block has rendered: if it was a Looper's thrown-away inner block,
+	 * accordions count again.
+	 *
+	 * @param string        $content  Rendered block.
+	 * @param array         $block    Parsed block.
+	 * @param WP_Block|null $instance Block instance.
+	 * @return string
+	 */
+	public static function rendered( $content, $block, $instance = null ) {
+		if ( ! self::$discarded || ! $instance instanceof WP_Block ) {
+			return $content;
+		}
+
+		$looper = end( self::$discarded );
+
+		// The same object WordPress rendered from the Looper's inner blocks;
+		// GenerateBlocks' real loop items are new objects, so never match.
+		for ( $i = 0, $count = count( $looper->inner_blocks ); $i < $count; $i++ ) {
+			if ( $looper->inner_blocks[ $i ] === $instance ) {
+				array_pop( self::$discarded );
+				break;
+			}
+		}
+
+		return $content;
 	}
 
 	/**
@@ -116,7 +174,7 @@ class Thingamablocks_Faq_Schema {
 
 			case self::ITEM:
 				// An item hidden by a block condition renders as nothing: leave it out.
-				if ( '' !== trim( $content ) && '' !== self::$stack[ $frame ]['question'] && '' !== self::$stack[ $frame ]['answer'] ) {
+				if ( ! self::$discarded && '' !== trim( $content ) && '' !== self::$stack[ $frame ]['question'] && '' !== self::$stack[ $frame ]['answer'] ) {
 					self::$stack[ $frame ]['items'][] = array( self::$stack[ $frame ]['question'], self::$stack[ $frame ]['answer'] );
 				}
 
@@ -127,7 +185,7 @@ class Thingamablocks_Faq_Schema {
 			case self::ACCORDION:
 				$items = array_pop( self::$stack )['items'];
 
-				if ( '' !== trim( $content ) && self::is_faq( $block ) ) {
+				if ( ! self::$discarded && '' !== trim( $content ) && self::is_faq( $block ) ) {
 					self::queue( $items );
 				}
 				break;
@@ -161,7 +219,9 @@ class Thingamablocks_Faq_Schema {
 	/**
 	 * The answer: the content's HTML, kept to the tags Google reads in FAQ
 	 * answers (headings, paragraphs, lists, links, line breaks and bold or
-	 * italic text), with no attributes except a link's href.
+	 * italic text), with no attributes except a link's href, and no HTML
+	 * comments (kses keeps them; a Text block showing {{post_content}} is
+	 * full of block comments).
 	 *
 	 * @param string $html Rendered content.
 	 * @return string
@@ -235,13 +295,16 @@ class Thingamablocks_Faq_Schema {
 
 	/**
 	 * Remove elements whose text isn't content (scripts, styles, icons,
-	 * hidden templates), with everything inside them.
+	 * hidden templates), with everything inside them, then HTML comments
+	 * ("<!-->" and "<!--->" are empty ones; an unclosed one runs to the end).
 	 *
 	 * @param string $html HTML.
 	 * @return string
 	 */
 	private static function remove_elements( $html ) {
-		return (string) preg_replace( '#<(script|style|svg|template|noscript)\b[^>]*>.*?</\1>#isu', '', $html );
+		$html = (string) preg_replace( '#<(script|style|svg|template|noscript)\b[^>]*>.*?</\1>#isu', '', $html );
+
+		return (string) preg_replace( '#<!--(?:>|->|.*?(?:-->|$))#su', '', $html );
 	}
 
 	/**
@@ -325,6 +388,11 @@ class Thingamablocks_Faq_Schema {
 	public static function print_schema() {
 		$data           = self::data();
 		self::$entities = array();
+
+		// Anything left open by a render that never finished (another plugin
+		// short-circuiting a block after us) can't affect later renders.
+		self::$stack     = array();
+		self::$discarded = array();
 
 		if ( empty( $data ) ) {
 			return;

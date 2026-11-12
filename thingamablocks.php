@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Thingamablocks
  * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  generateblocks
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'THINGAMABLOCKS_VERSION', '1.2.0' );
+define( 'THINGAMABLOCKS_VERSION', '1.2.1' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once THINGAMABLOCKS_DIR . 'includes/settings.php';
