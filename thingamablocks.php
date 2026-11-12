@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Thingamablocks
  * Description:       A completely unnecessary ultimate add-ons power-pack for GenerateBlocks.
- * Version:           1.2.1
+ * Version:           1.2.2
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  generateblocks
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'THINGAMABLOCKS_VERSION', '1.2.1' );
+define( 'THINGAMABLOCKS_VERSION', '1.2.2' );
 define( 'THINGAMABLOCKS_DIR', plugin_dir_path( __FILE__ ) );
 
 require_once THINGAMABLOCKS_DIR . 'includes/settings.php';
@@ -40,6 +40,7 @@ require_once THINGAMABLOCKS_DIR . 'includes/color-scheme.php';
 require_once THINGAMABLOCKS_DIR . 'includes/animations.php';
 require_once THINGAMABLOCKS_DIR . 'includes/mask.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-faq-schema.php';
+require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-accordion-ids.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-video-background.php';
 require_once THINGAMABLOCKS_DIR . 'includes/class-thingamablocks-global-styles.php';
 

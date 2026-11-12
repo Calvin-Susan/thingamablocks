@@ -2,6 +2,16 @@
 
 All notable changes to Thingamablocks are listed here.
 
+## 1.2.2 – 2026-11-13
+
+### Fixed
+
+- GenerateBlocks Pro Accordions in a GenerateBlocks Query Loop: the HTML IDs GB Pro saves on the toggle (`gb-accordion-toggle-<uniqueId>`) and content (`gb-accordion-content-<uniqueId>`) repeated in every loop item, giving duplicate IDs and screen-reader links (`aria-controls` / `aria-labelledby`, which GB Pro's script copies from those IDs) pointing at the first item (WCAG 4.1.2). In a loop item the ID now gets the loop post's ID added (`gb-accordion-toggle-6904a3ed-24534`), and so does any accordion ID in a saved `aria-controls` / `aria-labelledby`. GB Pro's custom field and option loops, where every row has the same post ID, also get the row number (`-24534-3`). Done at render time (the plugin adds `postId`, `generateblocks/loopIndex` and `generateblocks/queryType` to the two blocks' `uses_context`), so it holds however often the page is saved. Outside loops nothing changes. Works with or without FAQ schema. Not covered: an HTML ID you set on the accordion item itself, and a loop nested inside another loop that shows the same posts in every outer item.
+
+### Tests
+
+- `tests/e2e/faq.spec.js`: a Query Loop whose accordion has GB Pro's saved IDs: each item's IDs end in its post's ID, an accordion outside the loop keeps its IDs, no duplicate IDs on the page, and the FAQPage is unchanged. The test site's mu-plugin registers stand-ins for GB Pro's accordion toggle and content on the server. Checked once by hand (not in CI) with GB Pro 2.8's `accordion.js`: every accordion `aria-controls` / `aria-labelledby` resolves, and items open and close by click, Enter and Space.
+
 ## 1.2.1 – 2026-11-12
 
 ### Fixed

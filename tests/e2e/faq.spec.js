@@ -273,6 +273,94 @@ test.describe( 'FAQ schema', () => {
 		);
 	} );
 
+	test( 'accordion IDs in a Query Loop are unique per loop item', async ( {
+		page,
+	} ) => {
+		const ids = [];
+		for ( const n of [ 1, 2, 3 ] ) {
+			ids.push(
+				await testPost(
+					page,
+					`tmb-test-faq-post-${ n }`,
+					`Loop question ${ n }?`,
+					`<!-- wp:paragraph -->\n<p>Loop answer ${ n } with <strong>bold</strong>.</p>\n<!-- /wp:paragraph -->`
+				)
+			);
+		}
+
+		// item() saves the IDs GB Pro's editor saves on the toggle and content.
+		const outside = item( 'Outside the loop?', paragraph( 'Yes.' ) );
+		// An aria-controls typed in by hand follows its ID. (The content's
+		// ID is the last one item() made.)
+		const looped = item(
+			'{{post_title}}',
+			text( '{{post_content}}', 'div' )
+		);
+		const contentId = looped.match(
+			/ id="(gb-accordion-content-[^"]+)"/
+		)[ 1 ];
+		const withAria = looped.replace(
+			/ id="gb-accordion-toggle-[^"]+"/,
+			( match ) => `${ match } aria-controls="${ contentId }"`
+		);
+		const loop = await testPage(
+			page,
+			'tmb-test-accordion-ids',
+			queryLoop( ids, accordion( true, [ withAria ] ) ) +
+				accordion( false, [ outside ] )
+		);
+
+		await page.goto( loop );
+		const found = await page.$$eval( '.gb-accordion__item', ( items ) =>
+			items.map( ( element ) => [
+				element.querySelector( '.gb-accordion__toggle' ).id,
+				element.querySelector( '.gb-accordion__content' ).id,
+				element
+					.querySelector( '.gb-accordion__toggle' )
+					.getAttribute( 'aria-controls' ),
+			] )
+		);
+		expect( found ).toHaveLength( 4 );
+
+		// The hand-typed aria-controls points at its own item's content.
+		for ( const [ , content, controls ] of found.slice( 0, 3 ) ) {
+			expect( controls ).toBe( content );
+		}
+
+		// Each loop item's IDs end in its post's ID; outside the loop they're as saved.
+		const toggle = /id":"(gb-accordion-toggle-[^"]+)"/;
+		const content = /id":"(gb-accordion-content-[^"]+)"/;
+		ids.forEach( ( id, index ) => {
+			expect( found[ index ][ 0 ] ).toMatch(
+				new RegExp( `^gb-accordion-toggle-[0-9a-f]+-${ id }$` )
+			);
+			expect( found[ index ][ 1 ] ).toMatch(
+				new RegExp( `^gb-accordion-content-[0-9a-f]+-${ id }$` )
+			);
+		} );
+		expect( found[ 3 ] ).toEqual( [
+			outside.match( toggle )[ 1 ],
+			outside.match( content )[ 1 ],
+			null,
+		] );
+
+		// No duplicate IDs anywhere on the page.
+		const duplicates = await page.$$eval( '[id]', ( elements ) => {
+			const seen = new Set();
+			return elements
+				.map( ( element ) => element.id )
+				.filter( ( id ) => seen.has( id ) || ! seen.add( id ) );
+		} );
+		expect( duplicates ).toEqual( [] );
+
+		// The FAQ schema is unaffected: one FAQPage, three clean questions.
+		const faqs = await faqPages( page );
+		expect( faqs ).toHaveLength( 1 );
+		expect(
+			faqs[ 0 ].mainEntity.map( ( question ) => question.name )
+		).toEqual( [ 1, 2, 3 ].map( ( n ) => `Loop question ${ n }?` ) );
+	} );
+
 	test( 'no FAQ accordion, no FAQPage', async ( { page } ) => {
 		const plain = await testPage(
 			page,

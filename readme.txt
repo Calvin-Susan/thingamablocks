@@ -4,7 +4,7 @@ Tags: generateblocks, marquee, countdown timer, dark mode, toggle
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -236,6 +236,9 @@ The picker tells you why. The SVG needs a `viewBox` (or a width and height) so i
 
 == Changelog ==
 
+= 1.2.2 =
+* GenerateBlocks Pro Accordions in a Query Loop get unique HTML IDs per loop item, so each question's screen-reader link points at its own answer (no more duplicate IDs).
+
 = 1.2.1 =
 * FAQ schema: an FAQ accordion in a GenerateBlocks Query Loop item no longer adds an extra question with the page's own title, and answers no longer contain HTML comments (such as the block comments `{{post_content}}` brings along).
 
@@ -267,6 +270,9 @@ First public release.
 * Removes its options when deleted.
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Fixes duplicate IDs (and broken screen-reader links) in accordions inside a GenerateBlocks Query Loop.
 
 = 1.2.1 =
 Fixes FAQ schema for accordions inside a GenerateBlocks Query Loop.
